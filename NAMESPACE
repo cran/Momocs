@@ -1,0 +1,22 @@
+exportPattern("^[[:alpha:]]+")
+exportMethods(
+    "dev.qual",
+    "dev.quant",
+    "get.Nef",
+    "harm.pow",
+    "manova.nef",
+    "morph.sp",
+    "pca.tps",
+    "pca",
+    "pca3",
+    "plot",
+    "show",
+    "tps.grid",
+    "tps.iso",
+    "tps.vf",
+    "traj" 
+)
+exportClasses(
+    "Coo",
+     "Nef" 
+)
