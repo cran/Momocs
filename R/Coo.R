@@ -19,9 +19,9 @@ rep("*", 67, sep=""), sep="")})
 
 # plot one or several outlines from a Coo object
 setMethod(f="plot", signature="Coo", definition=
-  function(x,y,range=1:length(x@coo), prompt=TRUE, col="grey40",...) {
+  function(x, y, range=1:length(x@coo), prompt=TRUE, col="grey90",...) {
     for (i in seq(along=range)){
-        plot(x=x@coo[[range[i]]]$x, y=x@coo[[range[i]]]$y, col="red", type="l", lwd=3, an=FALSE, asp=1, axes=FALSE, frame=FALSE)
+        plot(x=x@coo[[range[i]]]$x, y=x@coo[[range[i]]]$y, col="#1A1A1A", type="l", lwd=3, an=FALSE, asp=1, axes=FALSE, frame=FALSE)
 		title(main=names(x@coo)[range[i]], sub=paste(length(x@coo[[range[i]]]$x), "coordinates"))
         polygon(x@coo[[range[i]]], col=col)
         if(prompt) {readline(prompt = "Press <Enter> to continue...")}}})
@@ -53,7 +53,8 @@ setMethod(f="dev.qual", signature="Coo", definition=
            nb.h      = 32,
            smooth.it = 0,
            range     = seq(1, nb.h, len = 4)){
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   range   <- round(range)
   n       <- length(range)
   cols    <-colorRampPalette(c("dodgerblue4", "firebrick1"))(n)
@@ -72,8 +73,7 @@ setMethod(f="dev.qual", signature="Coo", definition=
       lines(ief, col = cols[i], lwd = 2)}
   par(def.par) # if the user escapes, par is safe
   mtext(names(Coo@coo)[id[k]], side=3, line=1, cex=1.3, outer=TRUE)
-  if(length(id)>1){readline(prompt = "Press <Enter> to continue...")}}
-  par(def.par)})
+  if(length(id)>1){readline(prompt = "Press <Enter> to continue...")}}})
 
 # Plots quantitative deviations
 setMethod(f="dev.quant", signature="Coo", definition=
@@ -106,7 +106,8 @@ setMethod(f="dev.quant", signature="Coo", definition=
     rec.aligned <- align2m(ref, rec)
     dev   <- e.dm(ref, rec.aligned)/calliper.length
     return(dev)}
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   if (missing(id)) {id <- (1:length(Coo@coo))}
   range   <- 4:nb.h
   res <- matrix(NA, nr=length(range), nc=6,

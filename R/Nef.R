@@ -67,7 +67,8 @@ setMethod(f="pca", signature="Nef", definition=
     min.y <- min(y) - dy
     max.y <- max(y) + dy
     list(x = c(min.x, max.x), y = c(min.y, max.y))}
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   pca <- prcomp(Nef@coeff)
   proj <- list(x = pca$x[, PCa], y = pca$x[, PCb])
   wdw <- zoom.wdw(proj$x, proj$y, zoom.x, zoom.y)
@@ -139,7 +140,8 @@ setMethod(f="pca3", signature="Nef", definition=
              lwd = 1,
              zoom = 1.4,
              legend = FALSE){
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   pca <- prcomp(Nef@coeff)
   ev <- pca$sdev^2
   ev <- ev/sum(ev)
@@ -163,8 +165,7 @@ setMethod(f="pca3", signature="Nef", definition=
   pca(Nef, fac, PCa = 1, PCb = 3, title = "PC1-PC3", 
       col = col, pch = pch, lty=lty, lab = lab, lab.txt = lab.txt, lab.cex = lab.cex, 
       leg = FALSE, lab.box = lab.box, ell = ell,  
-      r = r, lwd = lwd, zoom.x = zoom)
-  par(def.par)})
+      r = r, lwd = lwd, zoom.x = zoom)})
  
 # Plots a PCA plus the grid deformations
 setMethod(f="pca.tps", signature="Nef", definition=
@@ -183,7 +184,8 @@ setMethod(f="pca.tps", signature="Nef", definition=
   nb.h <- ncol(Nef@coeff)/4
   pca(Nef, fac = fac, PCa = PCa, PCb = PCb, lab = FALSE, 
       zoom.x = zoom, ell = ell, pch = pch, col = col, title = title)
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   pca <- prcomp(Nef@coeff)
   extrem <- apply(pca$x[, c(PCa, PCb)], 2, range)
   l2m <- function(m) matrix(c(m$x, m$y), nc = 2)
@@ -220,8 +222,7 @@ setMethod(f="pca.tps", signature="Nef", definition=
     N.y1 <- plt[4] - plt.y * (0.25 + ins)
     N.y2 <- plt[4] - plt.x * ins
     par(plt = c(S.x1, S.x2, N.y1, N.y2), new = TRUE)
-    tps(cent, N, n = ncells, plot = 1)
-    par(def.par)})
+    tps(cent, N, n = ncells, plot = 1)})
 
 # Plots the morphological space
 setMethod(f="morph.sp", signature="Nef", definition=
@@ -296,6 +297,7 @@ setMethod(f="morph.PC", signature="Nef", definition=
 			 pca.ax=seq(1, 3)){
   layout(matrix(1:(3*length(pca.ax)), nc=3, byrow=T))
   op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   par(oma=rep(1,4), mar=rep(1,4))
   x.mu    <- apply(Nef@coeff, 2, mean)
   pca     <- prcomp(Nef@coeff)
@@ -314,8 +316,7 @@ setMethod(f="morph.PC", signature="Nef", definition=
       polygon(closed.outline(coe.shp), col="grey90")}
     coe.comp.plot(coe.min, nb.h, title=paste("PC", pca.ax[i], " - ", sd.nb, "SD", sep=""))
     coe.comp.plot(x.mu,    nb.h, title="Mean shape")
-    coe.comp.plot(coe.max, nb.h, title=paste("PC", pca.ax[i], " + ", sd.nb, "SD", sep=""))}
-  par(op)})
+    coe.comp.plot(coe.max, nb.h, title=paste("PC", pca.ax[i], " + ", sd.nb, "SD", sep=""))}})
   
 # Calculates shape intermediates
 setMethod(f="traj", signature="Nef", definition=
@@ -370,8 +371,8 @@ function (Nef,
           cont = TRUE,
           cont.col = c("dodgerblue3", "firebrick3"),
           cont.lwd = rep(3,2)) {
-  # X11()
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   if (missing(fr)) {
     morph.sp(Nef)
     cat("Click on the plot to select the starting point\n")
@@ -393,9 +394,7 @@ function (Nef,
     fr.l <- list(x = fr.m[, 1], y = fr.m[, 2])
     to.l <- list(x = to.m[, 1], y = to.m[, 2])
     lines(closed.outline(fr.l), lwd = cont.lwd[1], col = cont.col[1])
-    lines(closed.outline(to.l), lwd = cont.lwd[2], col = cont.col[2])}
-  # dev.off()
-  par(def.par)})
+    lines(closed.outline(to.l), lwd = cont.lwd[2], col = cont.col[2])}})
 
 # Calculates shape intermediates
 setMethod(f="tps.iso", signature="Nef", definition=
@@ -412,8 +411,8 @@ setMethod(f="tps.iso", signature="Nef", definition=
             cont.lev = 10,
             cont.col = c("dodgerblue3", "firebrick3"), 
             cont.lwd = rep(3,2)){
-  # X11()
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   if (missing(fr)) {
     morph.sp(Nef)
     cat("Click on the plot to select the starting point\n")
@@ -451,9 +450,7 @@ setMethod(f="tps.iso", signature="Nef", definition=
   if (cont.fr) {
       lines(closed.outline(shp.fr), col = cont.col[1], lwd = cont.lwd[1])}
   if (cont.to) 
-      {lines(closed.outline(shp.to), col = cont.col[2], lwd = cont.lwd[2])}
-  # dev.off()
-  par(def.par)})
+      {lines(closed.outline(shp.to), col = cont.col[2], lwd = cont.lwd[2])}})
 
 # Calculates shape intermediates
 setMethod(f="tps.vf", signature="Nef", definition=
@@ -473,8 +470,8 @@ setMethod(f="tps.vf", signature="Nef", definition=
             cont.col = c("dodgerblue3", "firebrick3"),
             cont.lwd = rep(3, 2)){
   e.d <- function (pt1, pt2) {sqrt(sum((pt1 - pt2)^2))}
-  # X11()
-  def.par <- par(no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   if (missing(fr)) {
     morph.sp(Nef)
     cat("Click on the plot to select the starting point\n")
@@ -511,6 +508,4 @@ setMethod(f="tps.vf", signature="Nef", definition=
     arrows(x0, y0, x1, y1, length = arr.len, angle = arr.ang, 
            lwd = arr.lwd, col = arr.col[i])}
   lines(rbind(m.fr, m.fr[1, ]), lwd = cont.lwd[1], col = cont.col[1])
-  lines(rbind(m.to, m.to[1, ]), lwd = cont.lwd[2], col = cont.col[2])
-  # dev.off()
-  par(def.par)})
+  lines(rbind(m.to, m.to[1, ]), lwd = cont.lwd[2], col = cont.col[2])})
