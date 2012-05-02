@@ -9,7 +9,6 @@ exportMethods(
     "pca.tps",
     "pca",
     "pca3",
-    "plot",
     "show",
     "tps.grid",
     "tps.iso",
