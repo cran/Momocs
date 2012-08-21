@@ -1,101 +1,395 @@
-setGeneric(name= "get.Nef", 	def=function(Coo, nb.h=32, smooth.it=0, fromrt=FALSE)
-											{standardGeneric("get.Nef")})
-setGeneric(name= "dev.qual", 	def=function(Coo, id=1:length(Coo@coo), nb.h = 32, smooth.it=0, range= seq(1, nb.h, len=4))
-											{standardGeneric("dev.qual")})  
-setGeneric(name= "dev.quant", 	def=function(Coo, id=1:length(Coo@coo), nb.h = 32, smooth.it=0, plot=TRUE)
-											{standardGeneric("dev.quant")})
-setGeneric(name= "harm.pow", 	def=function(Coo, id, nb.h = 32, smooth.it = 0, plot = TRUE, max.h = nb.h, first = TRUE)
-											{standardGeneric("harm.pow")})
-setGeneric(name= "manova.nef", 	def=function(Nef, fac, harmonics.retained, drop=FALSE)
-											{standardGeneric("manova.nef")})
-setGeneric(name= "pca", 		def=function(Nef, fac = NA,PCa = 1, PCb = 2, col = "black", pch = 1, lty=1, shp.nb=NA, shp.size, shp.col="#00000022",
-											 shp.border="black", title = "Principal Component Analysis", legend = TRUE, lab = FALSE, lab.txt = rownames(Nef@coeff),
-											 lab.cex = 1, lab.box = TRUE, ell = TRUE, r = 1, lwd = 1, zoom.x = 0.25, zoom.y = 0.3)
-											{standardGeneric("pca")})
-setGeneric(name= "pca3", 		def=function(Nef,  fac = NA, col = 1:nlevels(fac), pch = 1:nlevels(fac), lty = rep(1,nlevels(fac)),
-											 lab = FALSE, lab.txt = rownames(Nef@coeff), lab.cex = 1, lab.box = TRUE, ell = 1, r = 1,
-											 lwd = 1, zoom = 1.4, legend = FALSE){standardGeneric("pca3")})
-setGeneric(name= "pca.tps", 	def=function(Nef, fac = NA, PCa = 1, PCb = 2, col = "black", pch = 1, ell = TRUE, zoom = 1.4, 
-											 ncells = 20, title = "Deformations alongs PC axes")
-											 {standardGeneric("pca.tps")})
-setGeneric(name= "morph.sp",    def=function(Nef, PCa = 1, PCb = 2, nb.PCa = 5, nb.PCb = 6, fac = NA, morph.sp.extend = 1, zoom.extend = 1.2, asp,
-											pch = 20, shp.col = NA, shp.lwd = 1, shp.size,
-											col = "grey40", ell = FALSE, r = 1, lwd = 1, title = "Morphological space")
-											{standardGeneric("morph.sp")})
-setGeneric(name= "morph.PC", 	def=function(Nef, sd.nb=1, pca.ax=seq(1, 3))
-											{standardGeneric("morph.PC")})
-setGeneric(name= "traj", 		def=function(Nef, fr = c(0, 0), to = c(1, 1), nb.int = 50,
-											 nb.pts=500, save = FALSE, prog = TRUE, pause=TRUE)
-											{standardGeneric("traj")})
-setGeneric(name= "tps.grid", 	def=function(Nef, fr, to, nb.pts = 50, amp = 1, grid.size = 50, grid.col = "grey40", cont = TRUE,
-											 cont.col = c("dodgerblue3", "firebrick3"), cont.lwd = rep(3,2))
-											 {standardGeneric("tps.grid")})
-setGeneric(name= "tps.iso", 	def=function(Nef, fr, to, nb.pts = 200, amp = 1, iso.pts = 1000, col.pal = topo.colors, col.lev = 500, cont.to = TRUE, cont.fr = TRUE,
-											 cont.lev = 10, cont.col = c("dodgerblue3", "firebrick3"),  cont.lwd = rep(3,2))
-											{standardGeneric("tps.iso")})
-setGeneric(name= "tps.vf", 		def=function(Nef, fr, to, nb.pts = 100, amp = 1, arr.nb = 300, arr.len = 0.05, arr.ang = 30, arr.col = "grey40",
-											 arr.pal = FALSE, arr.palette = topo.colors, arr.pal.lev = 20, arr.lwd = 1, cont.col = c("dodgerblue3", "firebrick3"),
-											 cont.lwd = rep(3, 2))
-											 {standardGeneric("tps.vf")})
+######################################################################
+#######################   Coo methods   ##############################
+######################################################################
 
-############################# Internal functions ###############################
-# Import .txt or .jpg outlines
-get.cont <- function (path) {
-  if (missing(path)) {path <- choose.dir()}
-  img.list <- list.files(path, full.names = TRUE)
-  img.lite <- list.files(path, full.names = FALSE)
-  ext <- substr(img.list, nchar(img.list) - 2, nchar(img.list))
-  ext.types <- unique(ext)
-  if(any(ext.types=="jpg") & any(ext.types=="txt")){
-    stop("A folder with only .jpg or only .txt files must be provided")}
-  if (any(ext == "jpg")) {
-    retain <- which(ext=="jpg")
-    img.list <- img.list[retain]
-    img.lite <- img.lite[retain]
-    coo <- list()
-    #t0 <- Sys.time()
-    for (i in seq(along = img.list)) {
-      #t1 <- Sys.time()
-      cat("\nOutline ", img.lite[i], "\t\t", sep="")
-      img <- read.jpeg(img.list[i])
-      if (class(img)[2] == "array") {img <- rgb2grey(img)}
-      img[img >  0.5] <- 1
-      img[img <= 0.5] <- 0
-      img <- imagematrix(img)
-      if(any(dim(img)>500)) {cat("\t(large image)")}
-      if(any(c(img[1, ], img[nrow(img), ], img[, 1], img[, ncol(img)]) != 1)){
-        cat("\t(outline spans image border)")
-        img <- rbind(rep(1, ncol(img)), img, rep(1, ncol(img)))
-        img <- cbind(rep(1, nrow(img)), img, rep(1, nrow(img)))
-        img <- imagematrix(img)}              
-      cont <- Conte(img)
-      coo[i] <- list(cont)
-      #t2 <- Sys.time()
-      #cat("\tDone in", format(t2-t1, digits=3),"\t")
-      #cat("~", format((t2-t0)*(length(img.list)/i), digits=3),
-      #    " remaining", sep="")
-	  }
-  } else { # if .txt files and not .jpg
-    retain <- which(ext=="txt")
-    img.list <- img.list[retain]
-    img.lite <- img.lite[retain]
-    coo <- list()
-    #t0 <- Sys.time()
-    for (i in seq(along = img.list)) {
-      cont <- read.table(img.list[i], header = TRUE)
-      coo[i] <- list(list(x = cont[, 1], y = cont[, 2]))
+# Classes stuff ######################################################
+# Class declaration
+# Coo definition
+setClass(
+  Class = "Coo",
+  representation(coo       = "list",
+                 names     = "character",
+                 fac       = "data.frame",
+                 ldk       = "numeric",
+                 scale     = "numeric",
+                 coo.nb    = "numeric",
+                 coo.len   = "numeric",
+                 details   = "list"),
+  validity=function(object){
+    if(any(lapply(object@coo, class) != "matrix")) cat("A list of coordinates as 2-col matrices must be provided\n")
+    if(any(lapply(object@coo, ncol)  != 2))        cat("A list of coordinates as 2-col matrices must be provided\n")
+  }
+)
+
+# Nef definition
+setClass(
+  Class = "Nef",
+  representation(coeff  = "matrix",
+                 names  = "character",
+                 fac    = "data.frame",
+                 nb.h   = "numeric"),
+  validity=function(object){
+    if(!is.matrix(object@coeff)) cat("A matrix must be provided\n")
+  }
+)
+
+# Generic declaration
+### Coo
+setGeneric(name= "eFourier", 	def=function(Coo,
+           nb.h      = 32,
+           smooth.it = 0,
+           normalize = TRUE,
+           start     = FALSE){standardGeneric("eFourier")})
+### Nef
+
+setGeneric(name= "pca", 		  def=function(Nef, ...){standardGeneric("pca")})
+
+
+# Coordinates utils ##################################################
+coo.center     <- function(coo){
+  if (is.matrix(coo)) {  
+    return(apply(coo, 2, function(x) x-mean(x)))
+  } else if (is.list(coo)){
+    return(lapply(coo, function(x) x-mean(x)))
+  } else stop("A list or a coordinate matrix must be provided to coo.center")}
+
+coo.scale      <- function(coo, scale=1){
+  if (is.matrix(coo)) {
+    r <- apply(coo, 2, function(x) diff(range(x)))
+    r <- ifelse(r[1]>r[2], r[1], r[2])
+    return((coo/r)*scale)
+  } else if (is.list(coo)){
+    r <- lapply(coo, function(x) diff(range(x)))
+    r <- ifelse(r$x>r$y, r$x, r$y)
+    return(lapply(coo, function(x) (x/r)*scale))
+  } else stop("A list or a coordinate matrix must be provided to coo.scale")}
+
+coo.rotate     <- function(coo, theta){
+  rmat <- matrix(c(cos(theta), sin(theta),
+                   -sin(theta), cos(theta)), nrow=2)
+  if (is.matrix(coo)) {  
+    return(coo %*% rmat)
+  } else if (is.list(coo)){
+    coo <- cbind(coo$x, coo$y)
+    coo <- coo %*% rmat
+    return(list(x=coo[, 1], y=coo[, 2]))
+  } else stop("A list or a coordinate matrix must be provided to coo.rotate")}
+
+coo.align      <- function(coo){
+  if (is.matrix(coo)) {  
+    return(coo %*% svd(var(coo))$u)
+  } else if (is.list(coo)){
+    coo <- cbind(coo$x, coo$y)
+    coo <- coo %*% svd(var(coo))$u
+    return(list(x=coo[, 1], y=coo[, 2]))
+  } else stop("A list of a coordinate matrix must be provided to coo.align")}
+
+coo.trans      <- function(coo, x, y){
+  if (is.matrix(coo)) {  
+    return(cbind(coo[, 1] + x, coo[, 2] + y))
+  } else if (is.list(coo)){
+    return(list(x=coo$x + x, y=coo$y + y))
+  } else stop("A list of a coordinate matrix must be provided to coo.trans")}
+
+coo.slide      <- function(coo, id1){
+  if (id1 == 0) {return(coo)}
+  if (is.matrix(coo)) {
+    n <- nrow(coo)
+    id.slided <- c(id1:n, 1:(id1-1))
+    return(coo[id.slided, ])
+  } else if (is.list(coo)){
+    n <- length(coo$x)
+    id.slided <- c(id1:n, 1:(id1-1))
+    return(list(x=coo$x[id.slided], y=coo$y[id.slided]))
+  } else stop("A list of a coordinate matrix must be provided to coo.slide")}
+
+coo.sample     <- function (coo, n) {
+  if (is.matrix(coo)){
+    sampled <- round(seq(1, nrow(coo), len = n + 1)[-(n + 1)])
+    return(coo[sampled, ])
+  } else if (is.list(coo)) {
+    sampled <- round(seq(1, length(coo$x), len = n + 1)[-(n + 1)])
+    return(list(x=coo$x[sampled], y=coo$y[sampled]))  
+  } else stop("A list of a coordinate matrix must be provided to coo.sample")}
+
+coo.sample.rr  <- function(coo, n){
+ if (is.matrix(coo)) {
+   Rx <- coo[, 1]
+   Ry <- coo[, 2] }
+  if (is.list(coo)){
+   Rx <- coo$x
+   Ry <- coo$y }
+  le  <-length(Rx)
+  M   <-matrix(c(Rx, Ry), le, 2)
+  M1  <-matrix(c(Rx-mean(Rx), Ry-mean(Ry)), le, 2)
+  V1  <-complex(real=M1[,1], imaginary=M1[,2])
+  M2  <-matrix(c(Arg(V1), Mod(V1)), le, 2)
+  V2  <-NA
+  for (i in 0:(n-1)){
+    V2[i+1]<-which.max((cos(M2[,1]-2*i*pi/n)))}
+  V2<-sort(V2)
+  list("pixindices"=V2,"radii"=M2[V2,2],"phase"=M2[V2,1],
+      "coord"=M1[V2,], "orig.coord"=matrix(c(M1[,1]+mean(Rx), M1[,2]+mean(Ry)), ncol=2)[V2,])}
+
+
+coo.smooth     <- function(coo, n=0){
+  if (is.matrix(coo)) {
+    p   <- nrow(coo)
+    a   <- 0
+    while (a < n) {
+      a <- a + 1
+      coo.i <- rbind(coo[-1, ], coo[1, ])
+      coo.s <- rbind(coo[p, ],  coo[-p, ])
+      coo   <- coo/2 + coo.i/4 + coo.s/4}
+    return(coo)
+  } else if (is.list(coo)){
+    coo <- cbind(coo$x, coo$y)
+    p   <- nrow(coo)
+    a   <- 0
+    while (a <= n) {
+      a <- a + 1
+      coo.i <- rbind(coo[-1, ], coo[1, ])
+      coo.s <- rbind(coo[p, ],  coo[-p, ])
+      coo   <- coo/2 + coo.i/4 + coo.s/4}
+    return(list(x = coo[, 1], y = coo[, 2]))
+  } else stop("A list of a coordinate matrix must be provided to coo.smooth")}
+
+coo.close      <- function(coo){
+  if (is.matrix(coo)) {  
+    return(rbind(coo, coo[1, ]))
+  } else if (is.list(coo)){
+    return(list(x=c(coo$x, coo$x[1]), y=c(coo$y, coo$y[1])))
+  } else stop("A list or a coordinate matrix must be provided to coo.center")}
+
+coo.plot       <- function(coo=NA, col="#70809033",
+                           border="#708090EE", size=1, points=TRUE, points.col=border, pch=20, cex=0.25, main, ...){
+  if (is.list(coo)) coo <- l2m(coo)
+  if (missing(coo)) {
+    plot(NA, asp=1, xlim=c(-size, size), ylim=c(-size, size), ann=FALSE, ...)
+  } else {
+    plot(coo, type="n", asp=1, xlab="", ylab="", frame=FALSE, ...)
+    polygon(coo, col=col, border=border)
+    points(coo[1, 1], coo[1, 2], col=border, ...)}
+  if ((missing(points) & nrow(coo)>100) | points) {
+    points(coo, pch=pch, cex=cex, col=points.col)}
+  if (!missing(main)) title(main=main)}  
+
+coo.template   <- function(coo, size=1) {
+  # only for matrices
+  coo      <- coo * min(size/apply(coo, 2, function(x) diff(range(x))))
+  expected <- apply(coo, 2, function(x) diff(range(x)))/2
+  observed <- apply(coo, 2, range)[2, ]
+  shift    <-  expected - observed
+  return(coo.trans(coo, shift[1], shift[2]))}
+
+coo.list.panel <- function(coo.list, dim, byrow=TRUE,
+                           fromtop=TRUE, mar=rep(0, 4), cols, borders){
+  if (class(coo.list[[1]])=="list") coo.list <- lapply(coo.list, l2m)
+  # if dim is missing, we define a square
+  n <- length(coo.list)
+  if(missing(dim)) {
+    nc    <- ceiling(sqrt(n))
+    nr    <- ceiling(n/nc)
+    dim   <- c(nr, nc)}
+  k       <- dim[1]*dim[2]
+  if (k < n) stop("dim[1]*dim[2] must be >= the length of coo.list")
+  pos <- matrix(1:k, dim[1], dim[2], byrow=byrow)
+  if (fromtop) { pos <- pos[dim[1]:1,] }
+  # we prepare the panel
+  op <- par("mar")
+  par(mar=mar)
+  plot(NA, asp=1,
+       xlim=c(0, dim[2]),
+       ylim=c(0, dim[1]),
+       xaxs="i", yaxs="i", frame=FALSE, ann=FALSE, axes=FALSE)
+  # we template and plot shapes
+  coo.tp  <- lapply(coo.list, coo.template, size=0.9)
+  if (missing(cols))    cols     <- rep("grey80", n)
+  if (missing(borders)) borders  <- rep("grey20", n)
+  res <- data.frame(pos.x=numeric(), pos.y=numeric())
+  for (i in 1:n){
+    trans <- which(pos==i, arr.ind=TRUE) - 0.5
+    res[i, ] <- c(trans[2], trans[1])
+    polygon(coo.tp[[i]][, 1] + trans[2],
+            coo.tp[[i]][, 2] + trans[1],
+            col=cols[i], border=borders[i])
+  }
+  par(mar=op)
+  invisible(res)}
+
+coo.oscillo    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
+                           rug=TRUE, legend=TRUE, cols=col.gallus(2), ...){
+  if (is.list(coo)) coo <- l2m(coo)
+  nr <- nrow(coo)
+  if (method=="d0"){
+    dx <- coo[, 1] - coo[1, 1]
+    dy <- coo[, 2] - coo[1, 2]
+  } else {
+    if (method=="di"){
+      dx <- coo[, 1] - coo[, 1][c(nr, (1:nr - 1))]
+      dy <- coo[, 2] - coo[, 2][c(nr, (1:nr - 1))]
+    } else {stop("inappropriate method in oscillo")}}
+  if (plot) {
+    ry <- max(abs(range(c(dx, dy))))
+    plot(NA, xlim=c(1, nr), xlab="Points sampled along the outline",
+         ylim=c(-ry, ry)*1.1,   ylab="Deviation",
+         xaxs="i", las=1, col=cols[1])
+    lines(dx, col=cols[1], ...)
+    lines(dy, col=cols[2], ...)
+    abline(h=0, col="grey80", lty=2)
+    if (method=="d0" & rug) {
+      dx.i <- coo[, 1] - coo[, 1][c(nr, (1:nr - 1))]
+      dy.i <- coo[, 2] - coo[, 2][c(nr, (1:nr - 1))]
+      axis(3, at=(1:nr)[dx.i>0], line=-0.5, labels=FALSE, col=cols[1])
+      axis(3, at=(1:nr)[dy.i>0], line=-1, labels=FALSE, col=cols[2])
+    }
+    if (method=="d0" & legend) {
+      legend("bottomright", legend = c("xi - x0", "yi - y0"),
+             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}
+    if (method=="di" & legend) {
+      legend("bottomright", legend = c("dx", "dy"),
+             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}}
+  return(list(x=dx, y=dy))}
+
+coo.oscillo1    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
+                            rug=TRUE, legend=TRUE, cols=col.gallus(1), 
+                            xlab="Points sampled along the outline", ylab="Deviation", ...){
+  if (!is.numeric(coo)) stop("A numeric must be provided to coo.oscillo1")
+  nr <- length(coo)
+  if (method=="d0"){
+    dx <- coo - coo[1]
+  } else {
+    if (method=="di"){
+      dx <- coo - coo[c(nr, (1:nr - 1))]
+    } else {stop("inappropriate method in oscillo")}}
+  if (plot) {
+    plot(dx, type="l", ylim=range(dx)*1.1,
+         xlab=xlab, ylab=ylab, las=1, col=cols, ...)
+    abline(h=0, col="grey80", lty=2)
+    if (method=="d0" & rug) {
+      dx.i <- coo - coo[c(nr, (1:nr - 1))]
+      axis(3, at=(1:nr)[dx.i>0], line=-0.5, labels=FALSE, col=cols[1])
+    }
+    if (method=="d0" & legend) {
+      legend("bottomright", legend = "xi - x0",
+             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}
+    if (method=="di" & legend) {
+      legend("bottomright", legend = "dx",
+             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}}
+  return(list(x=dx))}
+
+
+l2m            <- function(l) {return(cbind(l$x, l$y))}
+m2l            <- function(m) {return(list(x=m[,1], y=m[,2]))}
+edm            <- function(m1, m2){return(sqrt((m1[, 1] - m2[, 1])^2 + (m1[, 2] - m2[, 2])^2))}
+
+# Import section #####################################################
+import.txt <- function(txt.list){
+  cat("Extracting", length(txt.list), ".jpg outlines...\n")
+  if (length(txt.list) > 10) {
+    pb <- txtProgressBar(1, length(txt.list))
+    t <- TRUE } else {t <- FALSE}
+  res <- list()
+  for (i in seq(along = txt.list)) {
+    coo <- read.table(txt.list[i], header=FALSE)
+    res[[i]] <- as.matrix(coo)
+    if (t) setTxtProgressBar(pb, i)
+  }
+  names(res) <- substr(txt.list, start=1, stop=nchar(txt.list)-4)
+  return(res)}
+
+import.jpg <- function(jpg.list) {
+  cat("Extracting", length(jpg.list), ".jpg outlines...\n")
+  if (length(jpg.list) > 10) {
+    pb <- txtProgressBar(1, length(jpg.list))
+    t <- TRUE } else {t <- FALSE}
+  res <- list()
+  for (i in seq(along=jpg.list)) {
+    img <- import.img.prepare(jpg.list[i])
+    res[[i]] <- import.img.Conte(img)
+    if (t) setTxtProgressBar(pb, i)
+  }
+  names(res) <- substr(jpg.list, start=1, stop=nchar(jpg.list)-4) 
+  return(res)}
+
+import.img.prepare <- function(path){
+  img <- read.jpeg(path)
+  if (class(img)[2] == "array") {img <- rgb2grey(img)}
+  img[img >  0.5] <- 1
+  img[img <= 0.5] <- 0
+  img <- imagematrix(img)
+  # if(any(dim(img)>500)) {cat("\t(large image)")}
+  if(any(c(img[1, ], img[nrow(img), ], img[, 1], img[, ncol(img)]) != 1)){
+    # cat("\t(outline spans image border)")
+    img <- rbind(rep(1, ncol(img)), img, rep(1, ncol(img)))
+    img <- cbind(rep(1, nrow(img)), img, rep(1, nrow(img)))
+    img <- imagematrix(img)}              
+  return(img)}
+
+import.img.Conte   <- function (img, x) {
+  if (class(img)[1] != "imagematrix"){ 
+    stop("An 'imagematrix' object is expected")}
+  if (missing(x)) {x <- round(dim(img)/2)}
+  while(img[x[1], x[2]] != 0) {
+    plot(img, main = "Click a point within the shape")
+    # cat("\t(click)")
+    rect(0, 0, ncol(img), nrow(img), border="red")
+    click <- lapply(locator(1), round)
+    x     <- c(nrow(img)-click$y, click$x)
+    if(any(x > dim(img))) {x <- round(dim(img)/2)}
+  } 
+  while (abs(img[x[1], x[2]] - img[x[1], (x[2] - 1)]) < 0.1) {
+    x[2] <- x[2] - 1
+  }
+  a <- 1
+  M <- matrix(c(0, -1, -1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1, 
+                -1, 0, 1), 2, 8, byrow = TRUE)
+  M <- cbind(M[, 8], M, M[, 1])
+  X <- 0
+  Y <- 0
+  x1 <- x[1]
+  x2 <- x[2]
+  SS <- NA
+  S <- 6
+  while ((any(c(X[a], Y[a]) != c(x1, x2)) | length(X) < 3)) {
+    if (abs(img[x[1] + M[1, S + 1], x[2] + M[2, S + 1]] - img[x[1], 
+                                                              x[2]]) < 0.1) {
+      a <- a + 1
+      X[a] <- x[1]
+      Y[a] <- x[2]
+      x <- x + M[, S + 1]
+      SS[a] <- S + 1
+      S <- (S + 7)%%8
+    }
+    else if (abs(img[x[1] + M[1, S + 2], x[2] + M[2, S + 2]] - 
+      img[x[1], x[2]]) < 0.1) {
+      a <- a + 1
+      X[a] <- x[1]
+      Y[a] <- x[2]
+      x <- x + M[, S + 2]
+      SS[a] <- S + 2
+      S <- (S + 7)%%8
+    }
+    else if (abs(img[x[1] + M[1, S + 3], x[2] + M[2, S + 3]] - 
+      img[x[1], x[2]]) < 0.1) {
+      a <- a + 1
+      X[a] <- x[1]
+      Y[a] <- x[2]
+      x <- x + M[, S + 3]
+      SS[a] <- S + 3
+      S <- (S + 7)%%8
+    }
+    else {
+      S <- (S + 1)%%8
     }
   }
-  names(coo) <- substr(img.lite, 1, nchar(img.lite) - 4)
-  cat("\n")
-  return(Coo(coo))}
+  return(cbind((Y[-1]), ((dim(img)[1] - X))[-1]))}
 
-# Core function that calculates Elliptical Fourier Analysis
-efourier <- function (coo, nb.h = 32, smooth.it = NULL) {
-  if (!is.list(coo)) 
-      stop("A list of coordinates (x,y) must be provided")
-	if (is.numeric(smooth.it)) {coo <- cont.smooth(coo, smooth.it)}
-  coo <- cont.sample(coo, nb.h * 2)
+# elliptical Fourier analysis ########################################
+efourier  <- function (coo, nb.h = 32, smooth.it = 0) {
+  if (is.matrix(coo)) coo <- m2l(coo)
+  coo <- coo.smooth(coo, smooth.it)
+  coo <- coo.sample(coo, nb.h * 2)
   p <- length(coo$x)
   Dx <- coo$x - coo$x[c(p, (1:p - 1))]
   Dy <- coo$y - coo$y[c(p, (1:p - 1))]
@@ -105,276 +399,387 @@ efourier <- function (coo, nb.h = 32, smooth.it = NULL) {
   T <- sum(Dt)
   an <- bn <- cn <- dn <- numeric(nb.h)
   for (i in 1:nb.h) {
-      an[i] <- (T/(2 * pi^2 * i^2)) * sum((Dx/Dt) * 
-          (cos(2 * i * pi * t1/T) - cos(2 * pi * i * t1m1/T)))
-      bn[i] <- (T/(2 * pi^2 * i^2)) * sum((Dx/Dt) *
-          (sin(2 * i * pi * t1/T) - sin(2 * pi * i * t1m1/T)))
-      cn[i] <- (T/(2 * pi^2 * i^2)) * sum((Dy/Dt) * 
-          (cos(2 * i * pi * t1/T) - cos(2 * pi * i * t1m1/T)))
-      dn[i] <- (T/(2 * pi^2 * i^2)) * sum((Dy/Dt) *
-          (sin(2 * i * pi * t1/T) - sin(2 * pi * i * t1m1/T)))}
+    Ti <- (T/(2 * pi^2 * i^2))
+    r <- 2 * i * pi
+    an[i] <- Ti * sum((Dx/Dt) * (cos(r * t1/T) - cos(r * t1m1/T)))
+    bn[i] <- Ti * sum((Dx/Dt) * (sin(r * t1/T) - sin(r * t1m1/T)))
+    cn[i] <- Ti * sum((Dy/Dt) * (cos(r * t1/T) - cos(r * t1m1/T)))
+    dn[i] <- Ti * sum((Dy/Dt) * (sin(r * t1/T) - sin(r * t1m1/T)))
+    }
   ao <- 2 * sum(coo$x * Dt/T)
   co <- 2 * sum(coo$y * Dt/T)
   return(list(an = an, bn = bn, cn = cn, dn = dn, ao = ao, co = co))}
 
-# Normalized elliptical Fourier analysis that returns a Nef object
-eFa <- function(coo, nb.h = 32, smooth.it = 0, fromrt = FALSE) {
-  ef <- efourier(coo, nb.h = nb.h, smooth.it = smooth.it)
+efourier.i <- function(ef, nb.h, nb.pts = 300) {
+  #if (any(names(ef) != c("an", "bn", "cn", "dn"))) {
+  #  stop("a list containing 'an', 'bn', 'cn' and 'dn' harmonic coefficients must be provided")}
+  if (is.null(ef$ao)) ef$ao <- 0
+  if (is.null(ef$co)) ef$co <- 0
+  an <- ef$an
+  bn <- ef$bn
+  cn <- ef$cn
+  dn <- ef$dn
+  ao <- ef$ao
+  co <- ef$co
+  if (missing(nb.h)) nb.h <- length(an)
+  theta <- seq(0, 2 * pi, length = nb.pts + 1)[-(nb.pts + 1)]
+  hx <- matrix(NA, nb.h, nb.pts)
+  hy <- matrix(NA, nb.h, nb.pts)
+  for (i in 1:nb.h) {
+    hx[i, ] <- an[i] * cos(i * theta) + bn[i] * sin(i * theta)
+    hy[i, ] <- cn[i] * cos(i * theta) + dn[i] * sin(i * theta)}
+  x <- (ao/2) + apply(hx, 2, sum)
+  y <- (co/2) + apply(hy, 2, sum)
+  list(x = x, y = y)}
+
+efourier.norm <- function(ef, start = FALSE) {
   A1 <- ef$an[1]
   B1 <- ef$bn[1]
   C1 <- ef$cn[1]
   D1 <- ef$dn[1]
-  theta <- 0.5 * atan(2 * (A1 * B1 + C1 * D1)/(A1^2 + C1^2 - B1^2 - D1^2)) %% pi
+  nb.h <- length(ef$an)
+  theta      <- 0.5 * atan(2 * (A1 * B1 + C1 * D1)/(A1^2 + C1^2 - B1^2 - D1^2)) %% pi
   phaseshift <- matrix(c(cos(theta), sin(theta), -sin(theta), cos(theta)), 2, 2)
   M2 <- matrix(c(A1, C1, B1, D1), 2, 2) %*% phaseshift
   v <- apply(M2^2, 2, sum)
   if (v[1] < v[2]) {theta <- theta + pi/2}
   theta <- (theta + pi/2)%%pi - pi/2
-  Aa <- A1 * cos(theta) + B1 * sin(theta)
-  Cc <- C1 * cos(theta) + D1 * sin(theta)
+  Aa <- A1*cos(theta) + B1*sin(theta)
+  Cc <- C1*cos(theta) + D1*sin(theta)
   scale <- sqrt(Aa^2 + Cc^2)
   psi   <- atan(Cc/Aa)%%pi
   if (Aa<0){psi<-psi+pi}
   size  <- 1/scale
   rotation <- matrix(c(cos(psi), -sin(psi), sin(psi), cos(psi)), 2, 2)
   A <- B <- C <- D <- numeric(nb.h)
-  if (fromrt) {theta <- 0}
+  if (start) {theta <- 0}
   lnef <- NULL
   for (i in 1:nb.h) {
-      mat <- size * rotation %*% matrix(c(ef$an[i], ef$cn[i], 
-          ef$bn[i], ef$dn[i]), 2, 2) %*% matrix(c(cos(i * theta), 
-          sin(i * theta), -sin(i * theta), cos(i * theta)), 
-          2, 2)
+    mat <- size * rotation %*%
+      matrix(c(ef$an[i], ef$cn[i], ef$bn[i], ef$dn[i]), 2, 2) %*%
+      matrix(c(cos(i*theta), sin(i*theta), -sin(i*theta), cos(i*theta)), 2, 2)
       A[i] <- mat[1, 1]
       B[i] <- mat[1, 2]
       C[i] <- mat[2, 1]
       D[i] <- mat[2, 2]
       lnef <- c(lnef, c(A[i], B[i], C[i], D[i]))}
   list(A = A, B = B, C = C, D = D, size = scale, theta = theta, 
-      psi = psi, ao = ef$ao, co = ef$co, lnef = lnef)}  
+      psi = psi, ao = ef$ao, co = ef$co, lnef = lnef)}
 
-# Sample points along an outline
-cont.sample <- function (coo, n) {
-  if (!is.list(coo)) 
-      stop("A list of coordinates must be provided")
-  x <- coo$x[seq(1, length(coo$x), len = n + 1)][-(n + 1)]
-  y <- coo$y[seq(1, length(coo$y), len = n + 1)][-(n + 1)]
-  new.coo <- list(x = x, y = y)
-  return(new.coo)}
+efourier.shape <- function(an, bn, cn, dn, nb.h, nb.pts=80, alpha=2, plot=TRUE){
+  if (missing(nb.h) &  missing(an)) nb.h <- 1
+  if (missing(nb.h) & !missing(an)) nb.h <- length(an)
+  if (missing(an)) an <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  if (missing(bn)) bn <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  if (missing(cn)) cn <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  if (missing(dn)) dn <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  ef  <- list(an=an, bn=bn, cn=cn, dn=dn, ao=0, co=0)
+  shp <- efourier.i(ef, nb.h=nb.h, nb.pts=nb.pts)      
+  if (plot) coo.plot(shp)
+  return(shp)}
 
-# Simplistic smoothing algorithm
-cont.smooth <- function (M, n) {
-    if (is.list(M)) {M <- matrix(c(M$x, M$y), ncol = 2)}
-    p <- ncol(M)
-    a <- 0
-    while (a <= n) {
-      a <- a + 1
-      Ms <- rbind(M[p, ], M[-p, ])
-      Mi <- rbind(M[-1, ], M[1, ])
-      M <- M/2 + Ms/4 + Mi/4}
-    return(list(x = M[, 1], y = M[, 2]))}
+# Radius variation Fourier ###########################################
+rfourier<-function(coo, nb.h=32, smooth.it=0){
+  if (is.list(coo)) coo <- l2m(coo)
+  coo <- coo.smooth(coo, smooth.it)
+  coo <- coo.sample.rr(coo, nb.h * 2)$coord
+  p <- nrow(coo)
+  bn <- an <- numeric(nb.h)
+  Z  <- complex(real=coo[, 1], imaginary=coo[, 2])
+  r     <- Mod(Z)
+  angle <-Arg(Z)
+  ao <- 2* sum(r)/p
+  for (i in 1:nb.h){
+    an[i]<-(2/p)*sum(r * cos(i*angle))
+    bn[i]<-(2/p)*sum(r * sin(i*angle))}
+  list(an=an, bn=bn, ao=ao, r= r)}
 
-# select colums that correspond to harmonics we want to retain
-col.sel <- function (h.fr = 1, h.to = 8, h.max = 32, drop = FALSE){
-    fr <- h.max * 0:3 + h.fr
-    to <- fr + h.to - 1
-    cs <- c(fr[1]:to[1], fr[2]:to[2], fr[3]:to[3], fr[4]:to[4])
-    if (drop) {cs <- cs[-c(1, h.max + 2, 2 * h.max + 2)]}
-    return(cs)}
+rfourier.i<-function(rf, nb.pts=300, nb.h=length(rf$an)) {
+  an <- rf$an
+  bn <- rf$bn
+  ao <- rf$ao
+  theta <- seq(0, 2*pi, length=nb.pts+1)[-(nb.pts+1)]
+  harm  <- matrix (NA, nb.h, nb.pts)
+  for (i in 1:nb.h){
+    harm[i, ] <-an[i]*cos(i*theta)+ bn[i]*sin(i*theta)}
+  r<-(ao/2) + apply(harm, 2, sum)
+  Z<-complex(modulus=r, argument=theta)
+  list(x = Re(Z), y = Im(Z), angle = theta, r = r)}
 
-# Close an outline
-closed.outline <- function (cont) {
-  if (is.list(cont)) {
-    cont.c <- list(x = c(cont$x, cont$x[1]), y = c(cont$y, cont$y[1]))
-  } else {
-    stop("A list of (x;y) coordinates must be provided")}
-  return(cont.c)}
+rfourier.shape <- function(an, bn, nb.h, nb.pts=80, alpha=2, plot=TRUE){
+  if (missing(nb.h) &  missing(an)) nb.h <- 1
+  if (missing(nb.h) & !missing(an)) nb.h <- length(an)
+  if (missing(an)) an <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  if (missing(bn)) bn <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  rf  <- list(an=an, bn=bn, ao=0, co=0)
+  shp <- rfourier.i(rf, nb.h=nb.h, nb.pts=nb.pts)      
+  if (plot) coo.plot(shp)
+  return(shp)}
 
-# Algorithm for outline extraction
-Conte <- 
-  function (img) 
-  {
-    if (class(img)[1] != "imagematrix"){ 
-      stop("An 'imagematrix' object is expected")}
-    x <- round(dim(img)/2)
-    while(img[x[1], x[2]] != 0) {
-      plot(img, main = "Click a point within the shape")
-      cat("\t(click)")
-      rect(0, 0, ncol(img), nrow(img), border="red")
-      click <- lapply(locator(1), round)
-      x     <- c(nrow(img)-click$y, click$x)
-      if(any(x > dim(img))) {x <- round(dim(img)/2)}
-      } 
-    while (abs(img[x[1], x[2]] - img[x[1], (x[2] - 1)]) < 0.1) {
-      x[2] <- x[2] - 1
+# Tangent angle Fourier ##############################################
+tfourier<-function(coo, nb.h=32, smooth.it=0){
+  if (is.list(coo)) coo <- l2m(coo)
+  coo <- coo.smooth(coo, smooth.it)
+  coo <- coo.sample.rr(coo, nb.h * 2)$coord
+  p   <- nrow(coo)
+  bn  <- an <- numeric(nb.h)
+  tangvect  <- coo-rbind(coo[p,], coo[-p,])
+  perim     <- sum(sqrt(apply((tangvect)^2, 1, sum)))
+  v0        <- (coo[1,]-coo[p,])
+  tet1 <- Arg(complex(real=tangvect[, 1], imaginary = tangvect [, 2]))
+  tet0 <- tet1[1]
+  t1   <- (seq(0, 2*pi, length=(p+1)))[1:p]
+  phi  <- (tet1-tet0-t1)%%(2*pi)
+  ao<- 2* sum(phi)/p
+  for (i in 1:nb.h){
+    an[i]<- (2/p) * sum(phi * cos (i*t1))
+    bn[i]<- (2/p) * sum(phi * sin (i*t1))}
+  list(ao=ao, an=an, bn=bn, phi=phi, t=t1, perimeter=perim, thetao=tet0)}
+
+tfourier.i<-function(tf, nb.pts, nb.h=length(tf$an), thetao=0){
+  ao <- tf$ao
+  an <- tf$an
+  bn <- tf$bn
+  theta <- seq(0, 2*pi, length=nb.pts+1)[-(nb.pts+1)]
+  harm  <- matrix (NA, nb.h, nb.pts)
+  for (i in 1:nb.h){
+    harm[i,] <- an[i]*cos(i*theta) + bn[i]*sin(i*theta)}
+  phi  <- (ao/2) + apply(harm, 2, sum)
+  vect <- matrix(NA, 2, nb.pts)
+  Z    <- complex(modulus=(2*pi)/nb.pts, argument=phi+theta+thetao)
+  Z1   <- cumsum(Z)
+  list(x=Re(Z1), y=Im(Z1), angle=theta, phi=phi)}
+
+tfourier.shape <- function(an, bn, ao=0, nb.h, nb.pts=80, alpha=2, plot=TRUE){
+  if (missing(nb.h) &  missing(an)) nb.h <- 1
+  if (missing(nb.h) & !missing(an)) nb.h <- length(an)
+  if (missing(an)) an <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  if (missing(bn)) bn <- runif(nb.h, -pi, pi) / (1:nb.h)^alpha
+  tf  <- list(an=an, bn=bn, ao=ao)
+  shp <- tfourier.i(tf, nb.h=nb.h, nb.pts=nb.pts)      
+  if (plot) coo.plot(shp)
+  return(shp)}
+
+# Coefficient matrices utils #########################################
+coeff.sel <- function(retain=8, drop=0, nb.h=32, cph=4){
+  cs <- numeric()
+  for (i in 1:cph) {
+    cs <- c(cs, (1+drop):retain + nb.h*(i-1))}
+  return(cs)}
+
+coeff.split <- function(cs, nb.h=8, cph=4){
+  if (missing(nb.h)) {nb.h <- length(cs)/cph }
+  cp <- list()
+  for (i in 1:cph) {
+    cp[[i]] <- cs[1:nb.h + (i-1)*nb.h]
     }
-    a <- 1
-    M <- matrix(c(0, -1, -1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1, 
-                  -1, 0, 1), 2, 8, byrow = TRUE)
-    M <- cbind(M[, 8], M, M[, 1])
-    X <- 0
-    Y <- 0
-    x1 <- x[1]
-    x2 <- x[2]
-    SS <- NA
-    S <- 6
-    while ((any(c(X[a], Y[a]) != c(x1, x2)) | length(X) < 3)) {
-      if (abs(img[x[1] + M[1, S + 1], x[2] + M[2, S + 1]] - img[x[1], 
-                                                                x[2]]) < 0.1) {
-        a <- a + 1
-        X[a] <- x[1]
-        Y[a] <- x[2]
-        x <- x + M[, S + 1]
-        SS[a] <- S + 1
-        S <- (S + 7)%%8
-      }
-      else if (abs(img[x[1] + M[1, S + 2], x[2] + M[2, S + 2]] - 
-        img[x[1], x[2]]) < 0.1) {
-        a <- a + 1
-        X[a] <- x[1]
-        Y[a] <- x[2]
-        x <- x + M[, S + 2]
-        SS[a] <- S + 2
-        S <- (S + 7)%%8
-      }
-      else if (abs(img[x[1] + M[1, S + 3], x[2] + M[2, S + 3]] - 
-        img[x[1], x[2]]) < 0.1) {
-        a <- a + 1
-        X[a] <- x[1]
-        Y[a] <- x[2]
-        x <- x + M[, S + 3]
-        SS[a] <- S + 3
-        S <- (S + 7)%%8
-      }
-      else {
-        S <- (S + 1)%%8
-      }
-    }
-    return(list(x = (Y[-1]), y = ((dim(img)[1] - X))[-1]))
+  names(cp) <- paste(letters[1:cph], "n", sep="")
+  return(cp)}
+
+# Miscellaneous ######################################################
+# Color palettes
+col.summer <- colorRampPalette(c("#4876FF", "#FFFF00", "#FF3030"))
+col.gallus <- colorRampPalette(c("#000080", "#FFFFFF", "#EE0000"))
+col.sari   <- colorRampPalette(c("#551A8B", "#FF7F00"))
+col.india  <- colorRampPalette(c("#FF9933", "#138808"))
+col.nb     <- colorRampPalette(c("#FFFFFF", "#000000"))
+col.wcol   <- function(col.hex) colorRampPalette(c("#FFFFFF", col.hex))
+col.bcol   <- function(col.hex) colorRampPalette(c("#000000", col.hex))
+
+pca2shp <- function (pos, rot, mean.shp, scale=1, amp=1, trans=TRUE, nb.pts=64) {
+  # we check a bit
+  if (!is.matrix(pos))        pos <- as.matrix(pos)
+  if (ncol(pos) != ncol(rot)) stop("rot an pos must have the same ncol")
+  if(length(mean.shp) != nrow(rot)) stop("mean.shp length must equals the col number of rot")
+  # stupid function
+  mprod <- function(m, s){
+    res <- m
+    for (i in 1:ncol(m)) {
+      res[, i] <- m[, i]*s[i]}
+    return(res)}
+  res <- list()
+  nb.h <- length(mean.shp)/4
+  n  <- nrow(pos)
+  for (i in 1:n) {
+    ax.contrib <- mprod(rot, pos[i, ])*amp
+    coe        <- mean.shp + apply(ax.contrib, 1, sum)
+    coo        <- l2m(efourier.shape(coe[1:nb.h + 0*nb.h], coe[1:nb.h + 1*nb.h],
+                                     coe[1:nb.h + 2*nb.h], coe[1:nb.h + 3*nb.h],
+                                     nb.h = nb.h, nb.pts=nb.pts, plot=FALSE))
+    coo <- coo.scale(coo, scale=scale)
+    if (trans) { res[[i]] <- coo.trans(coo, pos[i, 1], pos[i, 2]) } else { res[[i]] <- coo }
   }
+  return(res)}
 
-# Draw a Fourier Ellipse
-draw.Fell <- function (an = pi, bn = -pi, cn = pi, dn = pi,
-  					n = 200, cols = topo.colors, title = FALSE){
-    theta <- seq(0, 2 * pi, length = n + 1)[-(n + 1)]
-    ell <- list(x = an * cos(theta) + bn * sin(theta), y = cn * 
-        cos(theta) + dn * sin(theta))
-    plot(ell, asp = 1, col = cols(length(theta)), pch = 20, xlab = paste("x = ", 
-        signif(an, 3), "*cos(2.n.pi/T)+", signif(bn, 3), "*sin(2.n.pi)", 
-        sep = ""), ylab = paste("y = ", signif(cn, 3), "*cos(2.n.pi/T)+", 
-        signif(dn, 3), "*sin(2.n.pi)", sep = ""))
-    if (title) {
-        title(paste("an=", round(an, 3), ", bn=", round(bn, 3), 
-            ", cn=", round(cn, 3), ", dn=", round(dn, 3), sep = ""))}
-    arrows(ell$x[1], ell$y[1], ell$x[2], ell$y[2])
-    return(ell)}
-
-# Inverse EFT
-iefourier <- function (an, bn, cn, dn, k, n, ao = 0, co = 0) {
-    theta <- seq(0, 2 * pi, length = n + 1)[-(n + 1)]
-    harmx <- matrix(NA, k, n)
-    harmy <- matrix(NA, k, n)
-    for (i in 1:k) {
-        harmx[i, ] <- an[i] * cos(i * theta) + bn[i] * sin(i * theta)
-        harmy[i, ] <- cn[i] * cos(i * theta) + dn[i] * sin(i * theta)}
-    x <- (ao/2) + apply(harmx, 2, sum)
-    y <- (co/2) + apply(harmy, 2, sum)
-    list(x = x, y = y)}
-
-# Draw confidence ellipses given a nuage de points    
-panel.lm <- function (x, y, r = 1, col = "black", lwd = 1, lty = 1) {
-    dfn <- 2
-    dfd <- length(x) - 1
-    shape <- var(cbind(x, y), na.rm = TRUE)
-    keep <- (!is.na(x) & !is.na(y))
-    center <- c(mean(x[keep]), mean(y[keep]))
-    radius <- sqrt(dfn * qf(0.68, dfn, dfd)) * r
-    segments <- 75
-    angles <- seq(0, 2 * pi, length = segments)
-    unit.circle <- cbind(cos(angles), sin(angles))
-    ellipse.pts <- t(center + radius * t(unit.circle %*% chol(shape)))
-    ellx <- ellipse.pts[, 1]
-    elly <- ellipse.pts[, 2]
-    usr <- par()$usr
-    minx <- usr[1]
-    maxx <- usr[2]
-    miny <- usr[3]
-    maxy <- usr[4]
-    ellx <- ifelse(ellx < minx, minx, ellx)
-    ellx <- ifelse(ellx > maxx, maxx, ellx)
-    elly <- ifelse(elly < miny, miny, elly)
-    elly <- ifelse(elly > maxy, maxy, elly)
-    lines(ellx, elly, col = col, lwd = lwd, lty = lty)}
-
-# Plots a shape from the PCA
-pca2shp <- function (pc1 = 0, pc2 = 0, data, nb.h = ncol(data)/4, nb.pts = 500, 
-    amp = 1, col = "black", lwd = 2, plot = TRUE) {
-    pca <- prcomp(data, center = TRUE, scale = FALSE)
-    shp.mu <- as.numeric(apply(data, 2, mean))
-    coe <- shp.mu + amp * pc1 * pca$rotation[, 1] + amp * pc2 * 
-        pca$rotation[, 2]
-    st <- 1 + nb.h * 0:3
-    end <- nb.h + nb.h * 0:3
-    cont <- iefourier(coe[st[1]:end[1]], coe[st[2]:end[2]], coe[st[3]:end[3]], 
-        coe[st[4]:end[4]], nb.h, nb.pts)
-    if (plot) {
-        plot(closed.outline(cont), asp = 1, typ = "l", ax = FALSE, 
-            ann = FALSE, lwd = lwd, col = col)}
-    return(cont)}
-	
-# Core tps
-tps <- function (matr, matt, n, plot = TRUE, col = "black") {
-    xm <- min(matt[, 1])
-    ym <- min(matt[, 2])
-    xM <- max(matt[, 1])
-    yM <- max(matt[, 2])
-    rX <- xM - xm
-    rY <- yM - ym
-    a <- seq(xm - 1/5 * rX, xM + 1/5 * rX, length = n)
-    b <- seq(ym - 1/5 * rX, yM + 1/5 * rX, by = (xM - xm) * 7/(5 * 
-        (n - 1)))
-    m <- round(0.5 + (n - 1) * (2/5 * rX + yM - ym)/(2/5 * rX + 
-        xM - xm))
-    M <- as.matrix(expand.grid(a, b))
-    ngrid <- tps2d(M, matr, matt)
-    if (plot) {
-        plot(ngrid, cex = 0.2, asp = 1, axes = FALSE, ann = FALSE, 
-            mar = rep(0, 4))
-        for (i in 1:m) lines(ngrid[(1:n) + (i - 1) * n, ], col = col)
-        for (i in 1:n) lines(ngrid[(1:m) * n - i + 1, ], col = col)
+dev.plot       <- function(mat, matv, cols, x=1:ncol(mat), bw=0.1) {
+  r <- nrow(mat)
+  if (missing(cols) | length(cols)!=r) {cols <- rep("black", r)}
+  if (!missing(matv)){
+    if (any(dim(x)!=dim(x))) {stop("mat and matv must be of the same dimension")}
+    for (i in 1:nrow(mat)){
+      segments(x,    mat[i, ] - matv[i, ], x, mat[i, ]    + matv[i, ], col=cols[i], lwd=0.5)
+      segments(x-bw, mat[i, ] - matv[i, ], x+bw, mat[i, ] - matv[i, ], col=cols[i], lwd=0.5)
+      segments(x-bw, mat[i, ] + matv[i, ], x+bw, mat[i, ] + matv[i, ], col=cols[i], lwd=0.5)
     }
-    return(ngrid)}
-	
-# tps grids
-tps2d <- function (M, matr, matt) {
-    p <- dim(matr)[1]
-    q <- dim(M)[1]
-    n1 <- p + 3
-    P <- matrix(NA, p, p)
-    for (i in 1:p) {
-        for (j in 1:p) {
-            r2 <- sum((matr[i, ] - matr[j, ])^2)
-            P[i, j] <- r2 * log(r2)
-        }
-    }
-    P[which(is.na(P))] <- 0
-    Q <- cbind(1, matr)
-    L <- rbind(cbind(P, Q), cbind(t(Q), matrix(0, 3, 3)))
-    m2 <- rbind(matt, matrix(0, 3, 2))
-    coefx <- solve(L) %*% m2[, 1]
-    coefy <- solve(L) %*% m2[, 2]
-    fx <- function(matr, M, coef) {
-        Xn <- numeric(q)
-        for (i in 1:q) {
-            Z <- apply((matr - matrix(M[i, ], p, 2, byrow = TRUE))^2, 
-                1, sum)
-            Xn[i] <- coef[p + 1] + coef[p + 2] * M[i, 1] + coef[p + 
-                3] * M[i, 2] + sum(coef[1:p] * (Z * log(Z)))
-        }
-        Xn
-    }
-    matg <- matrix(NA, q, 2)
-    matg[, 1] <- fx(matr, M, coefx)
-    matg[, 2] <- fx(matr, M, coefy)
-    matg}
-	
+  }
+  for (i in 1:nrow(mat)) {
+    lines(x, mat[i, ], col=cols[i], type="o", pch=20, cex=0.6)}}
+
+
+dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
+                      points     = TRUE,  pch.points=1,  col.points="black", cex.points=0.8,
+                      labels     = FALSE, label=rownames(dudi$li), boxes=TRUE, clabel=1,
+                      neighbors  = FALSE, col.nei="grey90",  lwd.nei=0.5,
+                      star       = TRUE,  col.star="grey60", lwd.star=0.25, cstar=1,
+                      ellipses   = TRUE,  col.ellipse="grey30", cellipse=1, axesell=TRUE,
+                      chull      = FALSE, col.chull="grey30", optchull = c(0.5, 1),
+                      arrows     = FALSE, edge.arrow=FALSE, box.arrow=TRUE, maxnb.arrow=10, dratio.arrow=0.2, 
+                      shapes     = TRUE,  pos.shp=c("li", "usr", "circle", "full", "range")[4],
+                      nr.shp=6, nc.shp=5, amp.shp=1, scale.shp=0.8,
+                      circle.nb.shp=12, circle.r.shp,
+                      col.shp="#70809011", border.shp="#708090",      
+                      rug        = TRUE, rug.ticksize=0.01, rug.col="#708090",
+                      eigen      = FALSE, eigen.ratio=0.2,
+                      palette    = col.sari,
+                      title      = substitute(dudi),
+                      center.orig= FALSE,
+                      zoom.plot  = 1){
+  
+  # we prepare and check a bit
+  if (!missing(fac)) {
+  if (ncol(dudi$fac)==0) { fac <- factor(rep("", nrow(dudi$li))) } else {fac <- dudi$fac[, fac]}
+  if ((nlevels(fac) > 1)) {
+    if (missing(col.star))    col.star    <- paste(palette(nlevels(fac)), "33", sep="")
+    if (missing(col.ellipse)) col.ellipse <- palette(nlevels(fac))
+    if (missing(col.chull))   col.chull   <- palette(nlevels(fac))} }
+  
+  # we initialize the factorial map
+  if (center.orig) {
+    li.2      <- apply(dudi$li[,c(xax, yax)], 2, function(x) x^2)
+    li.len    <- apply(li.2, 1, function(x) sqrt(sum(x)))
+    w <- max(li.len)*(1/zoom.plot)
+    s.label(dudi$li, xax=xax, yax=yax, xlim=c(-w, w), clabel=0, cpoint=0, sub=title, grid=grid)
+  } else {     
+    s.label(dudi$li, xax=xax, yax=yax, clabel=0, cpoint=0, sub=title, grid=grid)}
+  
+  # size of the grid
+  xaxp <- par("xaxp")
+  ax <- (xaxp[2] - xaxp[1])/xaxp[3]
+  yaxp <- par("yaxp")
+  ay <- (yaxp[2] - yaxp[1])/yaxp[3]
+  d <- min(ax, ay)
+  
+  # we redefine the right margins
+  op <- par("mar")
+  par(mar=rep(0.1, 4))
+  
+  # rug
+  if (rug) {
+    rug(dudi$li[, xax], side=1, ticksize=rug.ticksize, col=rug.col, lwd=0.4)
+    rug(dudi$li[, yax], side=2, ticksize=rug.ticksize, col=rug.col, lwd=0.4)
+    box()}
+  
+  # neighboring graph
+  if (neighbors) {
+    fun <- function(x, coo, col, lwd) {
+      segments(coo$x[x[1]], coo$y[x[1]],
+               coo$x[x[2]], coo$y[x[2]], 
+               col = col, lwd = lwd)}
+    neig <- nb2neig(tri2nb(dudi$li[, c(xax, yax)]))
+    coo  <- list(x=dudi$li[, xax], y=dudi$li[, yax])
+    apply(unclass(neig), 1, fun,
+          coo = coo, col=col.nei, lwd=lwd.nei)}
+  
+  # star*
+  if (star & !is.null(fac)) {
+    s.class(dudi$li, xax=xax, yax=yax, fac=fac, clabel=0, cpoint=0, add.plot=TRUE,
+            cstar=cstar, col=col.star, cellipse=0)}
+  
+  # ellipses*
+  if (ellipses & !is.null(fac)) {
+    s.class(dudi$li,  xax=xax, yax=yax, fac=fac,
+            clabel=1, cpoint=0, add.plot=TRUE,
+            cstar=0, col=col.ellipse, cellipse=cellipse, axesell=axesell)}
+  
+  # chull*
+  if (chull & !is.null(fac)) {
+    s.chull(dudi$li,xax=xax, yax=yax, fac=fac, col=col.chull, 
+            optchull=optchull, add.plot=TRUE)}
+  
+  # arrow
+  if (arrows) {
+    arr.2      <- apply(dudi$co[,c(xax, yax)], 2, function(x) x^2)
+    arr.len    <- apply(arr.2, 1, function(x) sqrt(sum(x)))
+    arr.sorted <- order(arr.len, decreasing=TRUE)[1:maxnb.arrow]
+    arr.disp   <- arr.sorted[ arr.len[arr.sorted] > d*dratio.arrow ]
+    s.arrow(dudi$co[arr.disp,],
+            label = rownames(dudi$co[arr.disp, c(xax, yax)]), edge=edge.arrow, add.plot=TRUE, boxes=box.arrow)}
+  # shapes
+  if (shapes & !is.null(dudi$mean.shp)) {
+    if (pos.shp=="li") {
+      pos <- dudi$li[, c(xax, yax)]
+    } else if (pos.shp=="usr") {
+    } else if (pos.shp=="circle") {
+      if (missing(circle.r.shp)) {
+        li.2      <- apply(dudi$li[,c(xax, yax)], 2, function(x) x^2)
+        li.len    <- apply(li.2, 1, function(x) sqrt(sum(x)))
+        circle.r.shp <- mean(li.len)}
+      t <- seq(0, 2*pi, len=circle.nb.shp+1)[-(circle.nb.shp+1)]
+      pos <- cbind(circle.r.shp*cos(t), circle.r.shp*sin(t))
+    } else if (pos.shp=="range") {
+      pos <- expand.grid(seq(min(dudi$li[, xax]), max(dudi$li[, xax]), len=nr.shp),
+                         seq(min(dudi$li[, yax]), max(dudi$li[, yax]), len=nc.shp))
+    } else if  (pos.shp=="full") {
+      w <- par("usr")
+      pos <- expand.grid(seq(w[1]+d, w[2]-d, len=nr.shp),
+                         seq(w[3]+d, w[4]-d, len=nc.shp))
+    } else {stop("shp.pos must be passed with values li, usr, circle, full or range")}    
+    x <- pca2shp(pos, rot=dudi$c1[, c(xax, yax)],
+                 mean.shp=dudi$mean.shp, scale=d*scale.shp, amp=amp.shp)
+    b.quiet <- lapply(x, polygon, col=col.shp, border=border.shp, pch=20)
+  }
+  
+  # labels and points
+  if (points) {
+  repeach <- function(x, each){
+    if (length(x) != length(each)) return(rep(x[1], sum(each)))
+    res <- vector(mode = class(x[1]))
+    for (i in seq(along=x)) {
+      res <- append(res, rep(x[i], each[i]))}
+    return(res)}
+  if (!is.null(fac)) {
+    nb <- table(fac)
+    pch.points <- repeach(pch.points, nb)
+    col.points <- repeach(palette(nlevels(fac)), nb)
+    cex.points <- repeach(cex.points, nb)} 
+  points(dudi$li[, c(xax, yax)], pch=pch.points, col=col.points)
+  }
+  
+  #  s.label(dudi$li, xax=xax, yax=yax, clabel=0, cpoint=cpoint, pch=pch, add.plot=TRUE)}
+  # labels
+  if (labels) {
+    s.label(dudi$li, xax=xax, yax=yax, clabel=clabel, cpoint=0, boxes=boxes, add.plot=TRUE)}
+  
+  # ellipses* (only for the labels) #probably not the most orthodox option
+  if (ellipses & !is.null(fac)) {
+    s.class(dudi$li,  xax=xax, yax=yax, fac=fac,
+            clabel=clabel, cpoint=0, add.plot=TRUE,
+            cstar=0, col=NA, cellipse=0, axesell=FALSE)}
+  
+  # eigen
+  if (eigen) {
+    par("mar"=op)
+    add.scatter.eig(dudi$eig, nf=dudi$nf, xax=xax, yax=yax, eigen.ratio, posi="bottomright")}
+  
+  # we restore the margins
+  par("mar"=op)
+}
+
+ellpar <- function(coo){
+  if (is.list(coo)) coo <- cbind(coo$x, coo$y) ### ML
+  coo <- coo %*% svd(var(coo))$u
+  a <- max(coo[, 1])
+  b <- max(coo[, 2])
+  e <- sqrt((a^2 - b^2)/a^2)
+  list(a=a, b=b, e=e)}
+
