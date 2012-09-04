@@ -276,27 +276,29 @@ setMethod(f="ellipse.par",
 setGeneric(name= "manova.nef",def=function(
   Nef,
   fac,
-  harmonics.retained,
-  retain=8, drop=0){standardGeneric("manova.nef")})
+  retain=floor((nrow(Nef@coeff)-2)/4), drop=0){standardGeneric("manova.nef")})
 setMethod(f="manova.nef", signature="Nef", definition=
   function (Nef,
             fac,
-            harmonics.retained,
-            retain=8, drop=0){
+            retain=floor((nrow(Nef@coeff)-2)/4), drop=0){
+
     if (missing(fac)) stop("fac must be provided")
     if (!is.null(Nef@fac[,fac])) {
       fac <- Nef@fac[, fac]}
-    if (missing(retain)) {
-      retain <- floor((nrow(Nef@coeff)/4)-2)
-    } else if(harmonics.retained>(4*floor((nrow(Nef@coeff)/4)-2))) {
-      cat("The number of harmonics to retained is too high\n")
-      harmonics.retained <- floor((nrow(Nef@coeff)/4)-2)}
-    if(length(fac)!=nrow(Nef@coeff)) {
+    if (!missing(retain)) {
+		if ((retain - drop) > floor((nrow(Nef@coeff)-2)/4)) {
+			retain <- floor((nrow(Nef@coeff)-2)/4)
+			cat("The number or retained harmonics was too high. Analysis done with", retain, "harmonics\n")}
+	} else {
+		retain <- floor((nrow(Nef@coeff)-2)/4)
+		cat("The number or retained harmonics was not specified. Analysis done with", retain, "harmonics\n")
+	}
+	harm.sel <- coeff.sel(retain=retain, drop=drop, nb.h=ncol(Nef@coeff)/4, cph=4)
+	if(length(fac)!=nrow(Nef@coeff)) {
       stop("The length of the factor provided (", length(fac),") provided is different than the
       number of outlines (", nrow(Nef@coeff), ") in the Nef object provided")}
-  harm.sel <- coeff.sel(retain, drop, ncol(Nef@coeff)/4)
-    print(summary(manova(Nef@coeff[,harm.sel]~fac), test="Hotelling"))
-    cat(retain, "harmonics are retained\n")})
+    print(mod <- summary(manova(Nef@coeff[,harm.sel]~fac), test="Hotelling"))
+    invisible(mod)})
 
 ###### Thin Plate Splines
 # Multivariate analysis of variance ##################################

@@ -10,7 +10,7 @@ setClass(
   representation(coo       = "list",
                  names     = "character",
                  fac       = "data.frame",
-                 ldk       = "numeric",
+                 ldk       = "list",
                  scale     = "numeric",
                  coo.nb    = "numeric",
                  coo.len   = "numeric",
@@ -53,16 +53,24 @@ coo.center     <- function(coo){
     return(lapply(coo, function(x) x-mean(x)))
   } else stop("A list or a coordinate matrix must be provided to coo.center")}
 
-coo.scale      <- function(coo, scale=1){
-  if (is.matrix(coo)) {
-    r <- apply(coo, 2, function(x) diff(range(x)))
-    r <- ifelse(r[1]>r[2], r[1], r[2])
-    return((coo/r)*scale)
-  } else if (is.list(coo)){
-    r <- lapply(coo, function(x) diff(range(x)))
-    r <- ifelse(r$x>r$y, r$x, r$y)
-    return(lapply(coo, function(x) (x/r)*scale))
-  } else stop("A list or a coordinate matrix must be provided to coo.scale")}
+coo.scale <- 
+  function (coo, scale = 1) 
+  {
+    if (is.matrix(coo)) {
+      r <- apply(coo, 2, function(x) diff(range(x)))
+      r <- ifelse(r[1] > r[2], r[1], r[2])
+      lm <- matrix(c(scale/r, 0, 0, scale/r), ncol=2)
+      return(coo %*% lm)
+    }
+    else if (is.list(coo)) {
+      r <- apply(coo, 2, function(x) diff(range(x)))
+      r <- ifelse(r[1] > r[2], r[1], r[2])
+      lm <- matrix(c(scale/r, 0, 0, scale/r), ncol=2)
+      return(m2l(coo %*% lm))
+    }
+    else stop("A list or a coordinate matrix must be provided to coo.scale")
+  }
+
 
 coo.rotate     <- function(coo, theta){
   rmat <- matrix(c(cos(theta), sin(theta),
@@ -131,7 +139,6 @@ coo.sample.rr  <- function(coo, n){
   list("pixindices"=V2,"radii"=M2[V2,2],"phase"=M2[V2,1],
       "coord"=M1[V2,], "orig.coord"=matrix(c(M1[,1]+mean(Rx), M1[,2]+mean(Ry)), ncol=2)[V2,])}
 
-
 coo.smooth     <- function(coo, n=0){
   if (is.matrix(coo)) {
     p   <- nrow(coo)
@@ -162,17 +169,37 @@ coo.close      <- function(coo){
   } else stop("A list or a coordinate matrix must be provided to coo.center")}
 
 coo.plot       <- function(coo=NA, col="#70809033",
-                           border="#708090EE", size=1, points=TRUE, points.col=border, pch=20, cex=0.25, main, ...){
+                           border="#708090EE", xlim=c(-1, 1), ylim=c(-1, 1),
+                           points=TRUE, first.point=TRUE,
+                           points.col=border, pch=20, cex=0.25, main, ...){
   if (is.list(coo)) coo <- l2m(coo)
   if (missing(coo)) {
-    plot(NA, asp=1, xlim=c(-size, size), ylim=c(-size, size), ann=FALSE, ...)
+    plot(NA, asp=1, xlim=xlim, ylim=ylim, ann=FALSE, ...)
   } else {
+	if (missing(xlim) & missing(ylim)) {
     plot(coo, type="n", asp=1, xlab="", ylab="", frame=FALSE, ...)
+	} else {
+	plot(coo, type="n", asp=1, xlim=xlim, ylim=ylim, xlab="", ylab="", frame=FALSE, ...)
+	}
     polygon(coo, col=col, border=border)
-    points(coo[1, 1], coo[1, 2], col=border, ...)}
-  if ((missing(points) & nrow(coo)>100) | points) {
+    if (first.point) {points(coo[1, 1], coo[1, 2], col = border, ...)}
+}
+  if ((!missing(coo) & points)) {
     points(coo, pch=pch, cex=cex, col=points.col)}
   if (!missing(main)) title(main=main)}  
+
+coo.draw <-
+  function (coo = NA, col = "#70809033", border = "#708090EE",
+            points = TRUE, first.point=TRUE,
+            points.col = border, pch = 20, cex = 0.25,  ...)
+  {
+    if (is.list(coo)) {coo <- l2m(coo)}
+    polygon(coo, col = col, border = border)
+    if (first.point) {points(coo[1, 1], coo[1, 2], col = border, ...)}
+    if ((missing(points) & nrow(coo) > 100) | points) {
+      points(coo, pch = pch, cex = cex, col = points.col)
+    }
+  }
 
 coo.template   <- function(coo, size=1) {
   # only for matrices
@@ -183,7 +210,7 @@ coo.template   <- function(coo, size=1) {
   return(coo.trans(coo, shift[1], shift[2]))}
 
 coo.list.panel <- function(coo.list, dim, byrow=TRUE,
-                           fromtop=TRUE, mar=rep(0, 4), cols, borders){
+                           fromtop=TRUE, mar=rep(0, 4), cols, borders, density = NULL, angle = 45){
   if (class(coo.list[[1]])=="list") coo.list <- lapply(coo.list, l2m)
   # if dim is missing, we define a square
   n <- length(coo.list)
@@ -206,19 +233,22 @@ coo.list.panel <- function(coo.list, dim, byrow=TRUE,
   coo.tp  <- lapply(coo.list, coo.template, size=0.9)
   if (missing(cols))    cols     <- rep("grey80", n)
   if (missing(borders)) borders  <- rep("grey20", n)
+  if (missing(density))    density     <- rep(NULL, n)
+  if (missing(angle)) angle  <- rep(45, n)
   res <- data.frame(pos.x=numeric(), pos.y=numeric())
   for (i in 1:n){
     trans <- which(pos==i, arr.ind=TRUE) - 0.5
     res[i, ] <- c(trans[2], trans[1])
     polygon(coo.tp[[i]][, 1] + trans[2],
             coo.tp[[i]][, 2] + trans[1],
-            col=cols[i], border=borders[i])
+            col=cols[i], border=borders[i], density = density[i], angle = angle[i])
   }
   par(mar=op)
   invisible(res)}
 
 coo.oscillo    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
-                           rug=TRUE, legend=TRUE, cols=col.gallus(2), ...){
+                           rug=TRUE, legend=TRUE, cols=col.gallus(2),
+                           ref=FALSE, ref.nb=8, ...){
   if (is.list(coo)) coo <- l2m(coo)
   nr <- nrow(coo)
   if (method=="d0"){
@@ -229,6 +259,14 @@ coo.oscillo    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
       dx <- coo[, 1] - coo[, 1][c(nr, (1:nr - 1))]
       dy <- coo[, 2] - coo[, 2][c(nr, (1:nr - 1))]
     } else {stop("inappropriate method in oscillo")}}
+  if (ref & plot) {
+    def.par <- par(no.readonly = TRUE)
+    on.exit(par(def.par))
+    layout(matrix(1:2, ncol=2), widths=c(1, 2))
+    refs <- round(seq(1, nrow(coo), length=ref.nb+1)[-(ref.nb+1)])
+    coo.plot(coo)
+    text(coo[refs, 1], coo[refs, 2], labels=as.character(1:ref.nb), cex=0.7)
+    }
   if (plot) {
     ry <- max(abs(range(c(dx, dy))))
     plot(NA, xlim=c(1, nr), xlab="Points sampled along the outline",
@@ -248,7 +286,13 @@ coo.oscillo    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
              col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}
     if (method=="di" & legend) {
       legend("bottomright", legend = c("dx", "dy"),
-             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}}
+             col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}
+    if (ref){
+      #text((1:nr)[refs], dx[refs], labels=as.character(1:ref.nb), cex=0.7, col=cols[1])
+      #text((1:nr)[refs], dy[refs], labels=as.character(1:ref.nb), cex=0.7, col=cols[2])
+      text((1:nr)[refs], 0, labels=as.character(1:ref.nb), cex=0.7)
+      }
+    }
   return(list(x=dx, y=dy))}
 
 coo.oscillo1    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
@@ -278,11 +322,21 @@ coo.oscillo1    <- function(coo, method=c("d0", "di")[1], plot=TRUE,
              col = cols, bg="#FFFFFFCC", cex=0.7, lty = 1, lwd=1)}}
   return(list(x=dx))}
 
+coo.amplify <- function(coo, amp=rep(0.5, 4), nb.h, draw=FALSE, ...){
+  if (is.list(coo)) {coo <- l2m(coo)}
+  if (length(amp) == 1) {amp <- rep(amp, 4)}
+  if (missing(nb.h)) {nb.h <- dim(coo)[1]/2}
+  coo.ef <- efourier(coo, nb.h=nb.h, smooth.it=0)
+  coo.ef.amp <- ef.amplify(coo.ef, amp=amp)
+  coo.amp <- efourier.i(coo.ef.amp, nb.pts=nrow(coo))
+  if (draw) {
+    coo.draw(coo.amp, ...) }
+  return(coo.amp)}
 
 l2m            <- function(l) {return(cbind(l$x, l$y))}
 m2l            <- function(m) {return(list(x=m[,1], y=m[,2]))}
 edm            <- function(m1, m2){return(sqrt((m1[, 1] - m2[, 1])^2 + (m1[, 2] - m2[, 2])^2))}
-
+l2a            <- function(l){  return(array(unlist(l), dim=c(nrow(l[[1]]), ncol(l[[1]]), length(l))))}
 # Import section #####################################################
 import.txt <- function(txt.list){
   cat("Extracting", length(txt.list), ".jpg outlines...\n")
@@ -312,6 +366,20 @@ import.jpg <- function(jpg.list) {
   names(res) <- substr(jpg.list, start=1, stop=nchar(jpg.list)-4) 
   return(res)}
 
+import.multi1.jpg <- function(path){
+  img <- import.img.prepare(path)
+  res <- list()
+  on.exit(return(res))
+  i <- 1
+  res[[i]] <- import.img.Conte(img, auto=FALSE)
+  cat("1 outline extracted. Press 'ESC' to finish.\n")
+  while (TRUE) {
+    i <- i+1
+    res[[i]] <- import.img.Conte(img, auto=FALSE, plot=FALSE)
+    cat(paste(i, "outlines extracted.\n"))
+  }  
+return(res)}
+
 import.img.prepare <- function(path){
   img <- read.jpeg(path)
   if (class(img)[2] == "array") {img <- rgb2grey(img)}
@@ -326,64 +394,73 @@ import.img.prepare <- function(path){
     img <- imagematrix(img)}              
   return(img)}
 
-import.img.Conte   <- function (img, x) {
-  if (class(img)[1] != "imagematrix"){ 
-    stop("An 'imagematrix' object is expected")}
-  if (missing(x)) {x <- round(dim(img)/2)}
-  while(img[x[1], x[2]] != 0) {
-    plot(img, main = "Click a point within the shape")
-    # cat("\t(click)")
-    rect(0, 0, ncol(img), nrow(img), border="red")
-    click <- lapply(locator(1), round)
-    x     <- c(nrow(img)-click$y, click$x)
-    if(any(x > dim(img))) {x <- round(dim(img)/2)}
-  } 
-  while (abs(img[x[1], x[2]] - img[x[1], (x[2] - 1)]) < 0.1) {
-    x[2] <- x[2] - 1
+import.img.Conte <- 
+  function (img, x, auto=TRUE, plot=TRUE) 
+  {
+    if (class(img)[1] != "imagematrix") {
+      stop("An 'imagematrix' object is expected")
+    }
+    if (missing(x)) {
+      if (auto) {
+        x <- round(dim(img)/2)
+      } else { x <- c(1, 1)}}
+    while (img[x[1], x[2]] != 0) {
+      if (plot) {
+        plot(img, main = "Click a point within the shape")
+        rect(0, 0, ncol(img), nrow(img), border = "red")}
+      click <- lapply(locator(1), round)
+      x <- c(nrow(img) - click$y, click$x)
+      if (any(x > dim(img))) {
+        x <- round(dim(img)/2)
+      }
+    }
+    while (abs(img[x[1], x[2]] - img[x[1], (x[2] - 1)]) < 0.1) {
+      x[2] <- x[2] - 1
+    }
+    a <- 1
+    M <- matrix(c(0, -1, -1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1, 
+                  -1, 0, 1), 2, 8, byrow = TRUE)
+    M <- cbind(M[, 8], M, M[, 1])
+    X <- 0
+    Y <- 0
+    x1 <- x[1]
+    x2 <- x[2]
+    SS <- NA
+    S <- 6
+    while ((any(c(X[a], Y[a]) != c(x1, x2)) | length(X) < 3)) {
+      if (abs(img[x[1] + M[1, S + 1], x[2] + M[2, S + 1]] - 
+        img[x[1], x[2]]) < 0.1) {
+        a <- a + 1
+        X[a] <- x[1]
+        Y[a] <- x[2]
+        x <- x + M[, S + 1]
+        SS[a] <- S + 1
+        S <- (S + 7)%%8
+      }
+      else if (abs(img[x[1] + M[1, S + 2], x[2] + M[2, S + 
+        2]] - img[x[1], x[2]]) < 0.1) {
+        a <- a + 1
+        X[a] <- x[1]
+        Y[a] <- x[2]
+        x <- x + M[, S + 2]
+        SS[a] <- S + 2
+        S <- (S + 7)%%8
+      }
+      else if (abs(img[x[1] + M[1, S + 3], x[2] + M[2, S + 
+        3]] - img[x[1], x[2]]) < 0.1) {
+        a <- a + 1
+        X[a] <- x[1]
+        Y[a] <- x[2]
+        x <- x + M[, S + 3]
+        SS[a] <- S + 3
+        S <- (S + 7)%%8
+      }
+      else {
+        S <- (S + 1)%%8
+      }
+    }
+    return(cbind((Y[-1]), ((dim(img)[1] - X))[-1]))
   }
-  a <- 1
-  M <- matrix(c(0, -1, -1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1, 
-                -1, 0, 1), 2, 8, byrow = TRUE)
-  M <- cbind(M[, 8], M, M[, 1])
-  X <- 0
-  Y <- 0
-  x1 <- x[1]
-  x2 <- x[2]
-  SS <- NA
-  S <- 6
-  while ((any(c(X[a], Y[a]) != c(x1, x2)) | length(X) < 3)) {
-    if (abs(img[x[1] + M[1, S + 1], x[2] + M[2, S + 1]] - img[x[1], 
-                                                              x[2]]) < 0.1) {
-      a <- a + 1
-      X[a] <- x[1]
-      Y[a] <- x[2]
-      x <- x + M[, S + 1]
-      SS[a] <- S + 1
-      S <- (S + 7)%%8
-    }
-    else if (abs(img[x[1] + M[1, S + 2], x[2] + M[2, S + 2]] - 
-      img[x[1], x[2]]) < 0.1) {
-      a <- a + 1
-      X[a] <- x[1]
-      Y[a] <- x[2]
-      x <- x + M[, S + 2]
-      SS[a] <- S + 2
-      S <- (S + 7)%%8
-    }
-    else if (abs(img[x[1] + M[1, S + 3], x[2] + M[2, S + 3]] - 
-      img[x[1], x[2]]) < 0.1) {
-      a <- a + 1
-      X[a] <- x[1]
-      Y[a] <- x[2]
-      x <- x + M[, S + 3]
-      SS[a] <- S + 3
-      S <- (S + 7)%%8
-    }
-    else {
-      S <- (S + 1)%%8
-    }
-  }
-  return(cbind((Y[-1]), ((dim(img)[1] - X))[-1]))}
 
 # elliptical Fourier analysis ########################################
 efourier  <- function (coo, nb.h = 32, smooth.it = 0) {
@@ -409,6 +486,8 @@ efourier  <- function (coo, nb.h = 32, smooth.it = 0) {
   ao <- 2 * sum(coo$x * Dt/T)
   co <- 2 * sum(coo$y * Dt/T)
   return(list(an = an, bn = bn, cn = cn, dn = dn, ao = ao, co = co))}
+
+
 
 efourier.i <- function(ef, nb.h, nb.pts = 300) {
   #if (any(names(ef) != c("an", "bn", "cn", "dn"))) {
@@ -477,6 +556,14 @@ efourier.shape <- function(an, bn, cn, dn, nb.h, nb.pts=80, alpha=2, plot=TRUE){
   shp <- efourier.i(ef, nb.h=nb.h, nb.pts=nb.pts)      
   if (plot) coo.plot(shp)
   return(shp)}
+
+ef.amplify <- function(ef, amp=rep(0.5, 4)){
+  ef$an <- ef$an*amp[1]
+  ef$bn <- ef$bn*amp[2]
+  ef$cn <- ef$cn*amp[3]
+  ef$dn <- ef$dn*amp[4]
+  return(ef)
+}
 
 # Radius variation Fourier ###########################################
 rfourier<-function(coo, nb.h=32, smooth.it=0){
@@ -630,7 +717,7 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
                       points     = TRUE,  pch.points=1,  col.points="black", cex.points=0.8,
                       labels     = FALSE, label=rownames(dudi$li), boxes=TRUE, clabel=1,
                       neighbors  = FALSE, col.nei="grey90",  lwd.nei=0.5,
-                      star       = TRUE,  col.star="grey60", lwd.star=0.25, cstar=1,
+                      star       = TRUE,  col.star="grey60", cstar=1,
                       ellipses   = TRUE,  col.ellipse="grey30", cellipse=1, axesell=TRUE,
                       chull      = FALSE, col.chull="grey30", optchull = c(0.5, 1),
                       arrows     = FALSE, edge.arrow=FALSE, box.arrow=TRUE, maxnb.arrow=10, dratio.arrow=0.2, 
@@ -698,7 +785,7 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   # ellipses*
   if (ellipses & !is.null(fac)) {
     s.class(dudi$li,  xax=xax, yax=yax, fac=fac,
-            clabel=1, cpoint=0, add.plot=TRUE,
+            clabel=0, cpoint=0, add.plot=TRUE,
             cstar=0, col=col.ellipse, cellipse=cellipse, axesell=axesell)}
   
   # chull*
@@ -750,9 +837,9 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   if (!is.null(fac)) {
     nb <- table(fac)
     pch.points <- repeach(pch.points, nb)
-    col.points <- repeach(palette(nlevels(fac)), nb)
+    if (missing(col.points)) {col.points <- repeach(palette(nlevels(fac)), nb)}
     cex.points <- repeach(cex.points, nb)} 
-  points(dudi$li[, c(xax, yax)], pch=pch.points, col=col.points)
+  points(dudi$li[, c(xax, yax)], pch=pch.points, col=col.points, cex=cex.points)
   }
   
   #  s.label(dudi$li, xax=xax, yax=yax, clabel=0, cpoint=cpoint, pch=pch, add.plot=TRUE)}

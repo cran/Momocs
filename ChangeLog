@@ -1,0 +1,21 @@
+0.1-03
+* coo.plot. New argument: "first.point = TRUE". Whether to draw the first point.
+* coo.plot. Corrected a very minor bug when met="stack".
+* coo.draw. New function. Adds a shape on the active plot
+* Coo.plot. Corrected some minor bugs.
+* efourier. Corrected a (very small) bug
+* coo.list.panel. Added "density = NULL" and "angle = 45" parameters.
+* manova.nef. Corrected one bug concerning the selection of the number of harmonics to retain.
+* dudi.plot. Removed the obsolete "lwd.star=0.25".
+* dudi.plot. Corrected bugs for arguments "cex.points, clabel".
+* Coo builder. If "names" of the coo provided is NULL, then create these names.
+* import.img.Conte. Added "auto=TRUE, plot=TRUE" parameters.
+* import.multi1.jpg. New function to help to extract outlines from images with more than one mask.
+* Coo. Changed slot @ldk from 'numeric' to 'list'
+* coo.oscillo. Added two arguments "ref=TRUE, ref.nb=8" to add some reference points on the oscillo curves and on the shape.
+* New method: slide on Coo.
+* Corrected bugs on the align, scale, sample, center, align methods for Coo objects.
+* eFourier. Corrected a bug when EFA performed without normalization.
+* coo.scale. Slight change on code, no visible change.
+* New function. l2a, converts a list to an array.
+* New dataset. hearts: 450 outline of hand-drawn hearts by 15 different persons.

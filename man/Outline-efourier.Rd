@@ -100,9 +100,9 @@ Intuitively, for all positive integers \eqn{n}, the sum of a cosine curve and a 
 }
 
 \references{
-Claude J. 2008. Morphometrics with R. Springer Verlag.
+Claude, J. (2008) \emph{Morphometrics with R}, Use R! series, Springer 316 pp.
 
-Ferson S, Rohlf FJ, Koehn RK. 1985. Measuring shape variation of two-dimensional outlines. Systematic Biology 34: 59-68.
+Ferson S, Rohlf FJ, Koehn RK. 1985. Measuring shape variation of two-dimensional outlines. \emph{Systematic Biology} \bold{34}: 59-68.
 }
 \seealso{
 \link{Ptolemy} for an implementation of the Ptolemaic ellipses.
