@@ -27,7 +27,7 @@ ellpar(coo)
 }
 
 \references{
-Schmittbuhl M, Allenbach B, Le Minor J-M, Schaaf A, Minor J-marie L. 2003. Elliptical Descriptors: Some Simplified Morphometric Parameters for the Quantification of Complex Outlines. Mathematical Geology 35: 853-871.
+Schmittbuhl M, Allenbach B, Le Minor J-M, Schaaf A, Minor J-marie L. 2003. Elliptical Descriptors: Some Simplified Morphometric Parameters for the Quantification of Complex Outlines. \emph{Mathematical Geology} \bold{35}: 853-871.
 }
 
 \seealso{

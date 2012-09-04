@@ -51,7 +51,7 @@ The \eqn{a_n} and \eqn{b_n} harmonic coefficients, extracted for every individua
 Returns a list of coordinates.
 }
 \references{
-Claude J. 2008. Morphometrics with R. Springer Verlag.
+Claude, J. (2008) \emph{Morphometrics with R}, Use R! series, Springer 316 pp.
 }
 \seealso{
 \link{efourier}, \link{tfourier}.

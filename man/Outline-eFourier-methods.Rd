@@ -17,7 +17,7 @@ This method performs an elliptical Fourier analysis on a \code{Coo}-class object
 }
 }}
 \seealso{
-The same arguments as \link{eFourier} can be used with this method.
+The same arguments as \link{efourier} can be used with this method.
 }
 
 \keyword{Outline Analysis}

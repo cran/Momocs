@@ -23,9 +23,9 @@ smooth.qual(Coo, id=1,
 \references{
 See Claude and Crampton & Crampton works below for details on smoothing outlines before an outline analysis:
 
-Haines AJ, Crampton JS. 2000. Improvements To The Method Of Fourier Shape Analysis As Applied In Morphometric Studies. Palaeontology 43: 765-783.
+Haines AJ, Crampton JS. 2000. Improvements To The Method Of Fourier Shape Analysis As Applied In Morphometric Studies. \emph{Palaeontology} \bold{43}: 765-783.
 
-Crampton JS. 1995. Elliptical Fourier shape analysis of fossil bivalves: some practical considerations. Lethaia 28: 179-186.
+Crampton JS. 1995. Elliptical Fourier shape analysis of fossil bivalves: some practical considerations. \emph{Lethaia} \bold{28}: 179-186.
 }
 \examples{
 data(bot)

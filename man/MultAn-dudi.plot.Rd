@@ -13,7 +13,7 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
 	labels = FALSE, label = rownames(dudi$li),
 	boxes = TRUE, clabel = 1,
 	neighbors = FALSE, col.nei = "grey90", lwd.nei = 0.5,
-	star = TRUE, col.star = "grey60", lwd.star = 0.25, cstar = 1,
+	star = TRUE, col.star = "grey60", cstar = 1,
 	ellipses = TRUE, col.ellipse = "grey30", cellipse = 1, axesell = TRUE,
 	chull = FALSE, col.chull = "grey30", optchull = c(0.5, 1),
 	arrows = FALSE, edge.arrow = FALSE, box.arrow = TRUE, maxnb.arrow = 10, dratio.arrow = 0.2,
@@ -43,7 +43,6 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   \item{lwd.nei}{the \code{lwd} for drawing neighboring graph.}
   \item{star}{\code{logical}. Whether to draw the star.}
   \item{col.star}{the \code{col} for drawing the star.}
-  \item{lwd.star}{the \code{lwd} for drawing the star.}
   \item{cstar}{\code{numeric}. The size of the star.}
   \item{ellipses}{\code{logical}. Whether to draw bivariate confidence ellipses.}
   \item{col.ellipse}{The \code{col} for drawing these ellipses.}
@@ -83,11 +82,11 @@ This function takes the slightly modified \code{dudi.pca} object, obtained with 
 \references{
 See the papers below that introduce \code{ade4} and also the package's homepage: \url{http://pbil.univ-lyon1.fr/ADE-4/} and particularly the file called "td83" : Lobry JR. 2010. Les fonctions graphiques 2D du paquet ade4.
 
-Dray, S. and Dufour, A.B. (2007): The ade4 package: implementing the duality diagram for ecologists. Journal of Statistical Software. 22(4): 1-20.
+Dray, S. and Dufour, A.B. (2007): The ade4 package: implementing the duality diagram for ecologists. \emph{Journal of Statistical Software}. \bold{22}(4): 1-20.
 
-Chessel, D. and Dufour, A.B. and Thioulouse, J. (2004): The ade4 package-I- One-table methods. R News. 4: 5-10.
+Chessel, D. and Dufour, A.B. and Thioulouse, J. (2004): The ade4 package-I- One-table methods. \emph{R News}. \bold{4}: 5-10.
 
-Dray, S. and Dufour, A.B. and Chessel, D. (2007): The ade4 package-II: Two-table and K-table methods. R News. 7(2): 47-52.
+Dray, S. and Dufour, A.B. and Chessel, D. (2007): The ade4 package-II: Two-table and K-table methods. \emph{R News}. \bold{7}(2): 47-52.
 
 }
 \seealso{

@@ -12,12 +12,28 @@
 \alias{coo.trans}
 \alias{l2m}
 \alias{m2l}
+\alias{l2a}
 
 \title{
 Utilities to manipulate list and matrices of coordinates.
 }
 
-\description{Some utilities to manipulate \eqn{(x; y)} coordinates when arranged as matrices or lists. Most of them are used internally but they can be used directly. 
+\description{Some utilities to manipulate \eqn{(x; y)} coordinates when arranged as matrices or lists. Most of them are used internally but they can be used directly.
+\itemize{
+\item \code{coo.align} aligns \code{coo} using its best fitting ellipse.
+\item \code{coo.center} centers \code{coo} on the origin.
+\item \code{coo.close} closes \code{coo}, \emph{i.e.} makes the last coordinates be the first than the first.
+\item \code{coo.rotate} rotates \code{coo} with a \code{theta} angle.
+\item \code{coo.sample} samples \code{n} points in \code{coo}.
+\item \code{coo.sample.rr} does the same but based on polar coordinates.
+\item \code{coo.scale} "scales" \code{coo}, \emph{i.e.} resizes \code{coo} so that it can be included in a square of \code{scale} side.
+\item \code{coo.slide} "slides" \code{coo}, \emph{i.e.} makes the \code{id1} coordinate to be the first and change the others accordingly.
+\item \code{coo.smooth} performs \code{n} smoothing iteration on \code{coo}. \code{coo.template} returns \code{coo} so that the shape it is centered on the origin and inscribed in a size-side square, also centered on the origin; see \link{coo.list.panel} for an illustration of this function.
+\item \code{coo.trans} translates \code{coo} by \code{x} and {y} on the two dimensions, respectively.
+\item \code{m2l} converts a matrix of \code{(x; y)}coordinates to a list with \code{x; y} components.
+\item \code{l2m} does the exact opposite than \code{m2l}.
+\item \code{l2a} converts a list of length \code{k} with identical \code{m x n} matrices to a \code{m x n x k} array.
+}
 }
 
 \usage{
@@ -34,6 +50,7 @@ coo.template(coo, size)
 coo.trans(coo, x, y)
 m2l(m)
 l2m(l)	
+l2a(l)
 }
 
 \arguments{
@@ -51,11 +68,11 @@ l2m(l)
 
 \details{
 \code{coo.scale} simply returns coordinates so that the longer axis of the shape is of size "scale".
-\code{coo.template} returns coordinates so that the shape is centered on the origin and is completely inscribed in a size-side square, also centered on the origin. See \link{coo.list.panel} for an illustration of this function.
+\code{coo.template} returns coordinates so that the shape is centered on the origin and is completely inscribed in a size-side square, also centered on the origin. 
 }
 
 \value{
-A \code{list} (with x and y component) or a \code{matrix} (2 columns: x and y) of coordinates.
+A \code{list} with \code{x; y} components or a a matrix of \code{(x; y)}coordinates.
 }
 
 \seealso{

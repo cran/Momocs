@@ -51,9 +51,9 @@ a_0 = \sqrt{\frac{2}{p}}\sum\limits_{n=1}^{p}\phi(t)
 Returns a list of coordinates.
 }
 \references{
-Zahn CT, Roskies RZ. 1972. Fourier Descriptors for Plane Closed Curves. IEEE Transactions on Computers C-21: 269-281.
+Zahn CT, Roskies RZ. 1972. Fourier Descriptors for Plane Closed Curves. \emph{IEEE Transactions on Computers} \bold{C-21}: 269-281.
 
-Claude J. 2008. Morphometrics with R. Springer Verlag.
+Claude, J. (2008) \emph{Morphometrics with R}, Use R! series, Springer 316 pp.
 }
 
 \seealso{

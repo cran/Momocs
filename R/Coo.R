@@ -4,11 +4,13 @@
 
 # Domestic ###########################################################
 # Builder
-Coo <- function(coo, ...){new(Class="Coo",
-                              coo=coo,
-                              names=names(coo),
-                              coo.nb=length(coo),
-                              coo.len=as.numeric(lapply(coo, nrow)), ...)}
+Coo <- function(coo, ...){
+	if(is.null(names(coo))) {names(coo) <- paste("shp", 1:length(coo), sep="")}
+	new(Class="Coo",
+		coo=coo,
+        names=names(coo),
+        coo.nb=length(coo),
+        coo.len=as.numeric(lapply(coo, nrow)), ...)}
 
 #Getters
 # setMethod(f = "[", signature = "Coo", definition = function(x, i, j, value){
@@ -48,8 +50,8 @@ setMethod(f="show", signature="Coo", definition=function(object){
   cat(rep("-", 20),"\n", sep="")
   cat(" -", object@coo.nb, ifelse(object@coo.nb<2, "outline\n", "outlines\n"))
   cat(" -", round(mean(object@coo.len)), "+/-", round(sd(object@coo.len)), "coordinates per outline\n")
-  if (length(object@ldk)!=0) cat(" -", length(object@ldk), "landmarks defined\n") else cat(" - No landmark defined\n")
-  if (ncol(object@fac)!=0) cat(" -", ncol(object@fac), "grouping factors defined\n") else cat(" - No groups defined\n")
+  if (length(object@ldk)!=0) cat(" -", length(object@ldk[[1]]), "landmark(s) defined\n") else cat(" - No landmark defined\n")
+  if (ncol(object@fac)!=0) cat(" -", ncol(object@fac), "grouping factor(s) defined\n") else cat(" - No groups defined\n")
   
   cat("\nCoordinates: @coo\n")
   cat(rep("-", 20),"\n", sep="")
@@ -76,43 +78,66 @@ setMethod(f="show", signature="Coo", definition=function(object){
 setMethod(f="plot",
           signature="Coo",
           definition=
-            function(x, y, method=c("stack", "single", "panel")[1],
-                     subset, center=TRUE, scale=TRUE, align=FALSE,
-                     col="#70809033", border="#708090", ...) {
-              coo <- x@coo
-              if (!missing(subset)) coo <- coo[[subset]]
-              if (method == "panel") {
-                coo.list.panel(coo, cols=col, borders=border)
-                return()
-              }
-              if (center) coo <- lapply(coo, coo.center)
-              if (scale)  coo <- lapply(coo, coo.scale)
-              if (align)  coo <- lapply(coo, coo.align)
-              if (method == "stack") {
-                coo.plot(coo[[1]], size=0.5)
-                lapply(coo, polygon, col=col, border=border)}
-              if (method == "single") {
-                for (i in 1:length(coo)) {
-                  coo.plot(coo[[i]], col=col, border=border)
-                  title(main=names(coo)[i], outer=T, line=-2)
-                  readline(prompt = "Press <Enter> to continue...")}}
-              return()})
+  function(x, y, method=c("stack", "single", "panel")[1],
+           subset, center=FALSE, scale=FALSE, align=FALSE,
+           col=NA, border="#708090",  ...) {
+  coo <- x@coo
+  if (missing(col))    col     <- rep(col,    x@coo.nb)
+  if (missing(border)) border  <- rep(border, x@coo.nb)
+  if (!missing(subset)) coo <- coo[[subset]]
+  if (method == "panel") {coo.list.panel(coo, cols=col, borders=border)}
+  if (center) coo <- lapply(coo, coo.center)
+  if (scale)  coo <- lapply(coo, coo.scale)
+  if (align)  coo <- lapply(coo, coo.align)
+  if (method == "stack") {
+    wdw <- apply(l2a(lapply(coo, function(x) apply(x, 2, range))), 2, range)
+    coo.plot(xlim=wdw[, 1], ylim=wdw[, 2])
+    lapply(coo, polygon, col=col, border=border)}
+  if (method == "single") {
+    for (i in 1:length(coo)) {
+      coo.plot(coo[[i]], col=col, border=border)
+      title(main=names(coo)[i], outer=TRUE, line=-2)
+      readline(prompt = "Press <Enter> to continue...")}}
+  })
 
 # Methods on coordinates #############################################
 setGeneric(name= "align",   def=function(Coo, ...){standardGeneric("align")})
 setMethod(f="align", signature="Coo", definition= function(Coo){
-    return(Coo(lapply(Coo@coo, coo.align)))})
+  Coo2 <- Coo
+  Coo2@coo <- lapply(Coo@coo, coo.align)
+  return(Coo2)})
 
 setGeneric(name= "center",   def=function(Coo, ...){standardGeneric("center")})
 setMethod(f="center", signature="Coo", definition=function(Coo){
-  return(Coo(lapply(Coo@coo, coo.center)))})
+  Coo2 <- Coo
+  Coo2@coo <- lapply(Coo@coo, coo.center)
+  return(Coo2)})
+
+setGeneric(name= "smooth",   def=function(Coo, ...){standardGeneric("smooth")})
+setMethod(f="smooth", signature="Coo", definition=function(Coo, n){
+  Coo2 <- Coo
+  Coo2@coo <- lapply(Coo@coo, coo.smooth, n)
+  return(Coo2)})
 
 setGeneric(name= "sample",   def=function(Coo, ...){standardGeneric("sample")})
 setMethod(f="sample", signature="Coo", definition=function(Coo, nb.pts=100){
-  return(Coo(lapply(Coo@coo, coo.sample, nb.pts)))})
+  Coo2 <- Coo
+  Coo2@coo <- lapply(Coo@coo, coo.sample, nb.pts)
+  return(Coo2)})
 
 setMethod(f="scale", signature="Coo", definition=function(x){
-  return(Coo(lapply(x@coo, coo.scale)))})
+  Coo2 <- x
+  Coo2@coo <- lapply(x@coo, coo.scale)
+  return(Coo2)})
+
+# bug on slide
+setGeneric(name= "slide",   def=function(Coo, ...){standardGeneric("slide")})
+setMethod(f="slide", signature="Coo", definition=function(Coo, ldk.id=1){
+  Coo2 <- Coo
+  for (i in 1:Coo@coo.nb) {
+    Coo2@coo[[i]] <- coo.slide(Coo@coo[[i]], Coo@ldk[[i]][ldk.id])
+    Coo2@ldk[[i]] <- Coo2@ldk[[i]] - Coo2@ldk[[i]][ldk.id]}
+  return(Coo2)})
 
 # Fourier computation ################################################
 # compute elliptical Fourier analysis
@@ -127,14 +152,17 @@ setMethod(f="eFourier", signature="Coo", definition=
     coe <- matrix(ncol = 4 * nb.h, nrow = length(coo), dimnames = list(names(coo), col.n))
     for (i in seq(along = coo)) {
       ef <- efourier(coo[[i]], nb.h = nb.h, smooth.it = smooth.it)
-      if (normalize) ef <- efourier.norm(ef, start=start)
-      if (ef$A[1] < 0) {
-        ef$A <- (-ef$A)
-        ef$B <- (-ef$B)
-        ef$C <- (-ef$C)
-        ef$D <- (-ef$D)
-        ef$lnef <- (-ef$lnef)}
-      coe[i, ] <- c(ef$A, ef$B, ef$C, ef$D)}
+      if (normalize) {
+        ef <- efourier.norm(ef, start=start)
+        if (ef$A[1] < 0) {
+          ef$A <- (-ef$A)
+          ef$B <- (-ef$B)
+          ef$C <- (-ef$C)
+          ef$D <- (-ef$D)
+          ef$lnef <- (-ef$lnef)}
+        coe[i, ] <- c(ef$A, ef$B, ef$C, ef$D)
+        } else {
+          coe[i, ] <- c(ef$an, ef$bn, ef$cn, ef$dn)}}
     return(Nef(coe, fac=Coo@fac))})
 
 # harm.qual
@@ -245,7 +273,7 @@ setMethod(f="harm.quant", signature="Coo", definition=
     if (plot) {
       # for St Thomas
       plot(NA, xlim=c(1, nb.pts),   xlab="Points sampled along the outline",
-           ylim=c(0, max(res)), ylab="Deviation in pixels",
+           ylim=c(0, max(RES)), ylab="Deviation in pixels",
            main="Deviations along the outline", yaxs="i", xaxs="i", las=1)
       abline(h=lineat.y, lty=2, col="grey80")
       if (coo.nb > 1) {

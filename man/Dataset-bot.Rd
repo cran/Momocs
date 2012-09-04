@@ -3,7 +3,7 @@
 \docType{data}
 \title{Bottles dataset}
 \description{
-The bottles dataset is a \code{Coo}-class object that contains outline coordinates of 20 beer and 20 whisky bottles.
+The \code{bot} dataset is a \code{Coo}-class object that contains outline coordinates of 20 beer and 20 whisky bottles.
 }
 \usage{
 data(bot)
