@@ -1,0 +1,35 @@
+\name{a2l}
+\alias{a2l}
+
+\title{
+Converts an array of coordinates to a list.
+}
+
+\description{
+\code{a2l} converts an array of coordinates into a list of 2-cols matrices.
+}
+
+\usage{
+a2l(a)
+}
+
+\arguments{
+  \item{a}{An \code{array} of coordinates.}
+  }
+
+\value{
+A \code{list} with 2-cols matrices of \code{(x; y)} coordinates.
+}
+
+\seealso{
+\link{l2a}
+}
+
+\examples{
+data(gorf.dat)
+l <- a2l(gorf.dat)
+a <- l2a(l)
+A.plot(a)
+}
+
+\keyword{coo Utilities}

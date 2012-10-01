@@ -1,7 +1,7 @@
-\name{Dataset: bot}
+\name{dataset: bot}
 \alias{bot}
 \docType{data}
-\title{Bottles dataset}
+\title{bot dataset}
 \description{
 The \code{bot} dataset is a \code{Coo}-class object that contains outline coordinates of 20 beer and 20 whisky bottles.
 }
@@ -17,6 +17,6 @@ Images have been grabbed on the internet and prepared by the package's authors. 
 
 \examples{
 data(bot)
-bot
+panel(bot, names=TRUE)
 }
 \keyword{Datasets}
