@@ -1,22 +1,42 @@
-exportPattern("^[[:alpha:]]+")
-exportMethods(
-    "align",
-    "center",
-    "eFourier",
-    "ellipse.par",
-    "harm.contrib",
-    "harm.pow",
-    "harm.qual",
-    "harm.quant",
-    "manova.nef",
-    "pca",
-    "Ptolemy",
-    "sample",
-    "scale",
-    "smooth.qual"
-)
-
+exportPattern(".")
 exportClasses(
     "Coo",
-     "Nef" 
+     "Coe" 
 )
+
+# exportMethods(
+	# "[",
+	# "[<-",
+	# "Coo.align",
+	# "Coo.center",  
+	# "Coo.smooth",  
+	# "Coo.sample",   
+	# "Coo.scale",   
+	# "Coo.slide",   
+	# "Coo.close",   
+	# "Coo.unclose",
+	# "baseline",
+	# "boxplot", 
+	# "cooLandmarks",
+	# "defLandmarks",
+	# "diapo",
+	# "eFourier",
+	# "ellipse.par",
+	# "hist",
+	# "hcontrib",
+	# "hpow",
+	# "hqual",
+	# "hquant",
+	# "manova.Coe",
+	# "panel",
+	# "pca",
+	# "plot",
+	# "procGPAlign",
+	# "Ptolemy",
+	# "rFourier",
+	# "show",
+	# "smooth.qual",
+	# "stack",
+	# "tFourier"
+# )
+
