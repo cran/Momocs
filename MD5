@@ -1,9 +1,8 @@
-f7ee02d5d1152f5684100b7f753c47ff *ChangeLog
-ccd2a3e19d56431d65bc6f728e4b0d5c *DESCRIPTION
-e06dcde094034f21d5757882c3959fa0 *Momocs.Rproj
+d7f9c52ba97793e3fd6dbea1abbda3cc *ChangeLog
+db2128cf95dc874a97189fbb835a51ed *DESCRIPTION
 d7580d4b47cd5cc83af2ef04e9d483e0 *NAMESPACE
 6a083c2dc6fed03e85a8e12a46bd328b *R/Coe.R
-f8e766c2cf67ef4dab75b9311ea995ff *R/Coo.R
+6612eebfbeda53fe0bbce7841ebecbe5 *R/Coo.R
 7d87e6a152d3846f29a7a877302d4819 *R/global.R
 a5b3b501eaa90a3f5825d4f59773858a *data/bot.rda
 d55e300b122ff66e589b556eab633197 *data/hearts.rda
