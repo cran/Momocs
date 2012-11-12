@@ -1,3 +1,7 @@
+0.2-02 - 2012-10-02
+ * Corrected some minor bugs
+ * Some additions to help files
+
 0.2-01 - 2012-10-17
 * Lot of changes for this version, including:
   * Coe class replaces former Nef and now handles eFourier, rFourier and tFourier methods.

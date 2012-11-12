@@ -287,7 +287,7 @@ setMethod(f="baseline", signature="Coo", definition=
   function(Coo, ldk1=1, ldk2=2, t1=c(-0.5, 0), t2=c(0.5, 0)){
     for (i in 1:Coo@coo.nb){
       Coo@coo[[i]] <- coo.baseline(Coo@coo[[i]],
-                                   ldk1=hearts@ldk[[i]][ldk1], ldk2=hearts@ldk[[i]][ldk2],
+                                   ldk1=Coo@ldk[[i]][ldk1], ldk2=Coo@ldk[[i]][ldk2],
                                    t1=t1, t2=t2)}
     return(Coo)})
 
