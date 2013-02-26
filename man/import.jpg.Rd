@@ -26,6 +26,8 @@ import.img.Conte(img, x, auto=TRUE, plot=TRUE)
 \details{
 Typically, an object returned by \link{list.files} on a folder containing your images is passed to \code{import.jpg}. \code{import.img.prepare} and \code{import.img.Conte} are typically not used by front-user but internally by \code{import.jpg}. They clean, binarize, threshold, etc. raw .jpg images and extract a list of coordinates from a black and white \code{imagematrix}, respectively. The best option is to work with black and white \code{.jpg} image with the black mask of the outline overlapping the center of the image.
 \code{import.multi1.jpg} helps to extract several outlines from the same \code{.jpg} image.
+
+Due to troubles with ReadImages and the recent change towards the jpeg package for import of images, they MUST be converted to black and white images before being imported.
 }
 \value{
 \code{import.jpg} returns a list of (from 1 to thousands) \eqn{(x; y)} coordinates arranged as matrices and that can be then converted to a \code{Coo}-object. \code{import.multi1.jpg} returns a \code{list} of \eqn{(x; y)} coordinates. \code{import.img.prepare} returns an \code{imagematrix} object, \code{import.img.Conte} returns a matrix of \eqn{(x; y)} coordinates.
@@ -36,7 +38,7 @@ Typically, an object returned by \link{list.files} on a folder containing your i
 \examples{
 \dontrun{
 jpg.list <- list.files(path_to_your_folder_containing_.txt_files, full=TRUE)
-I <- import.jpg(I)
+I <- import.jpg(jpg.list)
 Coo(I)
 }
 }

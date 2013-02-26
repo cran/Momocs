@@ -549,25 +549,25 @@ import.multi1.jpg <- function(path){
 return(res)}
 
 import.img.prepare <- function(path){
-  img <- read.jpeg(path)
-  if (class(img)[2] == "array") {img <- rgb2grey(img)}
+  img <- readJPEG(path)
+  #if (class(img)[2] == "array") {img <- rgb2grey(img)} #to2fixed...ReadImages
   img[img >  0.5] <- 1
   img[img <= 0.5] <- 0
-  img <- imagematrix(img)
+  #img <- imagematrix(img) #to2fixed...ReadImages
   # if(any(dim(img)>500)) {cat("\t(large image)")}
   if(any(c(img[1, ], img[nrow(img), ], img[, 1], img[, ncol(img)]) != 1)){
     # cat("\t(outline spans image border)")
     img <- rbind(rep(1, ncol(img)), img, rep(1, ncol(img)))
     img <- cbind(rep(1, nrow(img)), img, rep(1, nrow(img)))
-    img <- imagematrix(img)}              
+    #img <- imagematrix(img) #to2fixed...ReadImages
+  }              
   return(img)}
 
 import.img.Conte <- 
   function (img, x, auto=TRUE, plot=TRUE) 
   {
-    if (class(img)[1] != "imagematrix") {
-      stop("An 'imagematrix' object is expected")
-    }
+    #if (class(img)[1] != "imagematrix") {
+    #  stop("An 'imagematrix' object is expected")}2befixe...ReadImages
     if (missing(x)) {
       if (auto) {
         x <- round(dim(img)/2)

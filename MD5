@@ -1,9 +1,9 @@
 d7f9c52ba97793e3fd6dbea1abbda3cc *ChangeLog
-db2128cf95dc874a97189fbb835a51ed *DESCRIPTION
+a76d46cd8bbff93cb98499d44bf55672 *DESCRIPTION
 d7580d4b47cd5cc83af2ef04e9d483e0 *NAMESPACE
 6a083c2dc6fed03e85a8e12a46bd328b *R/Coe.R
 6612eebfbeda53fe0bbce7841ebecbe5 *R/Coo.R
-7d87e6a152d3846f29a7a877302d4819 *R/global.R
+89973f51636aa7d400ba587caed09797 *R/global.R
 a5b3b501eaa90a3f5825d4f59773858a *data/bot.rda
 d55e300b122ff66e589b556eab633197 *data/hearts.rda
 e32ad5a5e79285874b058111c7c7fc61 *data/mosquito.rda
@@ -78,7 +78,7 @@ d60d6ba0e551ddd38a5b5d7cfa0cb290 *man/ellipse.par.Rd
 1b6fdd016a2cd444a4a521d1f0b05b0e *man/hpow.Rd
 ca15bf9dba4886587403d5813c2414df *man/hqual.Rd
 05900b69570315db9d2d3ac5f9217dda *man/hquant.Rd
-56611078601b60b42af203bbae1bbe8d *man/import.jpg.Rd
+ec9de9d6da47534cddae188eae286baf *man/import.jpg.Rd
 5df099d65cf67bd69649dc94d577a8af *man/import.txt.Rd
 6537c5c92bedfa31ac9765243d99f14d *man/is.closed.Rd
 d84f05d3a75a3dbf1da5ff093ceeb191 *man/l2a.Rd
@@ -87,7 +87,7 @@ f303638fd4024157e96e60f812496633 *man/m2l.Rd
 e4354a95dabba50872022181832498ec *man/manova.Coe.Rd
 0d0961b0c7adcd87d5f69c0f7ddc3036 *man/meanShapes.Rd
 b2d177d933f014f41b435627d5f11cbc *man/morpho.space.Rd
-c0007b06a8666dca123c59dec523f3ff *man/nef2Coe.Rd
+a175b648b1a70c5e075f7b047c7d38ce *man/nef2Coe.Rd
 0cca40318ad3395277d77844cc381ce0 *man/panel-methods.Rd
 2f4ba26582a3cd446ecaeadcf8252fde *man/pca.Rd
 f48ca86d20bbfa437fb72d36851443fd *man/pca2shp.Rd

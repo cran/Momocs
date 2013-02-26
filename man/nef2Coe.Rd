@@ -30,4 +30,35 @@ Iwata H, Ukai Y. 2002. SHAPE: a computer program package for quantitative evalua
 You can also have a look to the SHAPE's manual distributed with the program suite, that gives a description of the \code{.nef} format.
 }
 
+\examples{
+\dontrun{
+# I (VB) just finished my post-doc in India and I wont have time for Momocs
+# until mid march or maybe a bit after that.
+# Ryan Felice found a bug in my own version. I provide hereafter the function
+# he kindly sent to me and that worked fine for him.
+# Hope this help. Thanks again to him.
+NEF2COE<-function (nef.path){
+  nef <- readLines(nef.path)
+  HARMO.l <- grep(pattern = "HARMO", nef)
+  nb.h <- as.numeric(substring(nef[HARMO.l], 8))
+  nef <- nef[-(1:HARMO.l)]
+  nb.coo <- length(nef)/(nb.h + 1)
+  coo.i <- 1:nb.coo
+  coo.beg <- (coo.i - 1) * (nb.h + 1) + 1
+  coo.end <- coo.beg + nb.h
+  res <- matrix(NA, nrow = nb.coo, ncol = nb.h * 4, dimnames = list(nef[coo.beg], paste(rep(LETTERS[1:4], each = nb.h), 1:nb.h, sep = "")))
+  for (i in seq(along = coo.i)) {
+    nef.i <- nef[(coo.beg[i]+1):coo.end[i]]
+    x <- as.numeric(unlist(strsplit(nef.i, " ")))
+    x1<-x[!is.na(x)]
+    a.i<-x1[seq(1,length(x1),4)]
+    b.i<-x1[seq(2,length(x1),4)]
+    c.i<-x1[seq(3,length(x1),4)]
+    d.i<-x1[seq(4,length(x1),4)]
+    res[i, ]<-c(a.i,b.i,c.i,d.i)
+  }
+  return(Coe(res,method="eFourier"))}
+}
+}
+
 \keyword{Import}
