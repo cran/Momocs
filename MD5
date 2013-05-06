@@ -1,7 +1,7 @@
-d7f9c52ba97793e3fd6dbea1abbda3cc *ChangeLog
-a76d46cd8bbff93cb98499d44bf55672 *DESCRIPTION
+6db8c6173972f093f02a266529215cb4 *ChangeLog
+d29497492acd1daf876c19d85d2ce5a5 *DESCRIPTION
 d7580d4b47cd5cc83af2ef04e9d483e0 *NAMESPACE
-6a083c2dc6fed03e85a8e12a46bd328b *R/Coe.R
+400de1071a7e22bb4f58f0a1c3cb0de7 *R/Coe.R
 6612eebfbeda53fe0bbce7841ebecbe5 *R/Coo.R
 89973f51636aa7d400ba587caed09797 *R/global.R
 a5b3b501eaa90a3f5825d4f59773858a *data/bot.rda
@@ -23,6 +23,7 @@ d33dec510789c6398f6d5795eca5b90e *man/a2l.Rd
 5e0c6a93c0f26866cc7aa6a70c881a8f *man/baseline-methods.Rd
 07b96ae6b3344a2d7ea6ea39dabd9ace *man/chc2Coo.Rd
 8eaef557b222b1c765f72d757c918116 *man/chc2pix.Rd
+d78d99c20e42460275a72c2472152c33 *man/clust.Rd
 60d34121bd6f4ba0a8b0087af4c370bb *man/coeff.sel.Rd
 1f405fb8b53ee9b487d23a15294632e7 *man/coeff.split.Rd
 cb3369af14e85833cc8661b650a33155 *man/color-palettes.Rd

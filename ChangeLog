@@ -1,3 +1,11 @@
+0.2-04 - 2013-05-06
+ * A new method : clust, to perform hierarchical clustering ; so far it should be considered as a preliminary version.
+ * Momocs now requires the ape package.
+
+0.2-03 - 2013-02-26
+ * Some emergency fixes but the maintainer do not have time not contract to work on until a few months.
+ * Due to deprecated packages handling images, only black and white images are supported so far.
+
 0.2-02 - 2012-10-02
  * Corrected some minor bugs
  * Some additions to help files

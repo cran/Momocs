@@ -1,8 +1,8 @@
 Package: Momocs
 Type: Package
 Title: Shape Analysis of Outlines
-Version: 0.2-03
-Date: 2012-11-12
+Version: 0.2-04
+Date: 2013-05-06
 Author: Vincent Bonhomme, Sandrine Picq, Julien Claude with
         contributions from Dan Dkin, Cedric Gaucherel, Ricardo Kriebel,
         Neus Martinez, Marcelo Reginato, Norbert Telmon, Asher
@@ -19,9 +19,9 @@ Description: Momocs is intended to ease and popularize shape analysis
         in morphological comparisons of outlines.
 License: GPL (>= 2)
 URL: http://www.vincentbonhomme.fr/Momocs
-Depends: methods, sp, jpeg, ade4, spdep, shapes, R(>= 2.15.0)
+Depends: methods, sp, jpeg, ade4, spdep, shapes, ape, R(>= 2.15.0)
 Collate: global.R Coe.R Coo.R
-Packaged: 2013-02-26 14:40:15 UTC; vincent
-Repository: CRAN
-Date/Publication: 2013-02-26 16:19:21
+Packaged: 2013-05-08 11:57:47 UTC; vincent
 NeedsCompilation: no
+Repository: CRAN
+Date/Publication: 2013-05-08 15:47:08
