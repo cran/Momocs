@@ -47,7 +47,9 @@ rf  <- rfourier(coo, 12)
 rf
 rfi <- rfourier.i(rf)
 l2m(rfi)
-coo.draw(rfi, border="red", col=NA) # it works since coo.draw and coo.plot retrieve "x" and "y" components (through l2m when passed with a list.
+coo.draw(rfi, border="red", col=NA)
+    # it works since coo.draw and coo.plot retrieve "x"
+    # and "y" components (through l2m when passed with a list.
 }
 
 \keyword{radii variation Fourier analysis}

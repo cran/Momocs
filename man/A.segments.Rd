@@ -30,9 +30,11 @@ No returned value.
 }
 
 \examples{
-data(gorf.dat) # we import gorf.data from shapes
+	\dontrun{
+data(gorf.dat) # we import gorf.data from shapes package
 A.segments(gorf.dat, border.lty=2, border.col="grey95")
 m <- A.mshape(gorf.dat)
 points(m, pch=5)
+	}
 }
 \keyword{Utilities}

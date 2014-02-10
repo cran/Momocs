@@ -453,7 +453,7 @@ setGeneric(name= "clust",def=function(
   fac,
   method = "euclidean",
   type="fan",
-  palette=col.summer){standardGeneric("clust")})
+  palette=col.summer) standardGeneric("clust"))
 
 setMethod(f="clust", signature="Coe", definition=
             function (Coe,
@@ -476,7 +476,7 @@ setMethod(f="clust", signature="Coe", definition=
               Coe.hc <- hclust(dist(Coe@coe, method=method))
               op <- par(no.readonly = TRUE)
               par(oma=rep(0, 4), mar=rep(0,4))
-              plot(as.phylo(Coe.hc), tip.color=cols, type=type)
+              plot(as.phylo.hclust(Coe.hc), tip.color=cols, type=type)
               par(op)
               return(Coe.hc)})
 

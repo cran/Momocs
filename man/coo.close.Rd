@@ -27,13 +27,15 @@ Returns a matrix of \code{(x; y)}coordinates.
 }
 
 \examples{
-data(gorf.dat)
+\dontrun{
+data(gorf.dat) # we import gorf.data from shapes package
 coo <- gorf.dat[,,1]
 is.closed(coo)
 coo.c <- coo.close(coo)
 is.closed(coo.c)
 coo.cu <- coo.unclose(coo)
 is.closed(coo.cu)
+}
 }
 
 \keyword{coo Utilities}

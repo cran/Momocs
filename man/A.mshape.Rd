@@ -25,9 +25,11 @@ Returns a matrix of \eqn{(x; y)} coordinates.
 \link{A.points}, \link{A.segments}, \link{A.plot} \link{coo.plot}, and the others coo.utilities.
 }
 \examples{
-data(gorf.dat) # we import gorf.data from shapes
+	\dontrun{
+data(gorf.dat) # we import gorf.data from shapes package
 A.plot(gorf.dat, pch=20)
 m <- A.mshape(gorf.dat)
 points(m, pch=5)
+	}
 }
 \keyword{Utilities}

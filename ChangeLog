@@ -1,3 +1,7 @@
+0.2-05 - 2014-02-05
+* A CITATION file has been added
+* The frequent "Error in img[1, ] : incorrect number of dimensions" has been detailed in the help.file ?import.jpg
+
 0.2-04 - 2013-05-06
  * A new method : clust, to perform hierarchical clustering ; so far it should be considered as a preliminary version.
  * Momocs now requires the ape package.

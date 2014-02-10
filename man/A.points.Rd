@@ -31,7 +31,9 @@ No returned value.
 }
 
 \examples{
-data(gorf.dat) # we import gorf.data from shapes
+	\dontrun{
+data(gorf.dat) # we import gorf.data from shapes package
 A.points(gorf.dat)
+	}
 }
 \keyword{Utilities}

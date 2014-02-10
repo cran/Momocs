@@ -16,10 +16,13 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
 	star = TRUE, col.star = "grey60", cstar = 1,
 	ellipses = TRUE, col.ellipse = "grey30", cellipse = 1, axesell = TRUE,
 	chull = FALSE, col.chull = "grey30", optchull = c(0.5, 1),
-	arrows = FALSE, edge.arrow = FALSE, box.arrow = TRUE, maxnb.arrow = 10, dratio.arrow = 0.2,
+	arrows = FALSE, edge.arrow = FALSE,
+	        box.arrow = TRUE, maxnb.arrow = 10, dratio.arrow = 0.2,
 	shapes = TRUE, pos.shp=c("li", "circle", "range", "full")[3], 
-		nr.shp = 6, nc.shp = 5, amp.shp = 1, scale.shp = 0.666, first.point.shp = FALSE, rotate.shp=0,
-		circle.nb.shp = 12, circle.r.shp, col.shp = "#70809011", border.shp = "#708090",
+		nr.shp = 6, nc.shp = 5, amp.shp = 1,
+		scale.shp = 0.666, first.point.shp = FALSE, rotate.shp=0,
+		circle.nb.shp = 12, circle.r.shp,
+		col.shp = "#70809011", border.shp = "#708090",
 	rug = TRUE, rug.ticksize = 0.01, rug.col = "#708090",
 	eigen = FALSE, eigen.ratio = 0.2,
 	palette = col.sari, title = substitute(dudi), center.orig = FALSE, zoom.plot = 1)
@@ -96,7 +99,7 @@ Dray, S. and Dufour, A.B. and Chessel, D. (2007): The ade4 package-II: Two-table
 }
 \examples{
 data(bot)
-botF <- eFourier(bot)
+botF <- eFourier(bot, nb.h=32)
 botD <- pca(botF)
 dudi.plot(botD)
 dudi.plot(botD, 1, title="botD with no class but with ellipses")
@@ -111,14 +114,17 @@ dudi.plot(botD, 1, arrows=TRUE, dratio.arrow=0.2, shapes=FALSE,
 	title="botD with harmonic correlations")
 # With some fake factors
 botD <- pca(botF)
-dudi.plot(botD, "type", palette=col.gallus, rotate.shp=pi/2, title="botD with classes") # rotated shapes
+dudi.plot(botD, "type", palette=col.gallus,
+    rotate.shp=pi/2, title="botD with classes") # rotated shapes
 dudi.plot(botD, "type", palette=col.gallus, eigen=TRUE, title="botD with eigen values")
 dudi.plot(botD, "type", pos.shp="full", title="botD with shapes(1)")
 dudi.plot(botD, "type", pos.shp="range", scale.shp=0.5, shapes=TRUE,
-	border.shp="firebrick3", col.shp=NA, center.orig=TRUE, zoom.plot=0.8, title="botD with shapes(2)")
+	border.shp="firebrick3", col.shp=NA, center.orig=TRUE, 
+	zoom.plot=0.8, title="botD with shapes(2)")
 dudi.plot(botD, "type", pos.shp="circle", center.orig=TRUE, title="botD with shapes(3)")
 dudi.plot(botD, "type", pos.shp="range", scale.shp=0.5, title="botD with shapes(4)")
-dudi.plot(botD, pos.shp=as.matrix(expand.grid(seq(-0.05, 0.05, 0.025), seq(-0.05, 0.05, 0.025)))) # an example with a matrix provided to pos.shp
+dudi.plot(botD, pos.shp=as.matrix(expand.grid(seq(-0.05, 0.05, 0.025),
+    seq(-0.05, 0.05, 0.025)))) # an example with a matrix provided to pos.shp
 
 }
 \keyword{Multivariate Analysis}

@@ -26,7 +26,9 @@ Returns a \code{list} with \code{x; y} components.
 }
 
 \examples{
+	\dontrun{
 data(gorf.dat)
 m2l(gorf.dat[,,1])
+}
 }
 \keyword{coo Utilities}

@@ -47,7 +47,8 @@ tf <- tfourier(bot@coo[[1]], 24)
 tfourier.shape(tf$an, tf$bn) # equivalent to rfourier.i(rf)
 tfourier.shape()
 tfourier.shape(nb.h=6, alpha=0.4, nb.pts=500)
-panel(Coo(replicate(100, coo.force2close(l2m(tfourier.shape(nb.h=6, alpha=2, nb.pts=200, plot=FALSE)))))) # biological shapes
+panel(Coo(replicate(100, coo.force2close(l2m(
+    tfourier.shape(nb.h=6, alpha=2, nb.pts=200, plot=FALSE)))))) # biological shapes
 }
 
 

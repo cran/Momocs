@@ -9,8 +9,9 @@ Calculates and displays the contribution of every harmonic.
 \code{hcontrib} applies \code{amp.h} values for each of the \code{harm.range} harmonics when reconstruction shapes. This thus help to visualize the respective contribution of every harmonic, in other words their contribution in describing shapes.
 }
 \usage{
-hcontrib(Coe, id = 1, harm.range = 1:floor(Coe@nb.h / 4), amp.h   = c(0, 0.5, 1, 2, 5, 10),
-                     palette = col.sari, title   = "Harmonic contribution")
+hcontrib(Coe, id = 1, harm.range = 1:floor(Coe@nb.h / 4),
+    amp.h   = c(0, 0.5, 1, 2, 5, 10),
+    palette = col.sari, title   = "Harmonic contribution")
 }
 \arguments{
 	\item{Coe}{The \code{Coe} object}

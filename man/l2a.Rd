@@ -25,10 +25,12 @@ An array of coordinates.}
 }
 
 \examples{
+	\dontrun{
 data(gorf.dat)
 l <- a2l(gorf.dat)
 a <- l2a(l)
 A.plot(a)
+	}
 }
 
 \keyword{coo Utilities}

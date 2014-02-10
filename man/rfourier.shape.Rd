@@ -50,7 +50,8 @@ rfourier.shape() # not very interesting
 rfourier.shape(nb.h=12) # better
 rfourier.shape(nb.h=6, alpha=0.4, nb.pts=500)
 
-panel(Coo(replicate(100, l2m(rfourier.shape(nb.h=6, alpha=0.4, nb.pts=200, plot=FALSE))))) # Butterflies
+panel(Coo(replicate(100, l2m(rfourier.shape(
+    nb.h=6, alpha=0.4, nb.pts=200, plot=FALSE))))) # Butterflies
 }
 
 \keyword{radii variation Fourier analysis}
