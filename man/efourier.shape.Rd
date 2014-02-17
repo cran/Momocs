@@ -55,7 +55,8 @@ efourier.shape(nb.h=12)
 efourier.shape(nb.h=12, alpha=0.5)
 
 panel(Coo(replicate(100, l2m(efourier.shape(nb.h=6, alpha=2.5, plot=FALSE))))) # Bubble family
-panel(Coo(replicate(100, l2m(efourier.shape(nb.h=12, alpha=0.5, nb.pts=80, plot=FALSE)))))# some doodle
+panel(Coo(replicate(100, l2m(
+    efourier.shape(nb.h=12, alpha=0.5, nb.pts=80, plot=FALSE)))))# some doodle
 
 }
 

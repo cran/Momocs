@@ -4,6 +4,22 @@ exportClasses(
      "Coe" 
 )
 
+exportMethods("[", "[<-", "plot","clust", "pca")
+importFrom(ape, as.phylo.hclust)
+importFrom(jpeg, readJPEG)
+importFrom(sp, spsample)
+importFrom(sp, Polygon)
+importFrom(spdep, tri2nb)
+importFrom(ade4, dudi.pca)
+importFrom(ade4, s.label)
+importFrom(ade4, nb2neig)
+importFrom(ade4, s.class)
+importFrom(ade4, s.chull)
+importFrom(ade4, s.arrow)
+importFrom(ade4, add.scatter.eig)
+importFrom(shapes, procGPA)
+importFrom(methods, showDefault)
+
 # exportMethods(
 	# "[",
 	# "[<-",

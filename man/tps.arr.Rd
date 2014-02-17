@@ -39,10 +39,6 @@ tps.arr(fr, to, amp=1, palette = col.summer,
 No returned value.
 }
 
-\seealso{
-\link{tpsgrid} in \code{shapes}.
-}
-
 \examples{
 data(bot)
 botF <- eFourier(bot)

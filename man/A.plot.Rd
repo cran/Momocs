@@ -10,7 +10,8 @@ Plots an array of homologous coordinates, typically landmarks.
 }
 
 \usage{
-A.plot(A, col, palette = col.summer, xlim, ylim, border.col = NA, border.lty = 2, pch = 3, cex = 1)
+A.plot(A, col, palette = col.summer, xlim, ylim,
+    border.col = NA, border.lty = 2, pch = 3, cex = 1)
 }
 
 \arguments{
@@ -34,7 +35,9 @@ No returned value.
 \link{A.points}, \link{A.segments}, \link{A.mshape} \link{coo.plot}, and the others coo.utilities.
 }
 \examples{
-data(gorf.dat) # we import gorf.data from shapes
+	\dontrun{
+data(gorf.dat) # we import gorf.data from shapes package
 A.plot(gorf.dat, pch=20)
+	}
 }
 \keyword{Utilities}

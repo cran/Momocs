@@ -36,7 +36,8 @@ data(bot)
 coo <- bot@coo[[1]]
 coo <- coo.sample(coo, 12)
 coo.plot(coo, main="Some landmarks", points=TRUE)
-coo.plot(coo.baseline(coo), border="red", col=NA, points=TRUE, main="Reregistered using Bookstein's coordiantes")
+coo.plot(coo.baseline(coo), border="red", col=NA,
+    points=TRUE, main="Reregistered using Bookstein's coordiantes")
 abline(v=c(-0.5, 0.5), col="grey60", lty=2)
 box()
 par(def.par)

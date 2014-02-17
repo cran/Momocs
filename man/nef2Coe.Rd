@@ -46,7 +46,9 @@ NEF2COE<-function (nef.path){
   coo.i <- 1:nb.coo
   coo.beg <- (coo.i - 1) * (nb.h + 1) + 1
   coo.end <- coo.beg + nb.h
-  res <- matrix(NA, nrow = nb.coo, ncol = nb.h * 4, dimnames = list(nef[coo.beg], paste(rep(LETTERS[1:4], each = nb.h), 1:nb.h, sep = "")))
+  res <- matrix(NA, nrow = nb.coo, ncol = nb.h * 4,
+      dimnames = list(nef[coo.beg], paste(rep(LETTERS[1:4], each = nb.h),
+      1:nb.h, sep = "")))
   for (i in seq(along = coo.i)) {
     nef.i <- nef[(coo.beg[i]+1):coo.end[i]]
     x <- as.numeric(unlist(strsplit(nef.i, " ")))

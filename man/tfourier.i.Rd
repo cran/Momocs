@@ -11,7 +11,8 @@ Calculates inverse tangent angle Fourier analysis.
 }
 
 \usage{
-tfourier.i(tf, nb.h, nb.pts = 300, force2close = FALSE, rescale =TRUE, perim = 2 * pi, thetao = 0)
+tfourier.i(tf, nb.h, nb.pts = 300, force2close = FALSE,
+    rescale =TRUE, perim = 2 * pi, thetao = 0)
 }
 
 \arguments{

@@ -15,11 +15,11 @@ procGPAlign(Coo, tol=1e-30)
 
 \arguments{
   \item{Coo}{The \code{Coo} object.}
-  \item{tol}{thresold for GPA. See \link{procGPA}.}
+  \item{tol}{thresold for GPA. See \code{procGPA} in \code{shapes} package.}
   }
 
 \details{
-If landmarks are defined, their coordinates are used for the GPA alignment, with the \link{procGPA} in \code{shapes}. Then the original outlines are rotated and scaled accordingly.
+If landmarks are defined, their coordinates are used for the GPA alignment, with the \code{procGPA} in \code{shapes}. Then the original outlines are rotated and scaled accordingly.
 }
 
 \value{
@@ -27,7 +27,7 @@ Returns a \code{Coo} with centered, rotated and scaled outlines.
 }
 
 \seealso{
-\link{defLandmarks}, \link{cooLandmarks}, \link{procGPA}.
+\link{defLandmarks}, \link{cooLandmarks}.
 }
 
 

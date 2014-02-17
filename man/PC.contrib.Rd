@@ -36,7 +36,9 @@ data(bot)
 #botD <- pca(botF)
 #PC.contrib(botD)
 #PC.contrib(botD, sd=1) # only one sd
-#PC.contrib(botD, PC.r=1:3, sd=1, cols=paste(col.sari(3), "55", sep=""), borders=rep("black", 3), legend=FALSE) # only 3 PC axis and some cosmectics.
+#PC.contrib(botD, PC.r=1:3, sd=1, cols=paste(col.sari(3), "55", sep=""),
+#   borders=rep("black", 3), legend=FALSE)
+# only 3 PC axis and some cosmectics.
 }
 
 \keyword{Multivariate Analysis}
