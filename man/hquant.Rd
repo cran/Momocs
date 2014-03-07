@@ -11,10 +11,12 @@ Calculates deviations between reconstructed and best possible shapes using diffe
 }
 \usage{
 hquant(Coo, method = c("efourier", "rfourier", "tfourier"),
-                 id = 1, smooth.it = 0, harm.range = c(seq(4, 24, 4),
-                 200), norm.centsize = TRUE, dist.method = edm.nearest,
+                 id = 1, smooth.it = 0, harm.range = seq(4, 20, 4),
+                 norm.centsize = TRUE,
+                 dist.method = edm.nearest, dist.nbpts = 120,
                  plot = TRUE, dev.plot = TRUE, title = "Deviations along the outline",
-                 legend = TRUE, palette = col.summer, lineat.y = c(0.5, 0.1, 0.01))
+                 legend = TRUE, legend.title = "# harmonics",
+                 palette = col.summer, lineat.y = c(0.5, 0.1, 0.01))
 }
 \arguments{
 	\item{Coo}{The \code{Coo} object}
@@ -24,10 +26,12 @@ hquant(Coo, method = c("efourier", "rfourier", "tfourier"),
 	\item{harm.range}{A \code{vector} of \code{integer} giving the harmonic range to calculate. See \code{nb.h} for \code{harm.pow}.}
 	\item{norm.centsize}{\code{logical}. Whether to normalize distances by the centroid size of every outline.}
 	\item{dist.method}{A distance method to use, e.g. either \link{edm.nearest} or \link{edm}.}
+	\item{dist.nbpts}{\code{integer}. The number of points to sample along the outlines to calculate the deviations. It can be set to "max" and the maximum number of points will be used, e.g. twice the number of the highest possible number of harmonics on the outline(s) analysed.}
 	\item{plot}{\code{logical}. Whether to plot or not the shape. If \code{FALSE}, only the results are returned.}
 	\item{dev.plot}{\code{logical}. Whether to plot or not the deviation plot.}
 	\item{title}{A title for the plot.}
 	\item{legend}{\code{logical}. Whether to display a legend box.}
+	\item{legend.title}{\code{character}. A title for the legend box.}
 	\item{palette}{A color palette such those included in Momocs or produced with \link{colorRampPalette}.}
 	\item{lineat.y}{A \code{vector} of \code{numeric} to specify where to plot dashed lines on the y-axis.}
 }

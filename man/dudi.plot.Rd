@@ -20,12 +20,14 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
 	        box.arrow = TRUE, maxnb.arrow = 10, dratio.arrow = 0.2,
 	shapes = TRUE, pos.shp=c("li", "circle", "range", "full")[3], 
 		nr.shp = 6, nc.shp = 5, amp.shp = 1,
-		scale.shp = 0.666, first.point.shp = FALSE, rotate.shp=0,
+		scale.shp = 0.666, nb.pts.shp=300,
+		first.point.shp = FALSE, rotate.shp=0,
 		circle.nb.shp = 12, circle.r.shp,
 		col.shp = "#70809011", border.shp = "#708090",
 	rug = TRUE, rug.ticksize = 0.01, rug.col = "#708090",
 	eigen = FALSE, eigen.ratio = 0.2,
-	palette = col.sari, title = substitute(dudi), center.orig = FALSE, zoom.plot = 1)
+	palette = col.sari, title = substitute(dudi), legend=FALSE,
+	center.orig = FALSE, zoom.plot = 1)
 }
 \arguments{
   \item{dudi}{a dudi.pca object.}
@@ -65,6 +67,7 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   \item{nc.shp}{\code{numeric}. The number of shape columns.}
   \item{amp.shp}{\code{numeric}. An amplifying factor for shape deformation.}
   \item{scale.shp}{\code{numeric}. The size of shapes, relatively to grid size (0.5 = half of the grid size).}
+  \item{nb.pts.shp}{\code{numeric}. The number of point to use to reconstruct shapes.}
   \item{first.point.shp}{\code{logical}. Whether to plot or not the first point when plotting shapes.}
   \item{rotate.shp}{\code{numeric}. If specified, the angles (in radians) to counter-clockwise rotate shapes plotted.}
   \item{circle.nb.shp}{\code{integer}. When \code{pos == "circle"}, the number of shapes on the circle.}
@@ -78,8 +81,9 @@ dudi.plot(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   \item{eigen.ratio}{\code{numeric}. The relative size of the eigen values barplot.}
   \item{palette}{A color palette for group colors such as those produced by \link{colorRampPalette}.}
   \item{title}{A \code{character} string to be add on the graph.}
+  \item{legend}{\code{logical}. Whether to add or not a legend.}.
   \item{center.orig}{\code{logical}. Whether to center the graphical window on the origin.}
-  \item{zoom.plot}{\code{numeric}. Will help you to keep your distances.}
+  \item{zoom.plot}{\code{numeric}. Will help you to keep your distances, e.g. the value of magnification. Requires \code{center.orig} to be set true.}
 }
 \details{
 This function takes the slightly modified \code{dudi.pca} object, obtained with \link{pca} on a \code{Coe} object and widely hinges on \code{ade4} plotting facilities and graphical layers. Notice that besides dedicated \emph{shapes} argument and options, it can be used for plotting factorial maps on "regular" \code{dudi.pca} objects. By default, \code{shapes} is set to \code{FALSE} for \link{tFourier} analyses since the reconstruction of shapes do not always lead to closed shapes (see Rohlf F, Archie J. 1984. A comparison of Fourier methods for the description of wing shape in mosquitoes (Diptera: Culicidae). Systematic Biology: 302-317.).

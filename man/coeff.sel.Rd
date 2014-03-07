@@ -27,6 +27,11 @@ coeff.sel(retain = 8, drop = 0, nb.h = 32, cph = 4)
 \examples{
 coeff.sel(retain=8, drop=0, nb.h=12)        #efourier 
 coeff.sel(retain=8, drop=0, nb.h=12, cph=2) #r/tfourier
+
+# if you want to export the matrix of coefficients but only the first 6 colums.
+data(bot)
+bot.f <- eFourier(bot, nb.h=12)
+bot.f@coe[, coeff.sel(6, 0, 12)]
 }
 \keyword{Utilities}
 

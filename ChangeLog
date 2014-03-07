@@ -1,3 +1,15 @@
+0.2-06 - 2014-02-18
+* Now dudi.plot allows to specify the number of points for reconstructed outlines
+* Now if a 'pch.points' is passed to dudi.plot, it properly defines the pch of the points, and is no longer based on the factor provided (if any).
+ * dudi.plot gains a 'legend' argument.
+* A bug in pca2shp related to the specification of the number of points has been corrected
+* A bug in sampling points in the three methods has been corrected
+* Argument "zoom.plot" now works but needs (so far) "center.origin" to be set TRUE.
+* A bug in coo.plot has been corrected. Now when the nb of points in coo is <= 100, points are plotted by default, unless points is set FALSE.
+* hqual gains an argument 'legend.title', and now samples one of the outline within the Coo to ease qualitative reconstruction throughut the dataset
+* hquant now calculates much deviations much faster (on 120 points), gains an argument 'legend.title', plus various slight improvements in the code.
+* import.img.Conte now looks for the first point downwards (not leftwards). Ie, the first point will be found in the bottom of the images.
+
 0.2-05 - 2014-02-05
 * A CITATION file has been added
 * The frequent "Error in img[1, ] : incorrect number of dimensions" has been detailed in the help.file ?import.jpg

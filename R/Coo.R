@@ -14,8 +14,8 @@ setClass(
                  coo.closed = "logical",
                  details    = "list"),
   validity=function(object){
-    if(any(lapply(object@coo, class) != "matrix")) cat("A list of coordinates as 2-col matrices must be provided\n")
-    if(any(lapply(object@coo, ncol)  != 2))        cat("A list of coordinates as 2-col matrices must be provided\n")
+    if(any(lapply(object@coo, class) != "matrix")) cat(" * A list of coordinates as 2-col matrices must be provided.\n")
+    if(any(lapply(object@coo, ncol)  != 2))        cat(" * A list of coordinates as 2-col matrices must be provided.\n")
   }
 )
 
@@ -33,8 +33,9 @@ Coo <- function(coo, ...){
        ldk=coo@ldk, ...))
    } else {
   if (is.matrix(coo)) coo <- list(coo) #if only one shape is provided
-  if(is.array(coo)) coo <- a2l(coo)
-	if(is.null(names(coo))) {names(coo) <- paste("shp", 1:length(coo), sep="")}
+  if(is.array(coo))   coo <- a2l(coo)
+	if(is.null(names(coo))) {
+    names(coo) <- paste("shp", 1:length(coo), sep="") }  
 	new(Class="Coo",
 		coo=coo,
         names=names(coo),
@@ -73,7 +74,7 @@ setReplaceMethod(f = "[", signature = "Coo", definition =
            "fac"    = {x@fac      <- as.data.frame(value)},
            "ldk"    = {x@ldk   <- value },
            "details"= {x@details <- as.character(value)},
-           stop("This attribute does not exist or cannot be modified"))
+           stop(" * This attribute does not exist or cannot be modified."))
     validObject(x)
     return(x)})
 
@@ -97,19 +98,19 @@ setMethod(f="show", signature="Coo", definition=function(object){
   
   if (ncol(object@fac)!=0) cat(" -", ncol(object@fac), "grouping factor(s) defined\n") else cat(" - No groups defined\n")
   
-  cat("\nCoordinates: @coo\n")
+  eg <- sample(object@coo.nb, 1)
+  cat("\nCoordinates: @coo (e.g. '", object@names[eg], "')\n", sep="")
   cat(rep("-", 20),"\n", sep="")
-  k <- ifelse (nrow(object@coo[[1]]) < 4, nrow(object@coo[[1]]), 4)
-  print(object@coo[[1]][1:k,])
-  cat("...\n")
+  k <- ifelse (nrow(object@coo[[eg]]) < 4, nrow(object@coo[[eg]]), 4)
+  print(object@coo[[eg]][1:k,])
   
   cat("\nNames: @names\n")
   cat(rep("-", 20),"\n", sep="")
   if(object@coo.nb>20) {
-    cat(object@names[1:20], fill=60)
+    cat(object@names[1:20], fill=120)
     cat("\n...") 
   } else {
-    cat(object@names, fill=60)}
+    cat(object@names, fill=120)}
   cat("\n")
   
   if (ncol(object@fac)){
@@ -231,7 +232,7 @@ setMethod(f="Coo.template", signature="Coo", definition=function(Coo, size=1){
 
 setGeneric(name= "Coo.slide",   def=function(Coo, ...){standardGeneric("Coo.slide")})
 setMethod(f="Coo.slide", signature="Coo", definition=function(Coo, ldk.id=1){
-  if (length(Coo@ldk)==0) stop("First define landmarks on the Coo object. See ?defLandmarks")
+  if (length(Coo@ldk)==0) stop(" * First define landmarks on the Coo object. See ?defLandmarks.")
   Coo2 <- Coo
   for (i in 1:Coo@coo.nb) {
     Coo2@coo[[i]] <- coo.slide(Coo@coo[[i]], Coo@ldk[[i]][ldk.id])
@@ -241,7 +242,7 @@ setMethod(f="Coo.slide", signature="Coo", definition=function(Coo, ldk.id=1){
 
 setGeneric(name= "Coo.close",   def=function(Coo, ...){standardGeneric("Coo.close")})
 setMethod(f="Coo.close", signature="Coo", definition= function(Coo){
-  if (all(Coo@coo.closed)) return(cat("All outlines were already closed\n"))
+  if (all(Coo@coo.closed)) return(cat(" * All outlines were already closed.\n"))
   coo2close <- !Coo@coo.closed
   lapply(Coo@coo[coo2close], coo.close)
   Coo@coo.closed[coo2close] <- TRUE
@@ -250,7 +251,7 @@ setMethod(f="Coo.close", signature="Coo", definition= function(Coo){
 
 setGeneric(name= "Coo.unclose",   def=function(Coo, ...){standardGeneric("Coo.unclose")})
 setMethod(f="Coo.unclose", signature="Coo", definition= function(Coo){
-  if (!all(Coo@coo.closed)) return(cat("All outlines were already unclosed\n"))
+  if (!all(Coo@coo.closed)) return(cat(" * All outlines were already unclosed.\n"))
   coo2unclose <- Coo@coo.closed
   lapply(Coo@coo[coo2unclose], coo.unclose)
   Coo@coo.closed[coo2unclose] <- FALSE
@@ -260,7 +261,7 @@ setMethod(f="Coo.unclose", signature="Coo", definition= function(Coo){
 # Landmarks and cie
 setGeneric(name= "defLandmarks",   def=function(Coo, nb.ldk){standardGeneric("defLandmarks")})
 setMethod(f="defLandmarks", signature="Coo", definition=function(Coo, nb.ldk){
-  if (missing(nb.ldk)) stop("nb.ldk must be specified")
+  if (missing(nb.ldk)) stop(" * 'nb.ldk' must be specified.")
   ldk <- list()
   for (i in seq(along=Coo@coo)){
     Coo@ldk[[i]] <- coo.ldk(Coo@coo[[i]], nb.ldk=nb.ldk)
@@ -270,7 +271,7 @@ setMethod(f="defLandmarks", signature="Coo", definition=function(Coo, nb.ldk){
 # get array of coordinates from landmarks identified on Coo object
 setGeneric(name= "cooLandmarks",   def=function(Coo){standardGeneric("cooLandmarks")})
 setMethod(f="cooLandmarks", signature="Coo", definition=function(Coo){
-  if (length(Coo@ldk)==0) stop("No landmarks defined!")
+  if (length(Coo@ldk)==0) stop(" * No landmarks defined. See ?defLandmarks.")
   nb.ldk <- length(Coo@ldk[[1]])
   cooA <- array(NA, dim=c(nb.ldk, 2, Coo@coo.nb),
                 dimnames=list(paste("ldk", 1:nb.ldk, sep=""),
@@ -295,7 +296,7 @@ setGeneric(name= "procGPAlign",   def=
   function(Coo, tol=1e-30){standardGeneric("procGPAlign")})
 setMethod(f="procGPAlign", signature="Coo", definition=
   function(Coo, tol=1e-30){
-  if (length(Coo@ldk)==0) stop("No landmarks defined!")
+  if (length(Coo@ldk)==0) stop(" * No landmarks defined. See ?defLandmanarks.")
   Coo2 <- Coo
   Coo2@coo <- lapply(Coo@coo, function(x) coo.scale(coo.center(x)))
   ref  <- cooLandmarks(Coo2)
@@ -348,10 +349,10 @@ setMethod(f="eFourier", signature="Coo", definition=
     q <- floor(min(Coo@coo.len)/2) - 1
     if (missing(nb.h))  {
       nb.h <- if (q >= 32) { 32 } else { q }
-      cat(paste("  * nb.h not provided and set to", nb.h))}
+      cat(paste(" * 'nb.h' not provided and set to", nb.h))}
     if(nb.h  > (q+1)*2) {
       nb.h <- q # should not be 1
-      warning("At least one outline has ", (q+1)*2, " coordinates. The number of harmonics has been set to: ", q)}
+      warning(" * At least one outline has ", (q+1)*2, " coordinates. The number of harmonics has been set to: ", q)}
     coo <- Coo@coo
     col.n <- paste0(rep(LETTERS[1:4], each = nb.h), rep(1:nb.h, times = 4))
     coe <- matrix(ncol = 4 * nb.h, nrow = length(coo), dimnames = list(names(coo), col.n))
@@ -427,7 +428,7 @@ setMethod(f="tFourier", signature="Coo", definition=
 setGeneric(name= "hqual",     def=function(
    Coo,
    method = c("efourier", "rfourier", "tfourier"), 
-   id        = 1,
+   id        = sample(Coo@coo.nb, 1),
    smooth.it = 0,
    harm.range= c(1, 2, 4, 8, 16, 32),
    scale = TRUE,
@@ -435,6 +436,7 @@ setGeneric(name= "hqual",     def=function(
    align = TRUE,
    plot.method = c("stack", "panel")[1],
    legend = TRUE,
+   legend.title = "# harmonics",
    palette = col.summer,
    shp.col="#70809033",
    shp.border="#708090EE"){standardGeneric("hqual")})
@@ -442,7 +444,7 @@ setGeneric(name= "hqual",     def=function(
 setMethod(f="hqual", signature="Coo", definition=
   function(Coo,
            method = c("efourier", "rfourier", "tfourier"),
-           id        = 1,
+           id        = sample(Coo@coo.nb, 1),
            smooth.it = 0,
            harm.range= c(1, 2, 4, 8, 16, 32),
            scale = TRUE,
@@ -450,29 +452,26 @@ setMethod(f="hqual", signature="Coo", definition=
            align = TRUE,
            plot.method = c("stack", "panel")[1],
            legend = TRUE,
+           legend.title = "# harmonics",
            palette = col.summer,
            shp.col="#70809033",
            shp.border="#708090EE"){
-    # for one signle outline
+    # for one single outline
     if (missing(method)) {
-      cat("  * Method not provided. efourier is used.\n")
+      cat(" * Method not provided. efourier is used.\n")
       method   <- efourier
       method.i <- efourier.i 
       } else {
       p <- pmatch(tolower(method), c("efourier", "rfourier", "tfourier"))
-      if (is.na(p)) { warning("  * Unvalid method. efourier is used.\n")
+      if (is.na(p)) { warning(" * Unvalid method. efourier is used.\n")
         } else {
         method   <- switch(p, efourier,   rfourier,   tfourier)
         method.i <- switch(p, efourier.i, rfourier.i, tfourier.i)}}
     
-    # check for harm.range
-    q <- min(Coo@coo.len)
-    if (missing(harm.range)) {
+    # check for too ambitious harm.range
+    if (max(harm.range) > (min(Coo@coo.len)/2 + 1)) {
       harm.range <- floor(seq(1, q/2 - 1, length=6))
-      cat("  * harm.range was missing and set to: ", harm.range, ".\n")}
-    if (max(harm.range) > (q/2 + 1)) {
-      harm.range <- floor(seq(1, q/2 - 1, length=6))
-      cat("  * harm.range was too high and set to: ", harm.range, ".\n")}
+      cat(" * harm.range was too high and set to: ", harm.range, ".\n")}
     coo <- Coo@coo[[id]]
     if (scale)  coo <- coo.scale(coo)
     if (center) coo <- coo.center(coo)
@@ -486,11 +485,11 @@ setMethod(f="hqual", signature="Coo", definition=
     cols <- paste(palette(length(harm.range)), "88", sep="")
     if (plot.method=="stack") {
       coo.plot(coo.smooth(coo, smooth.it), main=Coo@names[id], col=shp.col, border=shp.border)
-      for (i in seq(along=harm.range)) {lines(res[[i]], col=cols[i], lwd=2)}
+      for (i in seq(along=harm.range)) {lines(res[[i]], col=cols[i], lwd=1)}
       if (legend) {
         legend("topright", legend = as.character(harm.range), bty="o",
                col = cols, lty = 1, lwd=1, bg="#FFFFFFCC", cex=0.7,
-               title = "Number of harmonics")}
+               title = legend.title)}
       if (center) {points(0, 0, pch=3, col=shp.col)}
     } else {
       if (plot.method=="panel") {
@@ -506,13 +505,15 @@ setGeneric(name= "hquant", def=function(
   method = c("efourier", "rfourier", "tfourier"),
   id        = 1,
   smooth.it = 0,
-  harm.range= c(seq(4, 24, 4), 200),
+  harm.range = seq(4, 20, 4),
   norm.centsize = TRUE,
-  dist.method = edm.nearest, 
+  dist.method = edm.nearest,
+  dist.nbpts = 120,
   plot = TRUE,
   dev.plot=TRUE,
   title = "Deviations along the outline",
   legend = TRUE,
+  legend.title = "# harmonics",
   palette = col.summer,
   lineat.y=c(0.5, 0.1, 0.01)){standardGeneric("hquant")})
 
@@ -521,13 +522,15 @@ setMethod(f="hquant", signature="Coo", definition=
            method = c("efourier", "rfourier", "tfourier"),
            id        = 1,
            smooth.it = 0,
-           harm.range= c(4, 12, 24, 80),
+           harm.range= seq(4, 20, 4),
            norm.centsize = TRUE,
-           dist.method = edm.nearest, 
+           dist.method = edm.nearest,
+           dist.nbpts = 120,
            plot = TRUE,
            dev.plot=TRUE,
            title = "Deviations along the outline",
            legend = TRUE,
+           legend.title = "# harmonics",
            palette = col.summer,
            lineat.y=c(0.5, 0.1, 0.01)){
     if (missing(method)) {
@@ -543,22 +546,13 @@ setMethod(f="hquant", signature="Coo", definition=
     # We define the highest possible nb.h along Coo@coo[id]
     min.nb.pts <- min(unlist(lapply(Coo@coo[id], nrow)))
     nb.h.best  <- floor(min.nb.pts/2)-1
-    # we handle harm.range missing or too ambitious
-    if (missing(harm.range)) {
-      if (nb.h.best > 32) {
-        harm.range <- c(floor(seq(4, 32, length=5)), nb.h.best)
-        } else {
-        harm.range <- floor(seq(4, nb.h.best, length=6))}
-      cat("  * harm.range was missing and set to: ", harm.range, ".\n")}
+    # we handle too ambitious harm.range
     if (max(harm.range) > nb.h.best) {
-      if (nb.h.best > 32) {
-        harm.range <- c(floor(seq(4, 32, length=5)), nb.h.best)
-      } else {
-        harm.range <- floor(seq(4, nb.h.best, length=6))}
-      cat("  * harm.range was too high and set to: ", harm.range, ".\n")}
+        harm.range <- floor(seq(4, nb.h.best, length=6))
+      cat("  * 'harm.range' was too high and set to: ", harm.range, ".\n")}
     
     # we prepare the results array
-    nb.pts <- 2*nb.h.best
+    nb.pts <- ifelse(dist.nbpts == "max", 2*nb.h.best, dist.nbpts)
     nr <- length(harm.range)
     nc <- nb.pts
     nk <- length(id)
@@ -573,7 +567,7 @@ setMethod(f="hquant", signature="Coo", definition=
     # the core loops that will calculate deviations
     for (ind in seq(along=id)) {
       coo <- Coo@coo[[id[ind]]]
-      # below, the best possible shape
+      # below, the best possible fit
       coo.best <- l2m(method.i(method(coo, nb.h=nb.h.best, smooth.it=smooth.it), nb.pts=nb.pts))
       for (i in seq(along=harm.range)) {
         # for each number of harmonics we calculate deviation with the FUN=method
@@ -583,9 +577,9 @@ setMethod(f="hquant", signature="Coo", definition=
       # we normalize by the centroid size
       if (norm.centsize) {res[,,ind] <- res[,,ind]/coo.centsize(coo)}
       if (t) setTxtProgressBar(pb, ind)}
-    # we manage below for single shape
-    if (nk > 1) {
-      m <- apply(res, 1:2, mean)
+    # below we manage for single/several individuals
+    if (nk > 1) { # if more than 1, we calculate median and sd
+      m <- apply(res, 1:2, median)
       d <- apply(res, 1:2, sd)
     } else {
       m <- res[,,1]
@@ -594,8 +588,16 @@ setMethod(f="hquant", signature="Coo", definition=
     if (plot) {
       cols <- palette(nr)
       if (nk > 1) {ylim <- c(0, max(m+d, na.rm=TRUE))} else {ylim <- range(m)}
+      if (norm.centsize) {
+        ylab = "Deviation (in % of the centroid size)"
+      } else {
+        ylab = "Deviation (in original units)"}
       plot(NA, xlim=c(1, nc), ylim=ylim,
-           xlab="Points sampled along the outline",  ylab="Deviation", main=title)
+           xlab="Points sampled along the outline",
+           ylab=ylab, main=title,
+           xaxs="i", yaxs="i", axes=FALSE)
+      axis(1, at=seq(0, dist.nbpts, length=5))
+      axis(2)
       abline(h=lineat.y, lty=2, col="grey90")
       # if you want deviations, here they are
       if (dev.plot) {
@@ -606,7 +608,7 @@ setMethod(f="hquant", signature="Coo", definition=
       if (legend) {
         legend("topright", legend = as.character(harm.range), bty="o",
                col = cols, lty = 1, lwd=1, bg="#FFFFFFCC", inset=0.005, cex=0.7,
-               title = "Number of harmonics")}
+               title = legend.title)}
       box() }
     return(list(res=res, m=m, d=d))})
 
@@ -749,5 +751,3 @@ setMethod(f="smooth.qual", signature="Coo", definition=
     }
     legend("topright", legend = as.character(smooth.range), 
            col = cols, lty = 1, bty = "o", bg="#FFFFFFCC", cex=0.7, title = "Smooth iterations")})
-
-# end Coe.R

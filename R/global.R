@@ -255,6 +255,8 @@ coo.plot       <- function(coo=NA, col="#F5F5F5",
     polygon(coo, col=col, border=border, lwd=lwd, lty=lty)
     if (first.point) {points(coo[1, 1], coo[1, 2], col = border, pch=20, ...)}
 }
+  if ((!missing(coo) & missing(points))) {
+    if (nrow(coo)<=100) points(coo, pch=pch, cex=cex, col=points.col)}
   if ((!missing(coo) & points)) {
     points(coo, pch=pch, cex=cex, col=points.col)}
   if (!missing(coo) & centroid) {
@@ -568,6 +570,7 @@ import.img.Conte <-
   {
     #if (class(img)[1] != "imagematrix") {
     #  stop("An 'imagematrix' object is expected")}2befixe...ReadImages
+    img <- t(img[nrow(img):1,])
     if (missing(x)) {
       if (auto) {
         x <- round(dim(img)/2)
@@ -726,18 +729,17 @@ efourier  <- function (coo, nb.h = 32, smooth.it = 0, silent = FALSE) {
   if (is.closed(coo)) coo <- coo.unclose(coo)
   if (missing(nb.h))  {
     nb.h <- length(coo$x)/2 - 1 # should not be 1
-    warning(paste("nb.h not provided and set to", nb.h))}
+    warning(paste(" * 'nb.h' not provided and set to", nb.h))}
   if(nb.h * 2 > length(coo$x)) {
     nb.h = floor(length(coo$x)/2)-1 # should not be -1
     if (!silent){
-    warning("The number of harmonics to calculate should be lower than half the number of points. 
-    The number of harmonics used has been set to: ", nb.h)}}
+    warning(" * The number of harmonics to calculate should be lower than half the number of points. 
+    'The number of harmonics used 'nb.h' has been set to: ", nb.h)}}
   if (nb.h == -1) {
     nb.h = floor(length(coo$x)/2)-1 # should not be -1
     if (!silent){
-    cat("The number of harmonics used has been set to: ", nb.h)}}
+    cat(" * The number of harmonics used has been set to: ", nb.h)}}
   if (smooth.it!=0) { coo <- coo.smooth(coo, smooth.it)}
-  coo <- coo.sample(coo, nb.h * 2)
   p <- length(coo$x)
   Dx <- coo$x - coo$x[c(p, (1:p - 1))]
   Dy <- coo$y - coo$y[c(p, (1:p - 1))]
@@ -801,7 +803,6 @@ efourier.norm <- function(ef, start = FALSE) {
   rotation <- matrix(c(cos(psi), -sin(psi), sin(psi), cos(psi)), 2, 2)
   A <- B <- C <- D <- numeric(nb.h)
   if (start) {theta <- 0}
-  lnef <- NULL
   for (i in 1:nb.h) {
     mat <- size * rotation %*%
       matrix(c(ef$an[i], ef$cn[i], ef$bn[i], ef$dn[i]), 2, 2) %*%
@@ -810,7 +811,7 @@ efourier.norm <- function(ef, start = FALSE) {
       B[i] <- mat[1, 2]
       C[i] <- mat[2, 1]
       D[i] <- mat[2, 2]
-      lnef <- c(lnef, c(A[i], B[i], C[i], D[i]))}
+      lnef <- c(A[i], B[i], C[i], D[i])}
   list(A = A, B = B, C = C, D = D, size = scale, theta = theta, 
       psi = psi, ao = ef$ao, co = ef$co, lnef = lnef)}
 
@@ -851,12 +852,8 @@ rfourier <- function(coo, nb.h, smooth.it=0, norm=FALSE, silent=FALSE){
   if (smooth.it!=0) { coo <- coo.smooth(coo, smooth.it)}
   if (norm) {
     coo   <- coo.scale(coo.center(coo))
-    coo1  <- coo.sample.rr(coo, nb.h * 2)$coord
-    rsize <- mean(apply(coo1, 1, function(x) sqrt(sum(x^2))))
-    coo   <- coo.scale(coo, 1/rsize)
-    coo   <- coo.sample.rr(coo, nb.h * 2)$coord
-  } else {
-    coo <- coo.sample.rr(coo, nb.h * 2)$coord}
+    rsize <- mean(apply(coo, 1, function(x) sqrt(sum(x^2))))
+    coo   <- coo.scale(coo, 1/rsize)}
   
   # from Claude
   p     <- nrow(coo)
@@ -918,8 +915,7 @@ tfourier <- function(coo, nb.h, smooth.it=0, norm=FALSE, silent=TRUE){
     coo <- coo.scale(coo.center(coo))
     coo <- coo.trans(coo, -coo[1, 1], -coo[1, 2])
   }
-  
-  coo <- coo.sample(coo, nb.h * 2)
+ 
   p <- nrow(coo)
   an <- bn <- numeric(nb.h)
   tangvect <- coo - rbind(coo[p,], coo[-p,])
@@ -1009,7 +1005,6 @@ pca2shp <- function (pos, rot, mean.shp,
   nb.h <- length(mean.shp)/ifelse(p==1, 4, 2)
   n  <- nrow(pos)
   # we prepare the array
-  nb.pts <- nb.h * 2
   res <- array(NA, dim=c(nb.pts, 2, n),
                dimnames=list(paste0("pt", 1:nb.pts),
                              c("x", "y"),
@@ -1099,13 +1094,13 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
                       chull      = FALSE, col.chull="grey30", optchull = c(0.5, 1),
                       arrows     = FALSE, edge.arrow=FALSE, box.arrow=TRUE, maxnb.arrow=10, dratio.arrow=0.2, 
                       shapes     = TRUE,  pos.shp=c("li", "circle", "range", "full")[3],
-                      nr.shp=6, nc.shp=5, amp.shp=1, scale.shp=0.666, first.point.shp=FALSE, rotate.shp=0,
+                      nr.shp=6, nc.shp=5, amp.shp=1, scale.shp=0.666, nb.pts.shp=300, first.point.shp=FALSE, rotate.shp=0,
                       circle.nb.shp=12, circle.r.shp,
                       col.shp="#70809011", border.shp="#708090",      
                       rug        = TRUE, rug.ticksize=0.01, rug.col="#708090",
                       eigen      = FALSE, eigen.ratio=0.2,
                       palette    = col.sari,
-                      title      = substitute(dudi),
+                      title      = substitute(dudi), legend=FALSE,
                       center.orig= FALSE,
                       zoom.plot  = 1){
   
@@ -1122,8 +1117,9 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   if (center.orig) {
     li.2      <- apply(dudi$li[,c(xax, yax)], 2, function(x) x^2)
     li.len    <- apply(li.2, 1, function(x) sqrt(sum(x)))
-    w <- max(li.len)*(1/zoom.plot)
-    s.label(dudi$li, xax=xax, yax=yax, xlim=c(-w, w), clabel=0, cpoint=0, sub=title, grid=grid)
+    xw <- max(li.len)*(1/zoom.plot)
+    yw <- min(li.len)*(1/zoom.plot)
+    s.label(dudi$li, xax=xax, yax=yax, xlim=c(-xw, xw), ylim=c(-yw, yw), clabel=0, cpoint=0, sub=title, grid=grid)
   } else {     
     s.label(dudi$li, xax=xax, yax=yax, clabel=0, cpoint=0, sub=title, grid=grid)}
   
@@ -1134,7 +1130,7 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
   ay <- (yaxp[2] - yaxp[1])/yaxp[3]
   d <- min(ax, ay)
   
-  # we redefine the right margins
+  # we redefine shorter margins
   op <- par("mar")
   par(mar=rep(0.1, 4))
   
@@ -1204,7 +1200,7 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
         pos.shp <- as.matrix(expand.grid(seq(w[1]+d/2, w[2]-d/2, len=nr.shp),
                                          seq(w[3]+d/2, w[4]-d/2, len=nc.shp)))}}
     shapes <- morpho.space(dudi, xax=xax, yax=yax, plot=FALSE, layer=TRUE,
-                           pos.shp=pos.shp,
+                           nb.pts=nb.pts.shp, pos.shp=pos.shp,
                            nr.shp = nr.shp, nc.shp = nc.shp, amp.shp = 1, 
                            scale.shp = d*scale.shp, rotate.shp = rotate.shp,
                            circle.nb.shp = circle.nb.shp, circle.r.shp = circle.r.shp,                         
@@ -1220,7 +1216,8 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
     return(res)}
   if (!is.null(fac)) {
     nb <- table(fac)
-    pch.points <- repeach(pch.points, nb)
+    if (missing(pch.points)) {
+      pch.points <- repeach(pch.points, nb)}
     if (missing(col.points)) {
       #col.points <- repeach(palette(nlevels(fac)), nb)
       col.points <- palette(nlevels(fac))[fac]
@@ -1240,6 +1237,10 @@ dudi.plot <- function(dudi, fac = NULL, xax = 1, yax = 2, grid = TRUE,
             clabel=clabel, cpoint=0, add.plot=TRUE,
             cstar=0, col=NA, cellipse=0, axesell=FALSE)}
   
+  #legend
+  if ((legend) | (missing(legend) & !is.null(fac))) {
+    legend("topright", col=palette(nlevels(fac)), lwd=2,
+           legend=levels(fac), bty="n")}
   # eigen
   if (eigen) {
     par("mar"=op)
@@ -1484,5 +1485,4 @@ col.india  <- colorRampPalette(c("#FF9933", "#138808"))
 col.bw     <- colorRampPalette(c("#FFFFFF", "#000000"))
 col.wcol   <- function(col.hex) colorRampPalette(c("#FFFFFF", col.hex))
 col.bcol   <- function(col.hex) colorRampPalette(c("#000000", col.hex))
-
-# end of global.R
+              

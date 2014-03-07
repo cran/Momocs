@@ -1,9 +1,9 @@
-d05f80ee801251162727561328fb71f4 *ChangeLog
-ead184a1140ed0197ecdeec2d6d9b320 *DESCRIPTION
+fd9e4b7a2ff2c51872851a440f1e325f *ChangeLog
+26d2e8a3ab9e710b42bf8c867134654c *DESCRIPTION
 f4a61c9fe019c15ee23cde82bbb351dd *NAMESPACE
-023f527a4044dc5aa1d1bfc941a20972 *R/Coe.R
-6612eebfbeda53fe0bbce7841ebecbe5 *R/Coo.R
-89973f51636aa7d400ba587caed09797 *R/global.R
+fd364f7e1e5719c651d1a6f43a1cbe75 *R/Coe.R
+7e87a7b0764410d191eaef595c9ae9d0 *R/Coo.R
+6a849424035886fa525e54f0d5e0b894 *R/global.R
 a5b3b501eaa90a3f5825d4f59773858a *data/bot.rda
 d55e300b122ff66e589b556eab633197 *data/hearts.rda
 e32ad5a5e79285874b058111c7c7fc61 *data/mosquito.rda
@@ -13,7 +13,7 @@ e32ad5a5e79285874b058111c7c7fc61 *data/mosquito.rda
 6ceee8895ce91d846527bcc15c94ff87 *man/A.plot.Rd
 7b694308c2b4a446dd427828d6d80be2 *man/A.points.Rd
 bfa70cff107939f81a159e99480d2164 *man/A.segments.Rd
-9177f77602d9a1e1c56e3470edc94e5d *man/Abstract-Momocs.Rd
+66b8bee7353ad8a790338fb208bb6962 *man/Abstract-Momocs.Rd
 4d2c089cc8ab6168fbb79831600395ae *man/Class-Coe.Rd
 c1e752833990413d79fb54de279a4a53 *man/Class-Coo.Rd
 fe6b3a5a4a3f101644fc7dcab0885129 *man/Coe2nef.Rd
@@ -25,7 +25,7 @@ e663bd5db7de40d2de31f29f73abb3b3 *man/a2l.Rd
 07b96ae6b3344a2d7ea6ea39dabd9ace *man/chc2Coo.Rd
 8eaef557b222b1c765f72d757c918116 *man/chc2pix.Rd
 d78d99c20e42460275a72c2472152c33 *man/clust.Rd
-60d34121bd6f4ba0a8b0087af4c370bb *man/coeff.sel.Rd
+f999d44e722a359c0a7330272ecaed86 *man/coeff.sel.Rd
 1f405fb8b53ee9b487d23a15294632e7 *man/coeff.split.Rd
 cb3369af14e85833cc8661b650a33155 *man/color-palettes.Rd
 4c96ebcfb26524bdcbb843796ec2dddb *man/coo-oscillo.Rd
@@ -62,7 +62,7 @@ e75729696c1be2face7d1891a6998aae *man/cooLandmarks.Rd
 59a1755ad64f3594369481fe039b833e *man/dev.plot.Rd
 bff0808165b60eee6ee6e42bafb7ac7d *man/dev.segments.Rd
 b3129848d7f3c679e536030549e51c51 *man/diapo-methods.Rd
-859fd4b8a4504026be8d34e65bb1b81c *man/dudi.plot.Rd
+39162440c57539484a55a3ad81e06abd *man/dudi.plot.Rd
 2fa82d480bffc9ee8e32e735d311214c *man/eFourier-methods.Rd
 7fe5475b0860894a731218098d621c12 *man/ed.Rd
 03a8378ff1f86c576e0e611baab7956c *man/edi.Rd
@@ -78,8 +78,8 @@ d60d6ba0e551ddd38a5b5d7cfa0cb290 *man/ellipse.par.Rd
 6faee45c1c808d3ae7f25ca4abd6f095 *man/harm.pow.Rd
 2208c13e5e85bb7e9c54ee5e22508ac6 *man/hcontrib.Rd
 1b6fdd016a2cd444a4a521d1f0b05b0e *man/hpow.Rd
-ca15bf9dba4886587403d5813c2414df *man/hqual.Rd
-05900b69570315db9d2d3ac5f9217dda *man/hquant.Rd
+42bd8994a22e2da7fce38ebc2a1a155b *man/hqual.Rd
+43ff2801c0be0c46e235a01a96c4a149 *man/hquant.Rd
 9437fea5fa89bdf72741e087158d8cd3 *man/import.jpg.Rd
 5df099d65cf67bd69649dc94d577a8af *man/import.txt.Rd
 3b4882649d4550d257eab4c2bf52ca1e *man/is.closed.Rd

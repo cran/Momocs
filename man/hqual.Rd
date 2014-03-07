@@ -13,9 +13,11 @@ Displays how shapes are described with a given number of harmonics.
 
 \usage{
 hqual(Coo, method = c("efourier", "rfourier", "tfourier"),
-                 id = 1, smooth.it = 0, harm.range = c(1, 2, 4, 8, 16,
-                 32), scale = TRUE, center = TRUE, align = TRUE,
+                 id = sample(Coo@coo.nb, 1), smooth.it = 0,
+                 harm.range = c(1, 2, 4, 8, 16, 32),
+                 scale = TRUE, center = TRUE, align = TRUE,
                  plot.method = c("stack", "panel")[1], legend = TRUE,
+                 legend.title = "# harmonics",
                  palette = col.summer, shp.col = "#70809033",
                  shp.border = "#708090EE")
 }
@@ -30,6 +32,7 @@ hqual(Coo, method = c("efourier", "rfourier", "tfourier"),
 	\item{align}{\code{logical}. Whether to align or not the shape.}
 	\item{plot.method}{A plot method to use, either \link{stack} or \link{panel}.}
 	\item{legend}{\code{logical}. Whether to display a legend box.}
+	\item{legend.title}{\code{character}. A title for the legend box.}
 	\item{palette}{A color palette such those included in Momocs or produced with \link{colorRampPalette}.}
 	\item{shp.col}{A color for the shape body.}
 	\item{shp.border}{A color for the shape border.}

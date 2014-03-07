@@ -479,6 +479,4 @@ setMethod(f="clust", signature="Coe", definition=
               plot(as.phylo.hclust(Coe.hc), tip.color=cols, type=type)
               par(op)
               return(Coe.hc)})
-
-# end of Coe.R 
-
+              
