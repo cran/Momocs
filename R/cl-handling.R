@@ -41,6 +41,7 @@ select.default <- function(.data, ...){
 select.Coo <- function(.data, ...){
   #.data %<>% validate()
   .data$fac <- select(.data$fac, ...)
+  .data$fac %<>% data.frame()
   .data
 }
 
@@ -76,6 +77,7 @@ rename.default <- function(.data, ...){
 rename.Coo <- function(.data, ...){
   #.data %<>% validate()
   .data$fac <- rename(.data$fac, ...)
+  .data$fac %<>% data.frame()
   .data
 }
 
@@ -112,6 +114,7 @@ mutate.default <- function(.data, ...){
 mutate.Coo <- function(.data, ...){
   #.data %<>% validate()
   .data$fac <- mutate(.data$fac, ...)
+  .data$fac %<>% data.frame()
   .data
 }
 
@@ -148,6 +151,7 @@ transmute.default <- function(.data, ...){
 transmute.Coo <- function(.data, ...){
   #.data %<>% validate()
   .data$fac <- transmute(.data$fac, ...)
+  .data$fac %<>% data.frame()
   .data
 }
 
@@ -191,7 +195,10 @@ filter.Coo <- function(.data, ...){
   df <- .data$fac
   df <- mutate(df, .id=1:nrow(df))
   df <- filter(df, ...)
-  subset(.data, df$.id)
+  .data <- subset(.data, df$.id)
+  .data$fac %<>% data.frame()
+  .data$fac %<>% .refactor()
+  .data
 }
 
 #' @export
@@ -232,7 +239,9 @@ arrange.Coo <- function(.data, ...){
   df <- .data$fac
   df <- mutate(df, .id=1:nrow(df))
   df <- arrange(df, ...)
-  subset(.data, df$.id)
+  .data <- subset(.data, df$.id)
+  .data$fac %<>% data.frame()
+  .data
 }
 
 #' @export
@@ -271,15 +280,24 @@ slice.default <- function(.data, ...){
 #' @export
 slice.Coo <- function(.data, ...){
   #.data %<>% validate()
-  subset(.data, ...)}
+  .data %<>% subset(...)
+  .data$fac %<>% .refactor()
+  .data
+  }
 
 #' @export
 slice.Coe <- function(.data, ...){
-  subset(.data, ...)}
+  .data %<>% subset(...)
+  .data$fac %<>% .refactor()
+  .data
+  }
 
 #' @export
 slice.PCA <- function(.data, ...){
-  subset(.data, ...)}
+  .data %<>% subset(...)
+  .data$fac %<>% .refactor()
+  .data
+  }
 
 # sample_n ---------------
 
@@ -460,7 +478,8 @@ chop.Coo <- function(.data, fac){
     }
     res[[i]] <- Coo2
   }
-  return(res)}
+  return(res)
+  }
 
 #' @export
 chop.Coe <- function(.data, fac){
@@ -535,7 +554,7 @@ combine.Out <- function(...) {
   #     stop("objects to combine must have the same number of items")
   Out <- Out(do.call(c, lapply(args, function(x) c(x$coo))))
   Out$fac <- do.call("rbind", lapply(args, function(x) x$fac))
-  #Out$fac <- .refactor(Out$fac)
+  Out$fac %<>% data.frame()
   if (any(lapply(args, function(x) length(x$ldk)) != 0)) {
     Out$ldk <- do.call("c", lapply(args, function(x) x$ldk))
   }
@@ -716,7 +735,8 @@ subset.Coo <- function(x, subset, ...) {
       Coo2$fac <- data.frame(Coo2$fac)
     }
     names(Coo2$fac) <- names(Coo$fac)
-    Coo2$fac <- .refactor(Coo2$fac)
+    Coo2$fac %<>% data.frame()
+    Coo2$fac %<>% .refactor()
   }
   return(Coo2)
 }
@@ -737,7 +757,8 @@ subset.Coe <- function(x, subset, ...) {
       Coe2$fac <- data.frame(Coe2$fac)
     }
     names(Coe2$fac) <- names(Coe$fac)
-    Coe2$fac <- .refactor(Coe2$fac)
+    Coe2$fac %<>% data.frame()
+    Coe2$fac %<>% .refactor()
   }
   return(Coe2)
 }
@@ -754,7 +775,8 @@ subset.PCA <- function(x, subset, ...){
     PCA2$fac <- PCA$fac
     PCA2$fac <- as.data.frame(PCA2$fac[retain, ])
     names(PCA2$fac) <- names(PCA$fac)
-    PCA2$fac <- .refactor(PCA2$fac)
+    PCA2$fac %<>% data.frame()
+    PCA2$fac %<>% .refactor()
   }
   return(PCA2)
 }

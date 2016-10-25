@@ -2,7 +2,7 @@
 % Please edit documentation in R/coo-utilities.R
 \name{coo_trim}
 \alias{coo_trim}
-\title{Trims coordinates from shape}
+\title{Trims both ends coordinates from shape}
 \usage{
 coo_trim(coo, trim = 1)
 }
@@ -44,6 +44,10 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_slidegap}}, \code{\link{coo_slide}},
   \code{\link{coo_smoothcurve}}, \code{\link{coo_smooth}},
   \code{\link{coo_template}}, \code{\link{coo_trans}},
+  \code{\link{coo_trimbottom}}, \code{\link{coo_trimtop}},
   \code{\link{coo_up}}, \code{\link{is_closed}}
+
+Other coo_trimming functions: \code{\link{coo_trimbottom}},
+  \code{\link{coo_trimtop}}
 }
 

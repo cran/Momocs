@@ -25,6 +25,15 @@
   abline(v = g, col = "grey80", lty = 3)
   abline(v = 0, col = "grey80")
   abline(h = 0, col = "grey80")
+
+}
+
+# unit
+.unit <- function(nb.grids=3){
+  m <- max(abs(par("usr")))
+  g <- seq(0, m, length = nb.grids)
+  g <- c(g[-1] * -1, g[-1])
+  text(min(abs(g)), 0, signif(min(abs(g)), 2), cex=0.5, adj=c(0.5, 0))
 }
 
 # rug
@@ -383,3 +392,5 @@
   c(diff(.x.range.gg(gg)),
     diff(.y.range.gg(gg)))
 }
+
+

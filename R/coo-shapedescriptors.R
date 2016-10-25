@@ -5,7 +5,7 @@
 #' Returns the length and width of a shape based on their iniertia axis
 #' i.e. alignment to the x-axis. The length is defined as
 #' the range along the x-axis; the width as the range on the y-axis.
-#' @param coo a \code{matrix} of (x; y) coordinates.
+#' @param coo a \code{matrix} of (x; y) coordinates or Coo object
 #' @return a vector of two \code{numeric}: the length and the width.
 #' @seealso \link{coo_length}, \link{coo_width}.
 #' @family coo_ descriptors
@@ -13,10 +13,20 @@
 #' data(bot)
 #' coo_lw(bot[1])
 #' @export
-coo_lw <- function(coo) {
+coo_lw <- function(coo){
+  UseMethod("coo_lw")
+}
+
+#' @export
+coo_lw.default <- function(coo) {
   coo <- coo_check(coo)
   d <- apply(coo_align(coo), 2, range)
   return(abs(d[2, ] - d[1, ]))
+}
+
+#' @export
+coo_lw.Coo <- function(coo){
+  sapply(coo$coo, coo_lw)
 }
 
 #' Calculates the length of a shape
@@ -49,7 +59,7 @@ coo_length.Coo <- function(coo){
 #' Calculates the width of a shape
 #'
 #' Nothing more than \code{coo_lw(coo)[2]}.
-#' @param coo a \code{matrix} of (x; y) coordinates.
+#' @param coo a \code{matrix} of (x; y) coordinates or Coo object
 #' @return the width (in pixels) of the shape
 #' @seealso \link{coo_lw}, \link{coo_length}.
 #' @family coo_ descriptors
@@ -58,7 +68,18 @@ coo_length.Coo <- function(coo){
 #' coo_width(bot[1])
 #' @export
 coo_width <- function(coo) {
-  return(coo_lw(coo)[2])}
+  UseMethod("coo_width")
+}
+
+#' @export
+coo_width.default <- function(coo){
+  return(coo_lw(coo)[2])
+}
+
+#' @export
+coo_width.Coo <- function(coo){
+  sapply(coo$coo, coo_width)
+}
 
 # coo_area ------
 #' Calculates the area of a shape
@@ -336,7 +357,7 @@ coo_eccentricityboundingbox <- function(coo) {
 #' Calculates the elongation of a shape
 #'
 #' @param coo a \code{matrix} of (x; y) coordinates.
-#' @return numeric, the circularity normalized to the unit circle.
+#' @return numeric, the eccentricity of the bounding box
 #' @source Rosin PL. 2005. Computing global shape measures.
 #' Handbook of Pattern Recognition and Computer Vision. 177-196.
 #' @family coo_ descriptors
@@ -410,7 +431,7 @@ coo_convexity <- function(coo) {
 # coo_solidity -------
 #' Calculates the solidity of a shape
 #'
-#' Returns the ids of points that define the convex hull of a shape.
+#' Calculated using the ratio of the shape area and the convex hull area.
 #' @param coo a \code{matrix} of (x; y) coordinates.
 #' @return numeric, the solidity of a shape.
 #' @source Rosin PL. 2005. Computing global shape measures.

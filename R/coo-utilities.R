@@ -1536,7 +1536,7 @@ coo_rev.Coo <- function(coo) {
   # ldk ids (if any) also have to be changed
   if (length(coo$ldk)!=0){
     for (i in 1:length(coo)){
-      coo$ldk[[i]] <- (nrow(coo[i])+1) - coo$ldk[[i]]
+      coo$ldk[[i]] <- (nrow(coo$coo[[i]])+1) - coo$ldk[[i]]
     }
     message("$ldk has been changed accordingly")
   }
@@ -1901,13 +1901,14 @@ coo_calliper <- function(coo, arr.ind = FALSE) {
 }
 
 # coo_trim ------------------
-#' Trims coordinates from shape
+#' Trims both ends coordinates from shape
 #'
 #' Removes \code{trim} coordinates at both ends of a shape, ie
 #' from top and bottom of the shape matrix.
 #' @inheritParams coo_check
 #' @param trim \code{numeric}, the number of coordinates to trim
 #' @family coo_ utilities
+#' @family coo_trimming functions
 #' @examples
 #' olea[1] %>% coo_sample(12) %T>%
 #'    print() %T>% ldk_plot() %>%
@@ -1926,6 +1927,64 @@ coo_trim.default <- function(coo, trim=1){
 #' @export
 coo_trim.Coo <- function(coo, trim=1){
   coo$coo %<>% lapply(coo_trim, trim)
+}
+
+#' Trims top coordinates from shape
+#'
+#' Removes \code{trim} coordinates from the top of a shape.
+#' @inheritParams coo_check
+#' @param trim \code{numeric}, the number of coordinates to trim
+#' @family coo_ utilities
+#' @family coo_trimming functions
+#' @examples
+#' olea[1] %>% coo_sample(12) %T>%
+#'    print() %T>% ldk_plot() %>%
+#'    coo_trimtop(4) %T>% print() %>% points(col="red")
+#' @export
+coo_trimtop <- function(coo, trim=1){
+  UseMethod("coo_trimtop")
+}
+
+#' @export
+coo_trimtop.default <- function(coo, trim=1){
+  coo %<>% coo_check()
+  return(coo[(trim+1):nrow(coo),])
+}
+
+#' @export
+coo_trimtop.Coo <- function(coo, trim=1){
+  coo$coo %<>% lapply(coo_trimtop, trim)
+  # we also trim landmarks
+  coo$ldk %<>% lapply(function(x) x[x > trim] - trim)
+  coo
+}
+
+
+#' Trims bottom coordinates from shape
+#'
+#' Removes \code{trim} coordinates from the bottom of a shape.
+#' @inheritParams coo_check
+#' @param trim \code{numeric}, the number of coordinates to trim
+#' @family coo_ utilities
+#' @family coo_trimming functions
+#' @examples
+#' olea[1] %>% coo_sample(12) %T>%
+#'    print() %T>% ldk_plot() %>%
+#'    coo_trimbottom(4) %T>% print() %>% points(col="red")
+#' @export
+coo_trimbottom <- function(coo, trim=1){
+  UseMethod("coo_trimbottom")
+}
+
+#' @export
+coo_trimbottom.default <- function(coo, trim=1){
+  coo %<>% coo_check()
+  return(coo[1:(nrow(coo)-trim),])
+}
+
+#' @export
+coo_trimbottom.Coo <- function(coo, trim=1){
+  coo$coo %<>% lapply(coo_trimbottom, trim)
 }
 
 # end of coo_utilities

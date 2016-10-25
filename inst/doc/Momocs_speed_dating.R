@@ -158,7 +158,7 @@ plot(bot.p, 1, chull=TRUE, pos.shp = "full_axes", abbreviate.labelsgroups = TRUE
 plot(bot.p, 1, pos.shp="circle", stars=TRUE, chull.filled=TRUE, palette=col_spring)
 
 ## ------------------------------------------------------------------------
-plot2(bot.p, "type")
+# plot2(bot.p, "type") # deprecated for the moment
 
 ## ------------------------------------------------------------------------
 scree(bot.p)
@@ -191,6 +191,10 @@ MANOVA(bot.p, "type")
 
 ## ------------------------------------------------------------------------
 MANOVA_PW(bot.p, "type")
+
+## ------------------------------------------------------------------------
+bot %<>% mutate(cs=coo_centsize(.))
+bot %>% efourier %>% PCA %>% MANOVA("cs")
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  CLUST(bot.p, 1)

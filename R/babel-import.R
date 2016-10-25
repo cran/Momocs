@@ -10,17 +10,18 @@
 #' @param txt.paths a vector of paths corresponding to the .txt files to import. If not
 #' provided (or \code{NULL}), switches to the automatic version, just as in\link{import_jpg}.
 #' See Details there.
+#' @param verbose logical whether to print progress in the console
 #' @param ... arguments to be passed to \link{read.table}, eg. 'skip', 'dec', etc.
 #' @return a list of matrix(ces) of (x; y) coordinates that can be passed to
 #' \link{Out}, \link{Opn} and \link{Ldk}.
 #' @seealso babel functions.
 #' @export
-import_txt <- function(txt.paths = NULL, ...) {
+import_txt <- function(txt.paths = NULL, verbose=FALSE, ...) {
   if (is.null(txt.paths)) {
     txt.paths <- .lf.auto()
   }
-  cat(" * Extracting", length(txt.paths), "..txt coordinates...\n")
-  if (length(txt.paths) > 10) {
+  cat(" * Extracting ", length(txt.paths), "..txt coordinates...\n")
+  if (length(txt.paths) > 10 & verbose) {
     pb <- txtProgressBar(1, length(txt.paths))
     t <- TRUE
   } else {
@@ -77,7 +78,7 @@ import_Conte <- function(img, x) {
   S <- 6
   while ((any(c(X[a], Y[a]) != c(x1, x2)) | length(X) < 3)) {
     if (abs(img[x[1] + M[1, S + 1], x[2] + M[2, S + 1]] -
-              img[x[1], x[2]]) < 0.1) {
+            img[x[1], x[2]]) < 0.1) {
       a <- a + 1
       X[a] <- x[1]
       Y[a] <- x[2]
@@ -85,7 +86,7 @@ import_Conte <- function(img, x) {
       SS[a] <- S + 1
       S <- (S + 7)%%8
     } else if (abs(img[x[1] + M[1, S + 2], x[2] + M[2, S +
-                                                      2]] - img[x[1], x[2]]) < 0.1) {
+                                                    2]] - img[x[1], x[2]]) < 0.1) {
       a <- a + 1
       X[a] <- x[1]
       Y[a] <- x[2]
@@ -93,7 +94,7 @@ import_Conte <- function(img, x) {
       SS[a] <- S + 2
       S <- (S + 7)%%8
     } else if (abs(img[x[1] + M[1, S + 3], x[2] + M[2, S +
-                                                      3]] - img[x[1], x[2]]) < 0.1) {
+                                                    3]] - img[x[1], x[2]]) < 0.1) {
       a <- a + 1
       X[a] <- x[1]
       Y[a] <- x[2]
@@ -266,8 +267,8 @@ import_jpg <- function(jpg.paths = NULL, auto.notcentered = TRUE,
     jpg.paths <- .lf.auto()
   }
   begin <- Sys.time()
-  message("Extracting", length(jpg.paths), ".jpg outlines...")
-  if (length(jpg.paths) > 10) {
+  message("Extracting ", length(jpg.paths), ".jpg outlines...")
+  if (length(jpg.paths) > 10 & verbose) {
     pb <- txtProgressBar(1, length(jpg.paths))
     t <- TRUE
   } else {
@@ -279,23 +280,25 @@ import_jpg <- function(jpg.paths = NULL, auto.notcentered = TRUE,
   n <- length(jpg.paths)
   for (i in seq(along = jpg.paths)) {
     if (verbose) {
-      cat(jpg.paths[i])
+      cat("[", i, "/", n, "] ", .trim.path(jpg.paths[i]))
     }
     coo_i <- import_jpg1(jpg.paths[i], auto.notcentered = auto.notcentered,
                          fun.notcentered = fun.notcentered, threshold = threshold)
     res[[i]] <- coo_i
     # if (export){coo_export(coo_i, jpg.paths[i])}
     if (verbose) {
-      cat("\tOK - ", n-i, " remaining\n", sep = "")
+      cat("\n")
     } else {
       if (t)
         setTxtProgressBar(pb, i)
     }
   }
   names(res) <- jpg.paths %>% .trim.ext() %>% .trim.path()
-  end <- Sys.time()
-  time <- end - begin
-  cat(" * Done in", as.numeric(time), units(time))
+  if (verbose) {
+    end <- Sys.time()
+    time <- end - begin
+    message("Done in", as.numeric(time), units(time))
+  }
   return(res)
 }
 
@@ -315,6 +318,9 @@ import_jpg <- function(jpg.paths = NULL, auto.notcentered = TRUE,
 #' @family babel functions
 #' @export
 import_StereoMorph_curve1 <- function(path){
+  # tem fix
+  stop("deprecated due to major update in StereoMorph export file format. You can try the solution by Stas Malavin before this being fixed in Momocs: https://github.com/stas-malavin/Momocs/blob/master/R/importSM.r")
+
   # we split the loci contained in the first column
   df <- read.table(path, header=FALSE, stringsAsFactors = FALSE) %>%
     select(locus=1, x=2, y=3) %>%
@@ -327,6 +333,9 @@ import_StereoMorph_curve1 <- function(path){
 #' @family babel functions
 #' @export
 import_StereoMorph_curve <- function(path, names){
+  # tem fix
+  stop("deprecated due to major update in StereoMorph export file format. You can try the solution by Stas Malavin before this being fixed in Momocs: https://github.com/stas-malavin/Momocs/blob/master/R/importSM.r")
+
   # we extract filenames and import them
   lf <- list.files(path, full.names=TRUE)
   res <- lapply(lf, import_StereoMorph_curve1)
@@ -345,6 +354,9 @@ import_StereoMorph_curve <- function(path, names){
 #' @rdname import_StereoMorph
 #' @export
 import_StereoMorph_ldk1 <- function(path){
+  # tem fix
+  stop("deprecated due to major update in StereoMorph export file format. You can try the solution by Stas Malavin before this being fixed in Momocs: https://github.com/stas-malavin/Momocs/blob/master/R/importSM.r")
+
   # a cousin of import_txt
   read.table(path, header=FALSE,
              row.names=1, col.names=c("l", "x", "y"), stringsAsFactors = FALSE)
@@ -353,6 +365,9 @@ import_StereoMorph_ldk1 <- function(path){
 #' @rdname import_StereoMorph
 #' @export
 import_StereoMorph_ldk <- function(path, names){
+  # tem fix
+  stop("deprecated due to major update in StereoMorph export file format. You can try the solution by Stas Malavin before this being fixed in Momocs: https://github.com/stas-malavin/Momocs/blob/master/R/importSM.r")
+
   # we extract filenames and import them
   lf <- list.files(path, full.names=TRUE)
   res <- lapply(lf, import_StereoMorph_ldk1)
@@ -606,10 +621,14 @@ chc2Out <- function(chc, skip, names){
 #' Useful to convert .nef files into Coe objects.
 #' It returns a matrix of coefficients that can be passed to \link{Coe}.
 #' @param nef.path the path to the .nef file
-#' @note I'm not very familiar to other morphometric formats.
+#' @note nef2Coe cannot really deduces some components of the \code{OutCoe} constructor.
+#' Most of the time working around \code{x <- nef2Coe(); OutCoe(x, method="efourier", norm=TRUE/FALSE)}
+#' shoudl do the job. Overall, I'm not very familiar to other morphometric formats.
 #' So if you have troubles importing your datasets, contact me, I can help. Or if you fix something,
 #' please let met know!
 #' @family babel functions
+#' @examples
+#' # nef2Coe cannot really deduces some components of the
 #' @export
 nef2Coe <- function(nef.path) {
   # change nef to coe one day
@@ -848,7 +867,7 @@ bind_db.Coe <- bind_db.Coo
 #' filenames, typically their extension, e.g. '.jpg'.
 #' @return data.frame with, for every individual, the corresponding level
 #' for every group.
-#' @note This is, to my view, a good practice to 'store' the grouoing structure
+#' @note This is, to my view, a good practice to 'store' the grouping structure
 #' in filenames, but it is of course not mandatory.
 #'
 #' Note also that you can: i) do a \link{import_jpg} and save is a list, say 'foo';

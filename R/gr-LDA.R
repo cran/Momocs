@@ -65,6 +65,7 @@
 #' @param color.legend logical whether to add a (cheap) color legend for numeric fac
 #' @param axisnames logical whether to add PC names
 #' @param axisvar logical whether to draw the variance they explain
+#' @param unit logical whether to add plane unit
 #' @param eigen logical whether to draw a plot of the eigen values
 #' @param rug logical whether to add rug to margins
 #' @param title character a name for the plot
@@ -137,6 +138,8 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
                      axisnames=TRUE,
                      #axisvar
                      axisvar=TRUE,
+                     # unit
+                     unit=FALSE,
                      #eigen
                      eigen=TRUE,
                      # various
@@ -148,35 +151,31 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
   morphospace=FALSE
   fac <- x$fac
 
-  # because copied from plot.PCA see https://github.com/vbonhomme/Momocs/issues/121
-  PCA <- x
-  xy <- PCA$x[, c(xax, yax)]
-  ### we check and prepare everything related to groups
-  ### fac not provided
-  if (missing(fac)) { # mainly for density and contour
-    fac <- NULL
-    col.groups <- col
-  } else {
+  # most of it copied from plot.PCA
     # fac provided ------------------------
     # fac provided, as formula ============
     if (class(fac) == "formula") {
       column_name <- attr(terms(fac), "term.labels")
       # we check for wrong formula
-      if (any(is.na(match(column_name, colnames(PCA$fac)))))
+      if (any(is.na(match(column_name, colnames(x$fac)))))
         stop("formula provided must match with $fac column names")
       # otherwise we retrive the column(s)
-      fac <- PCA$fac[, column_name]
+      fac <- x$fac[, column_name]
       # multicolumn/fac case
       if (is.data.frame(fac))
         fac <- factor(apply(fac, 1, paste, collapse="_"))
     }
     # fac provided, as column name or id
     if (length(fac)==1){
-      fac <- PCA$fac[, fac]
+      fac <- x$fac[, fac]
     }
 
-    # if fac is a factor
-    if (is.factor(fac)){
+  if (nlevels(fac) <= 2) { # case of 2 levels and a single LD
+    xy <- x$mod.pred$x[, 1, drop=FALSE]
+  } else {
+    xy <- x$mod.pred$x[, c(xax, yax)]
+  }
+
       if (!missing(col)){
         if (length(col)==nlevels(fac)) {
           col.groups <- col
@@ -197,21 +196,35 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
       else {
         pch <- 20
       }
-    }
-  }
 
-  # if fac is a numeric
-  if (is.numeric(fac)){
-    if (missing(col)){
-      if (missing(palette)){
-        palette <- col_gallus
-      }
-      cols_breaks = 1000
-      cols_all <- palette(cols_breaks)
-      cols_id <- fac  %>% .normalize()  %>% cut(breaks = cols_breaks)  %>% as.numeric()
-      col <- cols_all[cols_id]
-    }
-  }
+
+  # # if fac is a numeric
+  # if (is.numeric(fac)){
+  #   if (missing(col)){
+  #     if (missing(palette)){
+  #       palette <- col_gallus
+  #     }
+  #     cols_breaks = 1000
+  #     cols_all <- palette(cols_breaks)
+  #     cols_id <- fac  %>% .normalize()  %>% cut(breaks = cols_breaks)  %>% as.numeric()
+  #     col <- cols_all[cols_id]
+  #   }
+  # }
+
+if (nlevels(fac) <= 2){
+    op <- par(mfrow=c(2, 1), oma=c(0, 0, 0, 0), mar=c(4, 1, 3, 1 ))
+    on.exit(op)
+    hist.range <- range(xy)
+    hist(xy[fac==levels(fac)[1]], xlim=hist.range,
+                   ylab=NA, xlab="LD1", main=levels(fac)[1],
+                   col=palette(2)[1], axes=FALSE); axis(1)
+    hist(xy[fac==levels(fac)[2]], xlim=hist.range,
+                   ylab=NA, xlab="LD1", main=levels(fac)[2],
+                   col=palette(2)[2], axes=FALSE); axis(1)
+    par(mfrow=c(1, 1))
+    return()
+}
+
   # cosmetics
   if ((density) & missing(contour)) contour   <- TRUE
   if ((density) & missing(ellipses)) ellipses <- FALSE
@@ -246,15 +259,6 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
   if (contour)  .contour(xy, fac, levels= lev.contour, col=col.groups, transp=ifelse(density, 0.5, 0.3), n.kde2d=n.kde2d)
   if (delaunay) .delaunay(xy, fac, col.groups)
 
-  # morphospace handling - a big baby
-  if (morphospace & !is.null(PCA$method) & length(PCA$method)<=4) {
-    morphospacePCA(PCA, xax=xax, yax=yax, pos.shp=pos.shp,
-                   nb.shp=nb.shp, nr.shp=nr.shp, nc.shp=nc.shp,
-                   rotate.shp=rotate.shp, flipx.shp=flipx.shp, flipy.shp=flipy.shp,
-                   amp.shp=amp.shp, size.shp=size.shp, pts.shp=pts.shp,
-                   col.shp=col.shp, border.shp=border.shp, lwd.shp=lwd.shp,
-                   plot=TRUE)
-  }
   if (is.factor(fac)) {
     if (stars)      .stars(xy, fac, col.groups)
     if (ellipsesax) .ellipsesax(xy, fac, conf.ellipsesax, col.groups, lty.ellipsesax, lwd.ellipsesax)
@@ -276,8 +280,8 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
       rn <- NULL
     } else {
 
-      if (any(colnames(PCA$fac)==labelspoints)) {
-        rn <- PCA$fac[, labelspoints]
+      if (any(colnames(x$fac)==labelspoints)) {
+        rn <- x$fac[, labelspoints]
       } else {
         rn <- rownames(x$x)
       }
@@ -288,11 +292,12 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
            col=col.labelspoints, cex=cex.labelspoints)
     }
   }
-  if (loadings)   .loadings(PCA$rotation[, c(xax, yax)])
+  if (loadings)   .loadings(x$rotation[, c(xax, yax)])
   if (axisnames)  .axisnames(xax, yax, "LD")
-  if (axisvar)    .axisvar(PCA$mod$svd, xax, yax)
+  if (axisvar)    .axisvar(x$mod$svd, xax, yax)
+  if (unit)       .unit(nb.grids)
   .title(title)
-  if (eigen)     .eigen(PCA$mod$svd, xax, yax, ev.names="Prop. of trace")
+  if (eigen)     .eigen(x$mod$svd, xax, yax, ev.names="Prop. of trace")
   if (box) box()
   # we return a df
   if (is.null(fac))
@@ -332,7 +337,7 @@ plot_CV.default <- function(x, freq=TRUE,rm0 = TRUE, cex=5, round=2, labels=TRUE
   df <- as.data.frame(tab)
   #colnames(df) <- c("actual", "classified", "count")
   if (freq) {
-    df <- df %>% group_by_(colnames(df)[2]) %>%
+    df <- df %>% group_by_(colnames(df)[1]) %>%
       mutate(Freq=round(Freq/sum(Freq), round))
   }
   gg <- ggplot(df, aes_string(x=colnames(df)[1], y=colnames(df)[2], fill="Freq")) +

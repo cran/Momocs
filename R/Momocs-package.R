@@ -47,9 +47,9 @@ magrittr::`%T>%`
 #' \item Claude J. 2008. \emph{Morphometrics with R}. Springer-Verlag, New-York.
 #' }
 #' @section Cheers:
-#' We are very grateful to (in alphabetical order): Laurent Bouby, Simon Crameri, April Dinwiddie,
-#' Carl Lipo, Cedric Gaucherel, Sarah Ivorra, Glynis Jones, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
-#' Neus Martinez, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
+#' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Simon Crameri, April Dinwiddie,
+#' Carl Lipo, Cedric Gaucherel, Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
+#' Stas Malavin, Neus Martinez, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
 #' Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
 #' Asher Wishkerman, John Wood for their helpful ideas and bug reports.
 #' @import ape
@@ -69,7 +69,7 @@ magrittr::`%T>%`
 #' @importFrom grDevices chull
 #' @importFrom grDevices chull
 #' @importFrom graphics abline arrows axis barplot box
-#' contour image layout legend lines locator
+#' contour hist image layout legend lines locator
 #' par points polygon rasterImage rect rug
 #' segments strheight strwidth text title
 #' @importFrom stats cor cov cov.wt df dist dnorm
