@@ -10,6 +10,7 @@
 #' @return a \code{matrix} of (x; y) coordinates or a Coo object.
 #' @examples
 #' #coo_check('Not a shape')
+#' #coo_check(iris)
 #' #coo_check(matrix(1:10, ncol=2))
 #' #coo_check(list(x=1:5, y=6:10))
 #' @export
@@ -22,14 +23,14 @@ coo_check.default <- function(coo) {
   if (is.matrix(coo)) {
     return(coo)
   }
-  if (is.data.frame(coo)){
+  if (is.data.frame(coo) && all(sapply(coo, class)=="numeric")){
     return(as.matrix(coo))
   }
   if (is.list(coo)) {
     if (length(coo) == 1)
       return(l2m(coo))
   }
-  stop("a list or a matrix of (x; y) coordinates must be provided")
+  stop("do not know how to turn into a coo")
 }
 
 #' @export
@@ -862,6 +863,10 @@ coo_sample.Opn <- coo_sample.Out
 #'
 #' Samples n coordinates with a regular angle.
 #'
+#' By design, this function samples among existing points, so using
+#' \link{coo_interpolate} prior to it may be useful to have
+#' more homogeneous angles. See examples.
+#'
 #' @inheritParams coo_check
 #' @param n \code{integer}, the number of points to sample.
 #' @return a \code{matrix} of (x; y) coordinates or a Coo object.
@@ -873,6 +878,28 @@ coo_sample.Opn <- coo_sample.Out
 #' coo_plot(rr <- coo_samplerr(bot[1], 12))
 #' cpos <- coo_centpos(bot[1])
 #' segments(cpos[1], cpos[2], rr[, 1], rr[, 2])
+#'
+#' # Sometimes, interpolating may be useful:
+#' shp <- hearts[1] %>% coo_center
+#'
+#' # given a shp, draw segments from each points on it, to its centroid
+#' draw_rads <- function(shp, ...){
+#'  segments(shp[, 1], shp[, 2], coo_centpos(shp)[1], coo_centpos(shp)[2], ...)
+#'}
+#'
+#' # calculate the sd of argument difference in successive points,
+#' # in other words a proxy for the homogeneity of angles
+#' sd_theta_diff <- function(shp)
+#'    shp %>% complex(real=.[, 1], imaginary=.[, 2]) %>%
+#'    Arg %>% `[`(-1) %>% diff %>% sd
+#'
+#' # no interpolation: all points are sampled from existing points but the
+#' # angles are not equal
+#' shp %>% coo_plot(points=TRUE, main="no interpolation")
+#' shp %>% coo_samplerr(64) %T>% draw_rads(col="red") %>% sd_theta_diff
+#' # with interpolation: much more homogeneous angles
+#' shp %>% coo_plot(points=TRUE)
+#' shp %>% coo_interpolate(360) %>% coo_samplerr(64) %T>% draw_rads(col="blue") %>% sd_theta_diff
 #' @family sampling functions
 #' @family coo_ utilities
 #' @export
@@ -1075,12 +1102,97 @@ is_closed.Coo <- function(coo) {
   return(sapply(Coo$coo, is_closed))
 }
 
+#' @rdname is_closed
+#' @export
+is_open <- function(coo) !is_closed(coo)
+
+# is_equallyspacedradii ----------
+#' Tests if coordinates likely have equally spaced radii
+#'
+#' Returns TRUE/FALSE whether the sd of angles between all successive
+#' radii is below/above \code{thesh}
+#'
+#' @inheritParams coo_check
+#' @param thres numeric a threshold (arbitrarily \code{pi/90}, eg 2 degrees, by default)
+#' @return a single or a vector of \code{logical}. If \code{NA} are returned, they
+#' are produced by \link{coo_theta3} and some coordinates are likely identical, at least
+#' for x or y.
+#' @family coo_ utilities
+#' @examples
+#' bot[1] %>% is_equallyspacedradii
+#' bot[1] %>% coo_samplerr(36) %>% is_equallyspacedradii
+#' # higher tolerance but wrong
+#' bot[1] %>% coo_samplerr(36) %>% is_equallyspacedradii(thres=5*2*pi/360)
+#' # coo_interpolate is a better option
+#' bot[1] %>% coo_interpolate(1200) %>% coo_samplerr(36) %>% is_equallyspacedradii
+#' # Coo method
+#' bot %>% coo_interpolate(360) %>% coo_samplerr(36) %>% is_equallyspacedradii
+#' @export
+is_equallyspacedradii <- function(coo, thres) {
+  UseMethod("is_equallyspacedradii")
+}
+
+#' @export
+is_equallyspacedradii.default <- function(coo, thres=pi/90){
+  coo1 <- coo_slide(coo, id1 = 2)
+  cent <- coo_centpos(coo)
+  res <- vector("numeric", nrow(coo))
+  for (i in 1:nrow(coo)){
+    res[i] <- rbind(coo[i, ], cent, coo1[i, ]) %>% coo_theta3("acos")
+  }
+  sd(res) < thres
+}
+
+#' @export
+is_equallyspacedradii.Coo <- function(coo, thres=pi/90){
+  Coo <- coo
+  suppressWarnings(sapply(Coo$coo, is_equallyspacedradii, thres=thres))
+}
+
 # # is.likelyopen tries to estimate is a matrix of
 # coordinates is likely to be a # closed polygon
 # is.likelyclosedpolygon <- function(coo) { x <-
 # coo_perimpts(coo) d <- max(x) / median(x[-which.max(x)])
 # ifelse(d > 3, TRUE, FALSE)}
 
+# coo_clockwise
+# see http://en.wikipedia.org/wiki/Shoelace_formula
+
+#' Tests if shapes are developping clockwise or anticlockwise
+#'
+#' @inheritParams coo_check
+#' @return a single or a vector of \code{logical}.
+#' @family coo_ utilities
+#' @examples
+#' shapes[4] %>% coo_sample(64) %>% coo_plot()  #clockwise cat
+#' shapes[4] %>% is_clockwise()
+#' shapes[4] %>% coo_rev() %>% is_clockwise()
+#'
+#' # on Coo
+#' shapes %>% is_clockwise %>% `[`(4)
+#' @export
+is_clockwise <- function(coo)
+  UseMethod("is_clockwise")
+
+#' @export
+is_clockwise.default <- function(coo){
+  res <- numeric(nrow(coo)-1)
+  for (i in seq_along(res)){
+    res[i] <- (coo[i+1, 1] - coo[i, 1]) * (coo[i+1, 2] - coo[i, 2])
+  }
+  sum(res)>0
+}
+
+#' @export
+is_clockwise.Coo <- function(coo){
+  sapply(coo$coo, is_clockwise)
+}
+
+#' @rdname is_clockwise
+#' @export
+is_anticlockwise <- function(coo){
+  !is_clockwise(coo)
+}
 # coo_close -----------------
 #' Closes/uncloses shapes
 #'
@@ -1770,7 +1882,7 @@ coo_centpos.Coo <- function(coo) {
 #' # add it to $fac
 #' mutate(bot, size=coo_centsize(bot))
 #' @family centroid functions
-#' @family coo_ utilities
+#' @family coo_utilities
 #' @export
 coo_centsize <- function(coo){
   UseMethod("coo_centsize")
@@ -1802,9 +1914,18 @@ coo_centsize.Coo <- function(coo){
 #' @family centroid functions
 #' @family coo_ utilities
 #' @export
-coo_centdist <- function(coo) {
+coo_centdist <- function(coo){
+  UseMethod("coo_centdist")
+}
+#' @export
+coo_centdist.default <- function(coo) {
   coo <- coo_check(coo)
   return(apply(coo, 1, function(x) ed(coo_centpos(coo), x)))
+}
+
+#' @export
+coo_centdist.Coo <- function(coo){
+  lapply(coo$coo, coo_centdist)
 }
 
 # coo_perimpts --------------

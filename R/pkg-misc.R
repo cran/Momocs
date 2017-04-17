@@ -140,6 +140,77 @@ edm_nearest <- function(m1, m2, full = FALSE) {
     return(list(d = d, pos = pos)) else return(d)
 }
 
+#' Identify outliers
+#'
+#' A simple wrapper around \link{dnorm} that helps identify outliers. In particular,
+#' it may be useful on \link{Coe} object (in this case a PCA is first calculated) and also
+#' on \link{Ldk} for detecting possible outliers on freshly digitized/imported datasets.
+#'
+#' @param x object, either Coe or a numeric on which to search for outliers
+#' @param conf confidence for dnorm
+#' @param nax number of axes to retain (only for Coe),
+#' if <1 retain enough axes to retain this proportion of the variance
+#' @param ... additional parameters to be passed to PCA (only for Coe)
+#' @note experimental. dnorm parameters used are \code{median(x), sd(x)}
+#' @examples
+#' # on a numeric
+#' x <- rnorm(10)
+#' x[4] <- 99
+#' which_out(x)
+#'
+#' # on a Coe
+#' bf <- bot %>% efourier(6)
+#' bf$coe[c(1, 6), 1] <- 5
+#' which_out(bf)
+#'
+#' # on Ldk
+#' w_no <- w_ok <- wings
+#' w_no$coo[[2]][1, 1] <- 2
+#' w_no$coo[[6]][2, 2] <- 2
+#' which_out(w_ok, conf=1e-12) # with low conf, no outliers
+#' which_out(w_no, conf=1e-12) # as expected
+#' @export
+which_out <- function(x, conf, nax, ...){
+  UseMethod("which_out")
+}
+
+#' @export
+which_out.default <- function(x, conf=1e-3, ...){
+  out <- which(dnorm(x, median(x), sd(x)) < conf)
+  if(length(out)==0) {
+    return(NA)
+  } else {
+    return(out)}
+}
+
+#' @export
+which_out.Coe <- function(x, conf=1e-3, nax=0.99, ...){
+  p <- PCA(x, ...)
+  if (length(nax)==1)
+    if (nax < 1)
+      nax <- scree_min(p, nax)
+    m <- p$x[, 1:nax]
+    m <- matrix(m, ncol=nax)
+    outliers <- apply(m, 2, which_out, conf=conf)
+    outliers <- unlist(outliers)
+    return(unique(as.numeric(outliers)))
+}
+
+#' @export
+which_out.Ldk <- function(x, conf=1e-3, ...){
+  arr <- x$coo %>% l2a %>% apply(1:2, function(.) dnorm(., mean(.), sd(.)))
+  out <- which(arr < conf, arr.ind=TRUE)
+  if (nrow(out)==0){
+    return(NA)
+  } else {
+    message("found ", nrow(arr), " possible outliers")
+    data.frame(shape=names(x)[out[, 1]],
+               id=out[, 1],
+               row=out[, 2],
+               coordinate=c("x", "y")[out[, 3]], row.names = NULL)
+  }
+}
+
 ##### Miscellaneous functions for Fourier-based approaches
 
 #' Helps to select a given number of harmonics from a numerical vector.
@@ -210,6 +281,42 @@ coeff_split <- function(cs, nb.h = 8, cph = 4) {
   names(cp) <- paste(letters[1:cph], "n", sep = "")
   return(cp)
 }
+
+#' Rearrange a matrix of (typically Fourier) coefficients
+#'
+#' Momocs uses colnamed matrices to store (typically) Fourier coefficients
+#' in \link{Coe} objects (typically \link{OutCoe}). They are arranged as rank-wise:
+#' \code{A1, A2, ..., An, B1, ..., Bn, C1, ..., Cn, D1, ..., Dn}. From other softwares they may arrive
+#' as \code{A1, B1, C1, D1, ..., An, Bn, Cn, Dn}, this functions helps to go
+#' from one to the other format. In short, this function rearranges column order. See examples.
+#'
+#' @param x matrix (with colnames)
+#' @param by character either "name" (\code{A1, A2, ..}) or "rank" (\code{A1, B1, ...})
+#' @examples
+#' m_name <- m_rank <- matrix(1:32, 2, 16)
+#' # this one is order by name
+#' colnames(m_name) <- paste0(rep(letters[1:4], each=4), 1:4)
+#' # this one is order by rank
+#' colnames(m_rank) <- paste0(letters[1:4], rep(1:4, each=4))
+#'
+#' m_rank
+#' m_rank %>% coeff_rearrange(by="name")
+#' m_rank %>% coeff_rearrange(by="rank") #no change
+#'
+#' m_name
+#' m_name %>% coeff_rearrange(by="name") # no change
+#' m_name %>% coeff_rearrange(by="rank")
+#' @export
+coeff_rearrange <- function(x, by=c("name", "rank")[1]){
+  map <- data.frame(old_id=1:ncol(x),
+                    old_cn=colnames(x),
+                    name=x %>% colnames %>% substr(1, 1),
+                    rank=x %>% colnames %>% substr(2, nchar(.)) %>% as.numeric) %>%
+    dplyr::arrange_(by) %>%
+    mutate(new_cn=paste0(name, rank))
+  return(x[, map$old_id])
+}
+
 
 #' Calculates harmonic power given a list from e/t/rfourier
 #'
@@ -313,87 +420,6 @@ which.is.error <- function(x){
 .refactor <- function(df) {
   data.frame(lapply(df, function(x) if (is.factor(x)) factor(x) else x))
 }
-
-
-### prepare a factor according to waht is passed to various methods,
-# notably multivariate plotters..prep.fac(bp, 1)
-# eg
-#  olea %<>% mutate(fake=rnorm(length(olea)))
-#  summary(olea$fac)
-# # Valid ways
-# # nothing
-# .prep.fac(olea)
-# # column id
-# .prep.fac(olea, 2)
-# # column name
-# .prep.fac(olea, "domes")
-# # column name formula style
-# .prep.fac(olea, ~domes)
-# # formulas allow interaction of factors
-# .prep.fac(olea, ~domes+var)
-# # passing a factor on the fly
-# .prep.fac(olea, factor(rep(letters[1:7], each=30)))
-# # passing a numeric on the fly
-# .prep.fac(olea, rnorm(length(olea)))
-#
-# # Non valid ways
-# # column beyond defined columns
-# .prep.fac(olea, 84)
-# # non existing column name
-# .prep.fac(olea, "rock_and_roll")
-# # also, formula style
-# .prep.fac(olea, ~rock_and_roll)
-# # passing a factor of the wrong length
-# .prep.fac(olea, factor(rep(letters[1:7], each=10)))
-# # passing a numeric of the wrong length
-# .prep.fac(olea, rnorm(210))
-#' @export
-.prep.fac <- function(x, fac){
-  ### missing case
-  if (missing(fac)){
-    fac <- NULL
-    return(fac)
-  }
-  ### formula case (is.formula doesnt exist)
-  if (class(fac)=="formula"){
-    f0 <- x$fac[, attr(terms(fac), "term.labels")]
-    fac <- interaction(f0)
-    return(fac)
-  }
-  ### column id case
-  if (is.numeric(fac)) {
-    # case of a numeric not likely a column id is passed on the fly
-    if (length(fac)>1){
-      .check(length(fac) == length(x),
-             paste0("numeric passed is not of the correct length (", length(x), ")"))
-      return(fac)
-    }
-    # otherwise, we will pick a column
-    .check(fac <= ncol(x$fac),
-           paste(fac, "is not an existing column name"))
-    fac <- factor(x$fac[, fac])
-    return(fac)
-  }
-  ### column name case
-  if (is.character(fac)) {
-    .check(any(colnames(x$fac) == fac),
-           paste(fac, "is not an existing column name"))
-    fac <- factor(x$fac[, fac])
-    return(fac)
-  }
-  ### factor case
-  if (is.factor(fac)) {
-    # case where a factor is directly passed
-    .check(length(fac) == length(x),
-           paste0("factor passed is not of the correct length (", length(x), ")"))
-    # we need it to refactor in subset cases
-    fac <- factor(fac)
-    return(fac)
-  }
-  #   ### non-standard evaluation (kindof)
-  #   .prep.fac(x, deparse(quote(fac)))
-}
-
 
 #' @export
 .trim.ext <- function(lf, width = nchar(lf) - 4) {

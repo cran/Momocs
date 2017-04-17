@@ -184,6 +184,7 @@ PCA(iris[, -5], fac=data.frame(sp=iris$Species)) %>%
 #  plot(bot.l)
 #  # plot the cross-validation table
 #  plot_CV(bot.l)  # tabular version
+#  plot_CV(bot.l, freq=TRUE) # frequency table
 #  plot_CV2(bot.l) # arrays version
 
 ## ------------------------------------------------------------------------
@@ -211,6 +212,13 @@ beer   <- bot.ms$shp$beer    %T>% coo_plot(border="blue")
 whisky <- bot.ms$shp$whisky  %T>% coo_draw(border="red")
 legend("topright", lwd=1,
        col=c("blue", "red"), legend=c("beer", "whisky"))
+
+## ------------------------------------------------------------------------
+leaves <- shapes %>% slice(grep("leaf", names(shapes))) %$% coo
+leaves %>% plot_mshapes(col2="#0000FF")
+
+# or from mshapes directly
+bot %>% efourier(6) %>% mshapes("type") %>% plot_mshapes
 
 ## ---- results="markup"---------------------------------------------------
 data(olea)

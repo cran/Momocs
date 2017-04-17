@@ -24,7 +24,10 @@ Out <- function(x, fac = data.frame, ldk = list()) {
 
 #' @export
 Out.default <- function(x, fac = data.frame(), ldk = list()) {
-  message("do not know how to build an Out from this")
+  if (is.shp(x))
+    Out(list(x))
+  else
+    message("an Out object can only be build from a shape, a list, an array or a Coo object")
 }
 
 #' @export
@@ -106,25 +109,15 @@ as.Out <- function(object, OutCoe, nb.pts=120){
 #' @export
 print.Out <- function(x, ...) {
   Out <- validate(x)
+  coo_nb <- length(Out)
+  if (coo_nb==0){
+    cat("An empty Out object")
+    return()
+  }
   ### Header
   cat("An Out object with: \n")
-  cat(rep("-", 20), "\n", sep = "")
-  coo_nb <- length(Out)
   coo_len <- sapply(Out$coo, nrow)
   coo_closed <- sapply(Out$coo, is_closed)
-  #     # one random outline
-  #     eg <- sample(length(Out$coo), 1)
-  #     coo_eg <- Out$coo[[eg]]
-  #     colnames(coo_eg) <- c("x", "y")
-  #     cat(" - One random outline in $coo: '", names(Out$coo)[eg],
-  #         "':\n", sep = "")
-  #     if (nrow(coo_eg) > 5) {
-  #       print(coo_eg[1:5, ], print.gap = 2)
-  #       cat("etc.\n")
-  #     } else {
-  #       print(coo_eg, print.gap = 2)
-  #       cat("\n\n")
-  #     }
   # number of outlines
   cat(" - $coo:", coo_nb, "outlines")
 
@@ -177,7 +170,8 @@ OutCoe <- function(coe = matrix(), fac = data.frame(), method,
                    norm) {
   if (missing(method))
     stop("a method must be provided to OutCoe")
-  OutCoe <- structure(list(coe = coe, fac = fac, method = method, norm = norm), class=c("OutCoe", "Coe"))
+  OutCoe <- structure(list(coe = coe, fac = fac, method = method, norm = norm),
+                      class=c("OutCoe", "Coe"))
   return(OutCoe)
 }
 
@@ -190,8 +184,9 @@ print.OutCoe <- function(x, ...) {
     met <- c(met, "analyses ]\n")
     combined <- TRUE
   } else {
-    p <- pmatch(OutCoe$method[1], c("efourier", "rfourier", "tfourier"))
-    met <- switch(p, "elliptical Fourier", "radii variation", "tangent angle")
+    p <- pmatch(OutCoe$method[1], c("efourier", "rfourier", "sfourier", "tfourier"))
+    met <- switch(p, "elliptical Fourier", "radii variation (equally spaced radii)",
+                  "radii variation (equally spaced curvilinear abscissa)", "tangent angle")
     met <- c(met, "analysis ]\n")
     combined <- FALSE}
   ### Header

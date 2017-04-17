@@ -25,13 +25,18 @@ bf <- efourier(b, 10)
 wbf <- combine(wf, bf)
 dissolve(wbf, 1)
 dissolve(wbf, 2)
+
+# or using chop (yet combine here makes no sense)
+bw <- bot \%>\% chop(type) \%>\% lapply(efourier, 10) \%>\% combine
+bw \%>\% dissolve(1)
+bw \%>\% dissolve(2)
 }
 \seealso{
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{filter}},
   \code{\link{mutate}}, \code{\link{rename}},
-  \code{\link{rm_uncomplete}}, \code{\link{rw_rule}},
+  \code{\link{rm_uncomplete}}, \code{\link{rw_fac}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
   \code{\link{select}}, \code{\link{slice}},
   \code{\link{subset.Coo}}, \code{\link{transmute}}

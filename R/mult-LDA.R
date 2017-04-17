@@ -55,10 +55,10 @@ LDA.default <- function(x, fac, retain, ...) {
   if (missing(fac))
     stop("no fac provided")
   # now we calculate two lda models with MASS::lda one with
-  mod <- lda(X, grouping = fac)
+  mod <- MASS::lda(X, grouping = fac)
   mod.pred <- predict(mod, X)
   # leave-one-out cross validation
-  CV.fac <- lda(X, grouping = fac, tol = 1e-08, CV = TRUE, ...)$class
+  CV.fac <- MASS::lda(X, grouping = fac, tol = 1e-08, CV = TRUE, ...)$class
   # we build a nice table from it
   CV.tab <- table(fac, CV.fac)
   names(dimnames(CV.tab)) <- c("actual", "classified")
@@ -116,7 +116,7 @@ LDA.PCA <- function(x, fac, retain = 0.99, verbose=TRUE, ...) {
   }
 
   PCA <- x
-  f0 <- fac
+  f0 <- fac #<- prepare_fac(x, fac)
   #fac handling
   if (missing(fac))
     stop("no 'fac' provided")
@@ -155,10 +155,10 @@ LDA.PCA <- function(x, fac, retain = 0.99, verbose=TRUE, ...) {
   }
   X <- as.matrix(X)
   # now we calculate two lda models with MASS::lda one with
-  mod <- lda(X, grouping = fac, tol = 1e-08, ...)
+  mod <- MASS::lda(X, grouping = fac, tol = 1e-08, ...)
   mod.pred <- predict(mod, X)
   # leave-one-out cross validation
-  CV.fac <- lda(X, grouping = fac, tol = 1e-08, CV = TRUE, ...)$class
+  CV.fac <- MASS::lda(X, grouping = fac, tol = 1e-08, CV = TRUE, ...)$class
   # we build a nice table from it
   CV.tab <- table(fac, CV.fac)
   names(dimnames(CV.tab)) <- c("actual", "classified")
@@ -241,6 +241,7 @@ classify.Coe <- function(x, fac, ref, unk){
   if (!is.factor(fac)){
     fac <- x$fac[, fac]
   }
+  # fac <- prepare_fac(x, fac)
   # if any NAs, we remove them
   if (any(is.na(fac))) {
     x  <- x %>% subset(which(!is.na(fac)))

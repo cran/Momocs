@@ -376,59 +376,32 @@ get_chull_volume <- function (x, fac, xax = 1, yax = 2, zax = 3) {
   return(res)
 }
 
-# # FLips PCA
-# flip <- function(x, axs){
-#   UseMethod("flip")
-# }
-#
-# flip.PCA <- function(x, axs){
-#   x$x[, axs] %<>% `*`(-1)
-#   x$rotation[, axs] %<>% `*`(-1)
-#   x
-# }
-
-
-#5 . Remove outliers on the fly
-
-#' Remove outliers on Coe
+# 5. Flip PCA axes -------------
+#' Flips PCA axes
 #'
-#' First performs a PCA, then searches for outliers using \link{dnorm}
-#'
-#' @param x object, either Coe or a numeric on which to search for outliers
-#' @param conf confidence for dnorm
-#' @param nax number of axes to retain (only for Coe),
-#' if <1 retain enough axes to retain this proportion of the variance
-#' @param ... additional parameters to be passed to PCA (only for Coe)
-#' @note experimental. dnorm parameters used are \code{median(x), sd(x)}
+#' Simply multiply by -1, corresponding scores and rotation vectors for PCA objects.
+#' PC orientation being arbitrary, this may help to have a better display.
+#' @param x a PCA object
+#' @param axs numeric which PC(s) to flip
 #' @examples
-#' x <- rnorm(10)
-#' x[4] <- 99
-#' which_out(x)
+#' bp <- bot %>% efourier(6) %>% PCA
+#' bp %>% plot
+#' bp %>% flip_PCaxes(1) %>% plot()
 #' @export
-which_out <- function(x, conf, nax, ...){
-  UseMethod("which_out")
+flip_PCaxes <- function(x, axs){
+  UseMethod("flip_PCaxes")
 }
 
 #' @export
-which_out.default <- function(x, conf=1e-3, ...){
-  out <- which(dnorm(x, median(x), sd(x)) < conf)
-  if(length(out)==0) {
-    return(NA)
-  } else {
-    return(out)}
-  }
+flip_PCaxes.default <- function(x, axs){
+  message("only defined on PCA objects")
+}
 
 #' @export
-which_out.Coe <- function(x, conf=1e-3, nax=0.99, ...){
-  p <- PCA(x, ...)
-  if (length(nax)==1)
-    if (nax < 1)
-      nax <- scree_min(p, nax)
-    m <- p$x[, 1:nax]
-    m <- matrix(m, ncol=nax)
-    outliers <- apply(m, 2, which_out, conf=conf)
-    outliers <- unlist(outliers)
-    return(unique(outliers))
+flip_PCaxes.PCA <- function(x, axs){
+  x$x[, axs] %<>% `*`(-1)
+  x$rotation[, axs] %<>% `*`(-1)
+  x
 }
 
 #### end PCA
