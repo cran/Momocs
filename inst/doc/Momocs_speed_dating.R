@@ -179,6 +179,8 @@ PCA(iris[, -5], fac=data.frame(sp=iris$Species)) %>%
 #  bot.l <- LDA(bot.p, 1)
 #  # print a summary, along with the leave-one-out cross-validation table.
 #  bot.l
+#  # a much more detailed summary
+#  bot.l %>% summary
 #  # plot.LDA works pretty much with the same grammar as plot.PCA
 #  # here we only have one LD
 #  plot(bot.l)
@@ -240,8 +242,6 @@ rename(olea, domesticated=domes)
 # mutate: add new columns
 mutate(olea, fake=factor(rep(letters[1:2], each=105)))
 
-# transmute: add new columns and drop others
-transmute(olea, fake=factor(rep(letters[1:2], each=105)))
 
 ## ------------------------------------------------------------------------
 olea %>% 
@@ -257,6 +257,14 @@ olea %>% filter(var != "Cypre") %>%
   chop(view) %>% lapply(opoly) %>% combine() %>% 
   # note the two views in the morphospace
   PCA() %>% plot("var")
+
+## ---- eval=FALSE---------------------------------------------------------
+#  retain <- x$fac %>%
+#    # here we sort and create an id
+#    arrange(your_column) %>% mutate(.id=1:n()) %>%
+#    dplyr::group_by(taxa) %>% slice(1:10) %$% .id
+#  # it worked!
+#  x %>% slice(retain) %$% table(fac$taxa)
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  names(bot)
@@ -277,6 +285,12 @@ olea %>% filter(var != "Cypre") %>%
 #  # with a single line
 #  Ldk(coo=pupfish$coords %>% a2l,
 #  fac=pupfish[-1] %>% as.data.frame())
+
+## ------------------------------------------------------------------------
+# we simulate an imported matrix of coordinates, eg from a .csv
+coeffs_from_the_wild <- bot %>% efourier(6) %$% coe
+coeffs_in_Momocs <- OutCoe(coe=coeffs_from_the_wild, method="efourier", norm=TRUE)
+coeffs_in_Momocs %>% PCA %>% plot
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  save(bot, file="Bottles.rda")

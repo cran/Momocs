@@ -2,8 +2,8 @@
 % Please edit documentation in R/mult-LDA.R
 \name{LDA}
 \alias{LDA}
-\alias{LDA.PCA}
 \alias{LDA.default}
+\alias{LDA.PCA}
 \title{Linear Discriminant Analysis on Coe objects}
 \usage{
 LDA(x, fac, retain, ...)
@@ -64,6 +64,6 @@ plot(bot.l)
 \seealso{
 Other multivariate: \code{\link{CLUST}},
   \code{\link{KMEANS}}, \code{\link{MANOVA_PW}},
-  \code{\link{MANOVA}}, \code{\link{PCA}}
+  \code{\link{MANOVA}}, \code{\link{PCA}},
+  \code{\link{classification_metrics}}
 }
-

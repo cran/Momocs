@@ -32,6 +32,9 @@ coo_plot(b)
 coo_draw(coo_down(b), border='red')
 }
 \seealso{
+Other opening functions: \code{\link{coo_left}},
+  \code{\link{coo_right}}, \code{\link{coo_up}}
+
 Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_alignminradius}},
   \code{\link{coo_alignxax}}, \code{\link{coo_align}},
@@ -39,9 +42,9 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_boundingbox}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
   \code{\link{coo_center}}, \code{\link{coo_centpos}},
-  \code{\link{coo_close}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
+  \code{\link{coo_chull_onion}}, \code{\link{coo_close}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
   \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
   \code{\link{coo_left}}, \code{\link{coo_nb}},
   \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
@@ -59,8 +62,4 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_trim}}, \code{\link{coo_up}},
   \code{\link{is_clockwise}}, \code{\link{is_closed}},
   \code{\link{is_equallyspacedradii}}
-
-Other opening functions: \code{\link{coo_left}},
-  \code{\link{coo_right}}, \code{\link{coo_up}}
 }
-

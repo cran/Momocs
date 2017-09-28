@@ -13,9 +13,9 @@
   flipx.shp = FALSE, flipy.shp = FALSE, pts.shp = 60,
   border.shp = col_alpha("#000000", 0.5), lwd.shp = 1,
   col.shp = col_alpha("#000000", 0.95), stars = FALSE, ellipses = FALSE,
-  conf.ellipses = 0.5, ellipsesax = TRUE, conf.ellipsesax = c(0.5, 0.9),
+  conf.ellipses = 0.5, ellipsesax = FALSE, conf.ellipsesax = c(0.5, 0.9),
   lty.ellipsesax = 1, lwd.ellipsesax = sqrt(2), chull = FALSE,
-  chull.lty = 1, chull.filled = FALSE, chull.filled.alpha = 0.92,
+  chull.lty = 1, chull.filled = TRUE, chull.filled.alpha = 0.92,
   density = FALSE, lev.density = 20, contour = FALSE, lev.contour = 3,
   n.kde2d = 100, delaunay = FALSE, loadings = FALSE,
   labelspoints = FALSE, col.labelspoints = par("fg"),
@@ -169,7 +169,6 @@ of the ade4 R package.
 }
 \examples{
 \dontrun{
-data(bot)
 bot.f <- efourier(bot, 12)
 bot.p <- PCA(bot.f)
 
@@ -236,6 +235,15 @@ plot(bp, 1, zoom=2)
 plot(bp, zoom=0.5)
 plot(bp, center.origin=FALSE, grid=FALSE)
 
+# colors
+plot(bp, col="red") # globally
+plot(bp, 1, col=c("#00FF00", "#0000FF")) # for every level
+# a color vector of the right length
+plot(bp, 1, col=rep(c("#00FF00", "#0000FF"), each=20))
+# a color vector of the right length, mixign Rcolor names (not a good idea though)
+plot(bp, 1, col=rep(c("#00FF00", "forestgreen"), each=20))
+
+
 # ellipses
 plot(bp, 1, conf.ellipsesax=2/3)
 plot(bp, 1, ellipsesax=FALSE)
@@ -276,4 +284,3 @@ plot(bp, eigen=FALSE) # eigen cause troubles to graphical window
 \seealso{
 \link{plot.LDA}
 }
-

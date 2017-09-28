@@ -7,7 +7,9 @@
 import_tps(tps.path, curves = TRUE)
 }
 \arguments{
-\item{tps.path}{lines, typically from \link{readLines}, describing a single shape in tps-like format}
+\item{tps.path}{lines, typically from \link{readLines}, describing a single shape in tps-like format.
+
+You will need to manually build your \code{Coo} object from it: eg \code{Out(coo=your_list$coo)}.}
 
 \item{curves}{\code{logical} whether to read curves, if any}
 }
@@ -26,4 +28,3 @@ Other babel functions: \code{\link{bind_db}},
   \code{\link{ntsrow2Coo}}, \code{\link{pix2chc}},
   \code{\link{tie_jpg_txt}}, \code{\link{tps2coo}}
 }
-

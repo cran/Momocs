@@ -3,6 +3,7 @@
 \name{coo_center}
 \alias{coo_center}
 \alias{coo_centre}
+\alias{coo_centre}
 \title{Centers coordinates}
 \usage{
 coo_center(coo)
@@ -35,10 +36,10 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_baseline}}, \code{\link{coo_bookstein}},
   \code{\link{coo_boundingbox}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
-  \code{\link{coo_centpos}}, \code{\link{coo_close}},
-  \code{\link{coo_down}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
+  \code{\link{coo_centpos}}, \code{\link{coo_chull_onion}},
+  \code{\link{coo_close}}, \code{\link{coo_down}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
   \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
   \code{\link{coo_left}}, \code{\link{coo_nb}},
   \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
@@ -57,4 +58,3 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{is_clockwise}}, \code{\link{is_closed}},
   \code{\link{is_equallyspacedradii}}
 }
-

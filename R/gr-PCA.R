@@ -85,7 +85,6 @@
 #' @seealso \link{plot.LDA}
 #' @examples
 #' \dontrun{
-#' data(bot)
 #' bot.f <- efourier(bot, 12)
 #' bot.p <- PCA(bot.f)
 #'
@@ -152,6 +151,15 @@
 #' plot(bp, zoom=0.5)
 #' plot(bp, center.origin=FALSE, grid=FALSE)
 #'
+#' # colors
+#' plot(bp, col="red") # globally
+#' plot(bp, 1, col=c("#00FF00", "#0000FF")) # for every level
+#' # a color vector of the right length
+#' plot(bp, 1, col=rep(c("#00FF00", "#0000FF"), each=20))
+#' # a color vector of the right length, mixign Rcolor names (not a good idea though)
+#' plot(bp, 1, col=rep(c("#00FF00", "forestgreen"), each=20))
+#'
+#'
 #' # ellipses
 #' plot(bp, 1, conf.ellipsesax=2/3)
 #' plot(bp, 1, ellipsesax=FALSE)
@@ -211,12 +219,12 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
                      #ellipses
                      ellipses=FALSE, conf.ellipses=0.5,
                      #ellipsesax
-                     ellipsesax=TRUE, conf.ellipsesax=c(0.5, 0.9),
+                     ellipsesax=FALSE, conf.ellipsesax=c(0.5, 0.9),
                      lty.ellipsesax=1, lwd.ellipsesax=sqrt(2),
                      #convexhulls
                      chull=FALSE, chull.lty=1,
                      #filled convex hulls,
-                     chull.filled=FALSE, chull.filled.alpha=0.92,
+                     chull.filled=TRUE, chull.filled.alpha=0.92,
                      #kde2d
                      density=FALSE, lev.density=20,
                      contour = FALSE, lev.contour=3, n.kde2d=100,
@@ -281,6 +289,9 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
         if (length(col)==nlevels(fac)) {
           col.groups <- col
           col <- col.groups[fac]
+        }
+        if (length(col)==length(fac)) {
+          col.groups <- unique(col)[unique(as.numeric(fac))]
         } else {
           col.groups <- rep(col[1], nlevels(fac))
           if (length(col) != nrow(xy)){
@@ -312,6 +323,12 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
       col <- cols_all[cols_id]
     }
   }
+  # if Rcolors are passed...
+  if (any(col %in% colors()) & any(col.groups %in% colors())){
+    col.groups[which(col.groups %in% colors())] %<>% .rcolors2hex()
+    col[which(col %in% colors())] %<>% .rcolors2hex()
+  }
+
   # cosmetics
   if ((density) & missing(contour)) contour   <- TRUE
   if ((density) & missing(ellipses)) ellipses <- FALSE

@@ -202,6 +202,112 @@ print.LDA <- function(x, ...) {
 
 }
 
+# LDA metrics -------
+
+#' Calculate classification metrics on a confusion matrix
+#'
+#' In some cases, the class correctness or the proportion of correctly classified
+#' individuals is not enough, so here are more detailed metrics when working on classification.
+#'
+#' @param x a \code{table} or an \link{LDA} object
+#'
+#' @return  a list with the following components is returned:
+#' \enumerate{
+#'   \item \code{accuracy}  the fraction of instances that are correctly classified
+#'   \item \code{macro_prf} data.frame containing \code{precision}
+#'   (the fraction of correct predictions for a certain class);
+#'   \code{recall}, the fraction of instances of a class that were correctly predicted;
+#'   \code{f1} the harmonic mean (or a weighted average) of precision and recall.
+#'   \item \code{macro_avg}, just the average of the three \code{macro_prf} indices
+#'   \item \code{ova} a list of one-vs-all confusion matrices for each class
+#'   \item \code{ova_sum} a single of all ova matrices
+#'   \item \code{kappa} measure of agreement between the predictions and the actual labels
+#' }
+#' @seealso  The pages below are of great interest to understand these metrics. The code
+#' used is partley derived from the Revolution Analytics blog post (with their authorization). Thanks to them!
+#' \enumerate{
+#' \item \url{https://en.wikipedia.org/wiki/Precision_and_recall}
+#' \item \url{http://blog.revolutionanalytics.com/2016/03/com_class_eval_metrics_r.html}
+#' \item \url{http://www.r-bloggers.com/is-your-classification-model-making-lucky-guesses/}
+#' }
+#' @family multivariate
+#' @examples
+#' # some morphometrics on 'hearts'
+#' hearts %>% fgProcrustes(tol=1) %>%
+#' coo_slide(ldk=1) %>% efourier(norm=FALSE) %>% PCA() %>%
+#' # now the LDA and its summary
+#' LDA(~aut) %>% classification_metrics()
+#' @export
+classification_metrics <- function(x){
+  UseMethod("classification_metrics")
+}
+
+#' @export
+classification_metrics.table <- function(x){
+  tab <- x
+  # check that a table is passed
+  .check(is.table(tab),
+         "only defined on 'table's")
+
+  n <- sum(tab)           # nb of instances
+  nc <- nrow(tab)         # nb of classes
+  diag <- diag(tab)       # nb of correctly classified instances per class
+  rowsums <- rowSums(tab) # nb of instances per class
+  colsums <- colSums(tab) # nb of predictions per class
+  p <- rowsums / n        # distribution of instances over the actual classes
+  q <- colsums / n        # distribution of instances over the predicted classes
+
+  # overall accuracy
+  accuracy <- sum(diag) / n
+  # precision, recall, F1
+  precision <- diag / colsums
+  recall <- diag / rowsums
+  f1 <- 2 * precision * recall / (precision + recall)
+  macro_prf <- data.frame(precision, recall, f1)
+
+  # macro precision, recall, f1
+  macro_avg <- data.frame(avg_precision=mean(precision),
+                          avg_recall=mean(recall),
+                          avg_f1=mean(f1))
+
+  # one vs all
+  ova = lapply(1 : nc,
+               function(i){
+                 v = c(tab[i,i],
+                       rowsums[i] - tab[i,i],
+                       colsums[i] - tab[i,i],
+                       n-rowsums[i] - colsums[i] + tab[i,i]);
+                 return(matrix(v, nrow = 2, byrow = T))})
+  # nice names
+  names(ova) <- colnames(tab)
+  for (i in seq_along(ova)){
+    dimnames(ova[[i]]) <- list(actual=c(rownames(tab)[i], "others"),
+                               classified=c(colnames(tab)[i], "others"))
+  }
+
+  # we add all these matrices
+  ova_sum <- Reduce("+", ova)
+  dimnames(ova_sum) %<>% lapply(`[<-`, 1, "relevant")
+  # micro <- data.frame(accuracy=sum(diag(ova_sum)) / sum(ova_sum),
+  # prf=(diag(ova_sum) / apply(ova_sum, 1, sum))[1])
+
+  expAccuracy = sum(p*q)
+  kappa = (accuracy - expAccuracy) / (1 - expAccuracy)
+
+  list(accuracy=accuracy,
+       macro_prf=macro_prf,
+       macro_avg=macro_avg,
+       ova = ova,
+       ova_sum = ova_sum,
+       kappa=kappa
+  )
+}
+
+#' @export
+classification_metrics.LDA <- function(x){
+  classification_metrics(x$CV.tab)
+}
+
 # classify --------
 #' Classify using LDA
 #'

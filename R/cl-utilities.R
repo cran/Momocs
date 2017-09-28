@@ -193,8 +193,8 @@ get_ldk.Ldk <- function(Coo){
 
 #' @export
 get_ldk.Out <- function(Coo) {
-  .check(is.ldk(Coo),
-         "this object has no $ldk")
+  if (!is.ldk(Coo))
+         return(NULL)
   coo <- Coo$coo
   ldk <- Coo$ldk
   ref <- array(NA, dim = c(length(ldk[[1]]), ncol(coo[[1]]),
@@ -208,6 +208,61 @@ get_ldk.Out <- function(Coo) {
 }
 #' @export
 get_ldk.Opn <- get_ldk.Out
+
+#' Rearrange, (select and reorder) landmarks to retain
+#'
+#' Helps reorder and retain landmarks by simply changing the order in which they
+#' are recorded in the \code{Coo} objects. Note that for \code{Out} and \code{Opn}
+#'  objects, this rearranges the \code{$ldk} component. For \code{Ldk}, it rearranges
+#'   the \code{$coo} directly.
+#'
+#' @param Coo any appropriate \code{Coo} object (typically an \code{Ldk})
+#' with landmarks inside
+#' @param new_ldk_ids a vector of numeric with the ldk to retain \emph{and}
+#' in the right order (see below)
+#' @family ldk/slidings methods
+#' @examples
+#' # Out example
+#' hearts %>% slice(1) %T>% stack %$% ldk
+#' hearts %>% rearrange_ldk(c(4, 1)) %>%
+#'        slice(1) %T>%stack %$% ldk
+#'
+#' # Ldk example
+#' wings %>% slice(1) %T>% stack %$% coo
+#' wings %>% rearrange_ldk(c(1, 3, 12:15)) %>%
+#'       slice(1) %T>% stack %$% coo
+#' @export
+rearrange_ldk <- function(Coo, new_ldk_ids){
+  UseMethod("rearrange_ldk")
+}
+
+#' @export
+rearrange_ldk.default <- function(Coo, new_ldk_ids){
+  message("* only defined on Coo objects")
+}
+
+#' @export
+rearrange_ldk.Out <- function(Coo, new_ldk_ids){
+  if (is.null(get_ldk(Coo))){
+    message("* no ldk to arrange")
+    return(Coo)
+  }
+  Coo$ldk %<>% lapply(function(.) .[new_ldk_ids])
+  return(Coo)
+}
+
+#' @export
+rearrange_ldk.Opn <- rearrange_ldk.Out
+
+#' @export
+rearrange_ldk.Ldk <- function(Coo, new_ldk_ids){
+  if (is.null(get_ldk(Coo))){
+    message("* no ldk to arrange")
+    stop()
+  }
+  Coo$coo %<>% lapply(function(.) .[new_ldk_ids, ])
+  return(Coo)
+}
 
 # sliding getters/setters ------------------------------------------------------
 
@@ -395,6 +450,19 @@ get_slidings.Ldk <- function(Coo, partition){
   return(slidings)
 }
 
+# class append/prependers ------------
+# app/pre-pend classes
+.prepend_class <- function(x, class_to_add){
+  if (!(class_to_add %in% class(x)))
+    class(x) %<>% c(class_to_add, .)
+  x
+}
+
+.append_class <- function(x, class_to_add){
+  if (!(class_to_add %in% class(x)))
+    class(x) %<>% c(., class_to_add)
+  x
+}
 # class testers -------------
 #' Various class/component testers
 #'
@@ -403,99 +471,118 @@ get_slidings.Ldk <- function(Coo, partition){
 #' Component testers check if a particular component (eg $fac, etc.) is present.
 #' @param x the object to test
 #' @return TRUE/FALSE
+#' @note all \code{is_*} have an \code{is.*} alias
+#' (eg \code{is_Coo} is the same as \code{is.Coo}) but the \code{.} alias will
+#' be deprecated at some point.
 #' @examples
 #' data(bot)
-#' is.Coo(bot)
-#' is.Out(bot)
-#' is.Ldk(bot)
+#' is_Coo(bot)
+#' is_Out(bot)
+#' is_Ldk(bot)
 #' @name is
 #' @export
-is.Coo <- function(x){
+is_Coo <- function(x){
   ifelse(any(class(x) == "Coo"), TRUE, FALSE)
 }
+is.Coo <- is_Coo
 
 #' @rdname is
 #' @export
-is.PCA <- function(x){
+is_PCA <- function(x){
   ifelse(any(class(x) == "PCA"), TRUE, FALSE)
 }
+is.PCA <- is_PCA
 
 #' @rdname is
 #' @export
-is.LDA <- function(x){
+is_LDA <- function(x){
   ifelse(any(class(x) == "LDA"), TRUE, FALSE)
 }
+is.LDA <- is_LDA
 
 #' @rdname is
 #' @export
-is.Out <- function(x){
+is_Out <- function(x){
   ifelse(any(class(x) == "Out"), TRUE, FALSE)
 }
+is.Out <- is_Out
 
 #' @rdname is
 #' @export
-is.Opn <- function(x){
+is_Opn <- function(x){
   ifelse(any(class(x) == "Opn"), TRUE, FALSE)
 }
+is.Opn <- is_Opn
 
 #' @rdname is
 #' @export
-is.Ldk <- function(x){
+is_Ldk <- function(x){
   ifelse(any(class(x) == "Ldk"), TRUE, FALSE)
 }
+is.Ldk <- is_Ldk
 
 #' @rdname is
 #' @export
-is.Coe <- function(x){
+is_Coe <- function(x){
   ifelse(any(class(x) == "Coe"), TRUE, FALSE)
 }
+is.Coe <- is_Coe
 
 #' @rdname is
 #' @export
-is.OutCoe <- function(x){
+is_OutCoe <- function(x){
   ifelse(any(class(x) == "OutCoe"), TRUE, FALSE)
 }
+is.OutCoe <- is_OutCoe
 
 #' @rdname is
 #' @export
-is.OpnCoe <- function(x){
+is_OpnCoe <- function(x){
   ifelse(any(class(x) == "OpnCoe"), TRUE, FALSE)
 }
+is.OpnCoe <- is_OpnCoe
 
 #' @rdname is
 #' @export
-is.LdkCoe <- function(x){
+is_LdkCoe <- function(x){
   ifelse(any(class(x) == "LdkCoe"), TRUE, FALSE)
 }
+is.LdkCoe <- is_LdkCoe
 
 #' @rdname is
 #' @export
-is.TraCoe <- function(x){
+is_TraCoe <- function(x){
   ifelse(any(class(x) == "TraCoe"), TRUE, FALSE)
 }
+is.TraCoe <- is_TraCoe
+
 
 #' @rdname is
 #' @export
-is.shp <- function(x){
+is_shp <- function(x){
   if (is.matrix(x))
     if (ncol(x)==2 & all(!is.na(x)))
       return(TRUE)
   FALSE
 }
+is.shp <- is_shp
 
 #' @rdname is
 #' @export
-is.fac   <- function(x) length(x$fac) > 0
+is_fac <- function(x) length(x$fac) > 0
+is.fac <- is_fac
 
 #' @rdname is
 #' @export
-is.ldk   <- function(x) length(x$ldk) > 0
+is_ldk   <- function(x) length(x$ldk) > 0
+is.ldk <- is_ldk
 
 #' @rdname is
 #' @export
-is.slidings   <- function(x) length(x$slidings) > 0
+is_slidings   <- function(x) length(x$slidings) > 0
+is.slidings <- is_slidings
 
 #' @rdname is
 #' @export
-is.links <- function(x) is.matrix(x$links)
-
+is_links <- function(x) is.matrix(x$links)
+is.links <- is_links

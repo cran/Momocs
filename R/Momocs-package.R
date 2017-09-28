@@ -47,7 +47,7 @@ magrittr::`%T>%`
 #' \item Claude J. 2008. \emph{Morphometrics with R}. Springer-Verlag, New-York.
 #' }
 #' @section Cheers:
-#' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Simon Crameri, April Dinwiddie,
+#' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Matt Bulbert, Simon Crameri, Julia Cooke, April Dinwiddie,
 #' Carl Lipo, Cedric Gaucherel, Catherine Girard, Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
 #' Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
 #' Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
@@ -63,11 +63,10 @@ magrittr::`%T>%`
 #' @importFrom graphics boxplot
 #' @importFrom jpeg readJPEG
 #' @importFrom MASS lda ginv kde2d cov.trob
-#' @importFrom utils stack browseURL combn ls.str modifyList
+#' @importFrom utils stack browseURL combn ls.str modifyList methods
 #' packageVersion read.table setTxtProgressBar
 #' txtProgressBar write.table
-#' @importFrom grDevices chull
-#' @importFrom grDevices chull
+#' @importFrom grDevices chull colors rgb
 #' @importFrom graphics abline arrows axis barplot box
 #' contour hist image layout legend lines locator
 #' par points polygon rasterImage rect rug

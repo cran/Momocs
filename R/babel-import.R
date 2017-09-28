@@ -3,12 +3,12 @@
 #'
 #' A wrapper around \link{read.table} that can be used to import outline/landmark coordinates.
 #'
-#' By default, it works with the default arguments of \link{read.table}, e.g. assumes that the
 #' columns are not named in the \code{.txt} files. You can tune this using the \code{...} argument.
 #' Define the \link{read.table} arguments that allow to import a single file, and then
-#' pass them to this function.
+#' pass them to this function, ie if your \code{.txt} file
+#' has a header (eg ('x', 'y')), do not forget \code{header=TRUE}.
 #' @param txt.paths a vector of paths corresponding to the .txt files to import. If not
-#' provided (or \code{NULL}), switches to the automatic version, just as in\link{import_jpg}.
+#' provided (or \code{NULL}), switches to the automatic version, just as in \link{import_jpg}.
 #' See Details there.
 #' @param verbose logical whether to print progress in the console
 #' @param ... arguments to be passed to \link{read.table}, eg. 'skip', 'dec', etc.
@@ -16,11 +16,12 @@
 #' \link{Out}, \link{Opn} and \link{Ldk}.
 #' @seealso babel functions.
 #' @export
-import_txt <- function(txt.paths = NULL, verbose=FALSE, ...) {
-  if (is.null(txt.paths)) {
-    txt.paths <- .lf.auto()
-  }
-  cat(" * Extracting ", length(txt.paths), "..txt coordinates...\n")
+import_txt <- function(txt.paths = .lf.auto(), verbose=FALSE, ...) {
+  # if (is.null(txt.paths)) {
+  #   txt.paths <- .lf.auto()
+  # }
+  if (verbose)
+    cat(" * Extracting ", length(txt.paths), "..txt coordinates...\n")
   if (length(txt.paths) > 10 & verbose) {
     pb <- txtProgressBar(1, length(txt.paths))
     t <- TRUE
@@ -154,7 +155,9 @@ import_Conte <- function(img, x) {
 #' @return a matrix of (x; y) coordinates that can be passed to Out
 #' @seealso babel functions.
 #' @export
-import_jpg1 <- function(jpg.path, auto.notcentered = TRUE, fun.notcentered = NULL,
+import_jpg1 <- function(jpg.path,
+                        auto.notcentered = TRUE,
+                        fun.notcentered = NULL,
                         threshold = 0.5) {
   img <- readJPEG(jpg.path)
   # if a RVB is provided by the way, apply (img, 1:2, mean) is
@@ -260,12 +263,12 @@ import_jpg1 <- function(jpg.path, auto.notcentered = TRUE, fun.notcentered = NUL
 #' }
 #' @family babel functions
 #' @export
-import_jpg <- function(jpg.paths = NULL, auto.notcentered = TRUE,
+import_jpg <- function(jpg.paths = .lf.auto(), auto.notcentered = TRUE,
                        fun.notcentered = NULL, threshold = 0.5, verbose = TRUE) {
   # if not provided
-  if (is.null(jpg.paths)) {
-    jpg.paths <- .lf.auto()
-  }
+  # if (is.null(jpg.paths)) {
+  #   jpg.paths <- .lf.auto()
+  # }
   begin <- Sys.time()
   message("Extracting ", length(jpg.paths), ".jpg outlines...")
   if (length(jpg.paths) > 10 & verbose) {
@@ -297,7 +300,7 @@ import_jpg <- function(jpg.paths = NULL, auto.notcentered = TRUE,
   if (verbose) {
     end <- Sys.time()
     time <- end - begin
-    message("Done in", as.numeric(time), units(time))
+    message("Done in ", round(as.numeric(time), 1), " ", units(time))
   }
   return(res)
 }
@@ -385,7 +388,9 @@ import_StereoMorph_ldk <- function(path, names){
 #' Imports a tps file
 #'
 #' And returns a list of coordinates, curves, scale
-#' @param tps.path lines, typically from \link{readLines}, describing a single shape in tps-like format
+#' @param tps.path lines, typically from \link{readLines}, describing a single shape in tps-like format.
+#'
+#' You will need to manually build your \code{Coo} object from it: eg \code{Out(coo=your_list$coo)}.
 #' @param curves \code{logical} whether to read curves, if any
 #' @return a list with components:
 #' \code{coo} a matrix of coordinates; \code{cur} a list of matrices; \code{scale} the scale as a numeric.
@@ -453,15 +458,23 @@ tps2coo <- function(tps, curves=TRUE){
   scale  <- NULL
   cur <- NULL
   # we read the nb of landmarks
-  coo.nb <- as.numeric(gsub("LM=", "", tps[1]))
+  # some tps files (for outlines?) have a special
+  # format with no LM= but POINTS=
+  gPOINTS <- grep("POINTS=", tps)
+  if (length(gPOINTS)>0){
+    coo.nb <- tps[gPOINTS] %>% gsub("POINTS=", "", .) %>% as.numeric()
+  } else {
+    coo.nb <- as.numeric(gsub("LM=", "", tps[1]))
+  }
   # we read "SCALE=", if any
   scale  <- as.numeric(gsub("SCALE=", "", grep("SCALE=", tps, value=TRUE)))
   # removes the first line "LM=" and, if any, "IMAGE=", "ID=" and "SCALE=" lines
-  rm.ids <- c(1, grep("IMAGE|ID|SCALE", tps))
+  rm.ids <- c(1, grep("IMAGE|ID|SCALE|OUTLINES|POINTS", tps))
   tps <- tps[-rm.ids]
   # this function turns lines of coordinates into a shp
   lines2shp <- function(l) {
-    l %>% strsplit(" ") %>% unlist() %>% as.numeric() %>%
+    l %>% strsplit(" ") %>% unlist() %>%
+      as.numeric() %>%
       matrix(nrow=length(l), byrow=TRUE)
   }
   # here we extract coos and check a bit
