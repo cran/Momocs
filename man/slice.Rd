@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{slice}
 \alias{slice}
-\title{Slices (ala dplyr) on Momocs objects}
+\title{Subset based on positions}
 \usage{
 slice(.data, ...)
 }
@@ -30,9 +30,9 @@ slice(olea, 21:30)
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{filter}}, \code{\link{mutate}},
-  \code{\link{rename}}, \code{\link{rm_uncomplete}},
+  \code{\link{fac_dispatcher}}, \code{\link{filter}},
+  \code{\link{mutate}}, \code{\link{rescale}},
+  \code{\link{rm_harm}}, \code{\link{rm_uncomplete}},
   \code{\link{rw_fac}}, \code{\link{sample_frac}},
-  \code{\link{sample_n}}, \code{\link{select}},
-  \code{\link{subset.Coo}}
+  \code{\link{sample_n}}, \code{\link{select}}
 }

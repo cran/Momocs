@@ -35,6 +35,8 @@
 #' op
 #' # shape reconstruction
 #' opi <- opoly_i(op)
+#' coo_plot(o)
+#' coo_draw(opi)
 #' lines(opi, col='red')
 #' # R2 for degree 1 to 10
 #' r <- numeric()
@@ -136,7 +138,7 @@ opoly.Opn <- function(x,
 #' @param ... useless here
 #' @return when applied on a single shape, a list with components:
 #' \itemize{
-#'  \item \code{coeff} the coefficients (includint the intercept)
+#'  \item \code{coeff} the coefficients (including the intercept)
 #'  \item \code{ortho} whether orthogonal or natural polynomials were fitted
 #'  \item \code{degree} degree of the fit (could be retrieved through \code{coeff} though)
 #'  \item \code{baseline1} the first baseline point (so far the first point)
@@ -154,7 +156,8 @@ opoly.Opn <- function(x,
 #' op
 #' # shape reconstruction
 #' opi <- opoly_i(op)
-#' lines(opi, col='red')
+#' coo_plot(o)
+#' coo_draw(opi, border="red")
 #' # R2 for degree 1 to 10
 #' r <- numeric()
 #' for (i in 1:10) { r[i] <- npoly(o, degree=i)$r2 }
@@ -293,7 +296,6 @@ npoly_i <- function(pol, nb.pts = 120, reregister = TRUE) {
   colnames(coo) <- c("x", "y")
   return(coo)
 }
-
 
 #opoly_shape #TODO
 #npoly_shape #TODO

@@ -32,9 +32,9 @@ calculate a shape.}
 \value{
 A list with components:
 \itemize{
- \item \code{x} \code{vector} of x-coordinates
- \item \code{y} \code{vector} of y-coordinates.
- }
+\item \code{x} \code{vector} of x-coordinates
+\item \code{y} \code{vector} of y-coordinates.
+}
 }
 \description{
 \code{efourier_shape} calculates a 'Fourier elliptical shape' given Fourier
@@ -50,8 +50,6 @@ coefficients will thus increase. See \link{efourier} for the mathematical
 background.
 }
 \examples{
-
-data(bot)
 ef <- efourier(bot[1], 24)
 efourier_shape(ef$an, ef$bn, ef$cn, ef$dn) # equivalent to efourier_i(ef)
 efourier_shape() # is autonomous
@@ -68,5 +66,5 @@ two-dimensional outlines. \emph{Systematic Biology} \bold{34}: 59-68.
 }
 \seealso{
 Other efourier: \code{\link{efourier_i}},
-  \code{\link{efourier_norm}}, \code{\link{efourier}}
+  \code{\link{efourier}}
 }

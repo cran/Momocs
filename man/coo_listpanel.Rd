@@ -14,7 +14,7 @@ coo_listpanel(coo.list, dim, byrow = TRUE, fromtop = TRUE, cols, borders,
 \item{dim}{A \code{vector} of the form \code{(nb.row, nb.cols)} to specify
 the panel display. If missing, shapes are arranged in a square.}
 
-\item{byrow}{\code{logical}. Whether to succesive shape by row or by col.}
+\item{byrow}{\code{logical}. Whether to draw successive shape by row or by col.}
 
 \item{fromtop}{\code{logical}. Whether to display shapes from the top of the
 plotting region.}
@@ -50,11 +50,11 @@ according to a factor, use \link{arrange}.
 coo_listpanel(bot$coo) # equivalent to panel(bot)
 }
 \seealso{
-Other plotting functions: \code{\link{Ntable}},
-  \code{\link{conf_ell}}, \code{\link{coo_arrows}},
+Other plotting functions: \code{\link{coo_arrows}},
   \code{\link{coo_draw}}, \code{\link{coo_lolli}},
   \code{\link{coo_plot}}, \code{\link{coo_ruban}},
   \code{\link{ldk_chull}}, \code{\link{ldk_confell}},
   \code{\link{ldk_contour}}, \code{\link{ldk_labels}},
-  \code{\link{ldk_links}}, \code{\link{plot_devsegments}}
+  \code{\link{ldk_links}}, \code{\link{plot_devsegments}},
+  \code{\link{plot_table}}
 }

@@ -2,22 +2,22 @@ context("coo_ utilities")
 
 # coo_check -----
 test_that("coo_check works fine", {
-  expect_true(is.shp(coo_check(bot[1])))
-  expect_true(is.shp(coo_check(olea[1])))
-  expect_true(is.shp(coo_check(wings[1])))
-  expect_false(is.shp(coo_check(flower[1])))
-  expect_false(is.shp("plop"))
-  expect_true(is.Out(coo_check(bot)))
+  expect_true(is_shp(coo_check(bot[1])))
+  expect_true(is_shp(coo_check(olea[1])))
+  expect_true(is_shp(coo_check(wings[1])))
+  expect_false(is_shp(coo_check(flower[1])))
+  expect_false(is_shp("plop"))
+  expect_true(is_Out(coo_check(bot)))
   bot[1] <- NA
-  expect_error(is.Out(coo_check(bot)))
-  expect_true(is.Opn(coo_check(olea)))
+  expect_error(is_Out(coo_check(bot)))
+  expect_true(is_Opn(coo_check(olea)))
   data(bot)
   olea[1] <- NA
-  expect_error(is.Opn(coo_check(olea)))
+  expect_error(is_Opn(coo_check(olea)))
   data(olea)
-  expect_true(is.Ldk(coo_check(wings)))
+  expect_true(is_Ldk(coo_check(wings)))
   wings[1] <- NA
-  expect_error(is.Ldk(coo_check(wings)))
+  expect_error(is_Ldk(coo_check(wings)))
   data(wings)
   expect_error(coo_check(flower))
 })
@@ -70,24 +70,9 @@ test_that("coo_rotate works fine", {
   shp <- bot[1]
   shp.rot <- coo_rotate(shp, pi/7)
   nr <- nrow(shp)
-  expect_equal(coo_theta3(rbind(shp[24,], c(0, 0), c(1e3, 0))) - pi/7,
-               coo_theta3(rbind(shp.rot[24,], c(0, 0), c(1e3, 0))))
+  expect_equal(.coo_angle_edge1(rbind(shp[24,], c(0, 0), c(1e3, 0))) - pi/7,
+               .coo_angle_edge1(rbind(shp.rot[24,], c(0, 0), c(1e3, 0))))
 })
-
-# coo_rotatecenter ------
-#todo
-
-# coo_align -----
-#todo
-
-# coo_alignxax -----
-#todo
-
-# coo_aligncalliper -----
-#todo
-
-# coo_alignminradius -----
-#todo
 
 # coo_translate -----
 test_that("coo_translate works fine", {

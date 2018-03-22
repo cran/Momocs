@@ -29,14 +29,13 @@ Calculate and display Ptolemaic ellipses which illustrates
 intuitively the principle behing elliptical Fourier analysis.
 }
 \examples{
-data(shapes)
 cat <- shapes[4]
 Ptolemy(cat, main="An EFT cat")
 }
 \references{
 This method has been inspired by the figures found in the followings papers.
 Kuhl FP, Giardina CR. 1982. Elliptic Fourier features of a closed contour.
- \emph{Computer Graphics and Image Processing} \bold{18}: 236-258.
+\emph{Computer Graphics and Image Processing} \bold{18}: 236-258.
 Crampton JS. 1995. Elliptical Fourier shape analysis of fossil bivalves:
 some practical considerations. \emph{Lethaia} \bold{28}: 179-186.
 }

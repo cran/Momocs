@@ -34,7 +34,6 @@ Only for those obtained with \link{efourier}, otherwise a message is returned.
 all A and D coefficients to 0.
 }
 \examples{
-data(bot)
 botf <- efourier(bot, 12)
 botSym <- rm_asym(botf)
 boxplot(botSym)
@@ -67,5 +66,5 @@ and principal component analysis. Annals of Botany, 94(5), 657-64. doi:10.1093/a
 }
 }
 \seealso{
-\link{symmetry}.
+\link{symmetry} and the note there.
 }

@@ -6,11 +6,11 @@
 \usage{
 \method{plot}{PCA}(x, fac, xax = 1, yax = 2, points = TRUE,
   col = "#000000", pch = 20, cex = 0.5, palette = col_solarized,
-  center.origin = FALSE, zoom = 1, bg = par("bg"), grid = TRUE,
-  nb.grids = 3, morphospace = TRUE, pos.shp = c("range", "full", "circle",
-  "xy", "range_axes", "full_axes")[1], amp.shp = 1, size.shp = 1,
-  nb.shp = 12, nr.shp = 6, nc.shp = 5, rotate.shp = 0,
-  flipx.shp = FALSE, flipy.shp = FALSE, pts.shp = 60,
+  center.origin = FALSE, zoom = 1, xlim = NULL, ylim = NULL,
+  bg = par("bg"), grid = TRUE, nb.grids = 3, morphospace = TRUE,
+  pos.shp = c("range", "full", "circle", "xy", "range_axes", "full_axes")[1],
+  amp.shp = 1, size.shp = 1, nb.shp = 12, nr.shp = 6, nc.shp = 5,
+  rotate.shp = 0, flipx.shp = FALSE, flipy.shp = FALSE, pts.shp = 60,
   border.shp = col_alpha("#000000", 0.5), lwd.shp = 1,
   col.shp = col_alpha("#000000", 0.95), stars = FALSE, ellipses = FALSE,
   conf.ellipses = 0.5, ellipsesax = FALSE, conf.ellipsesax = c(0.5, 0.9),
@@ -26,7 +26,7 @@
   title = substitute(x), box = TRUE, old.par = TRUE, ...)
 }
 \arguments{
-\item{x}{an object of class "PCA", typically obtained with \link{PCA}}
+\item{x}{\code{PCA}, typically obtained with \link{PCA}}
 
 \item{fac}{name or the column id from the $fac slot, or a formula combining colum names
 from the $fac slot (cf. examples). A factor or a numeric of the same length
@@ -52,6 +52,10 @@ or for every individual, see examples)}
 
 \item{zoom}{to keep your distances}
 
+\item{xlim}{numeric of length two ; if provided along with ylim, the x and y lims to use}
+
+\item{ylim}{numeric of length two ; if provided along with xlim, the x and y lims to use}
+
 \item{bg}{color for the background}
 
 \item{grid}{logical whether to draw a grid}
@@ -60,9 +64,9 @@ or for every individual, see examples)}
 
 \item{morphospace}{logical whether to add the morphological space}
 
-\item{pos.shp}{passed to \link{pos.shapes}, one of
+\item{pos.shp}{passed to \link{morphospace_positions}, one of
 \code{"range", "full", "circle", "xy", "range_axes", "full_axes"}. Or directly
-a matrix of positions. See \link{pos.shapes}}
+a matrix of positions. See \link{morphospace_positions}}
 
 \item{amp.shp}{amplification factor for shape deformation}
 
@@ -167,6 +171,11 @@ The Momocs' \code{\link{PCA}} plotter with morphospaces and many graphical optio
 Widely inspired by the "layers" philosophy behind graphical functions
 of the ade4 R package.
 }
+\note{
+NAs is \code{$fac} are handled quite experimentally.
+More importantly, as of early 2018, I plan I complete rewrite of
+\code{plot.PCA} and other multivariate plotters.
+}
 \examples{
 \dontrun{
 bot.f <- efourier(bot, 12)
@@ -191,7 +200,6 @@ plot(bot.p, ~type)
 # let's create a dummy factor of the correct length
 # and another added to the $fac with mutate
 # and a numeric of the correct length
-data(bot)
 f <- factor(rep(letters[1:2], 20))
 z <- factor(rep(LETTERS[1:2], 20))
 bot \%<>\% mutate(cs=coo_centsize(.), z=z)
@@ -201,32 +209,26 @@ bp <- bot \%>\% efourier \%>\% PCA
 plot(bp, f)
 # numeric fac are allowed
 plot(bp, "cs", cex=3, color.legend=TRUE)
-# numeric can also be passed on the fly
-plot(bp, 1:40, cex=2)
 # formula allows combinations of factors
 plot(bp, ~type+z)
 
 ### other morphometric approaches works the same
 # open curves
-data(olea)
 op <- npoly(olea, 5)
 op.p <- PCA(op)
 op.p
 plot(op.p, ~ domes + var, morpho=TRUE) # use of formula
 
 # landmarks
-data(wings)
 wp <- fgProcrustes(wings, tol=1e-4)
 wpp <- PCA(wp)
 wpp
 plot(wpp, 1)
 
 # traditionnal measurements
-data(flower)
 flower \%>\% PCA \%>\% plot(1)
 
 # plot.PCA can be used after a PCA
-data(iris)
 PCA(iris[, 1:4], fac=iris$Species)  \%>\% plot(1)
 
 ### Cosmetic options

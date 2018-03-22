@@ -14,13 +14,12 @@
 #' specifying the grouping structure
 #' @param ldk (optionnal) \code{list} of landmarks as row number indices
 #' @return an \code{Opn} object
-#' @family Coo objects
+#' @family classes
 #' @aliases Opn
 #' @examples
 #' #Methods on Opn
 #' methods(class=Opn)
 #' # we load some open outlines. See ?olea for credits
-#' data(olea)
 #' olea
 #' panel(olea)
 #' # orthogonal polynomials
@@ -37,20 +36,20 @@
 #' olda
 #' plot(olda)
 #' @export
-Opn <- function(x, fac = data.frame(), ldk = list()) {
+Opn <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   UseMethod("Opn")
 }
 
 #' @export
-Opn.default <- function(x, fac = data.frame(), ldk = list()) {
-  if (is.shp(x))
+Opn.default <- function(x, fac = dplyr::data_frame(), ldk = list()) {
+  if (is_shp(x))
     Opn(list(x))
   else
     message("an Opn object can only be build from a shape, a list, an array or a Coo object")
 }
 
 #' @export
-Opn.list <- function(x, fac = data.frame(), ldk = list()) {
+Opn.list <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   x <- lapply(x, as.matrix)
   Opn <- structure(list(coo = x, fac = fac, ldk = ldk), class=c("Opn", "Coo"))
   if (!is.null(Opn$fac))
@@ -61,7 +60,7 @@ Opn.list <- function(x, fac = data.frame(), ldk = list()) {
 }
 
 #' @export
-Opn.array <- function(x, fac = data.frame(), ldk = list()) {
+Opn.array <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   x <- a2l(x)
   Opn <- Opn(x, fac = fac, ldk = ldk)
   if (is.null(names(Opn))) names(Opn) <- paste0("shp", 1:length(Opn))
@@ -69,39 +68,38 @@ Opn.array <- function(x, fac = data.frame(), ldk = list()) {
 }
 
 #' @export
-Opn.Coo <- function(x, fac = data.frame(), ldk = list()) {
+Opn.Coo <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   Opn <- Opn(x = x$coo, fac = x$fac, ldk = x$ldk)
   if (is.null(names(Opn))) names(Opn) <- paste0("shp", 1:length(Opn))
   return(Opn)
 }
 
-# The print method for Out objects
-#' @export
-print.Opn <- function(x, ...) {
-  Opn <- validate(x)
-  coo_nb <- length(Opn)
-  if (coo_nb==0){
-    cat("An empty Opn object")
-    return()
-  }
-  ### Header
-  cat("An Opn object with: \n")
-  coo_len <- sapply(Opn$coo, nrow)
-  coo_closed <- sapply(Opn$coo, is_closed)
-  # number of outlines
-  cat(" - $coo:", coo_nb, "open outlines")
-  # number of coordinates
-  cat(" (", round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coordinates)\n", sep="")
-  # number of landmarks
-  if (length(Opn$ldk) != 0) {
-    cat(" - $ldk:", length(Opn$ldk[[1]]), "landmark(s) defined\n")
-  } else {
-    #     cat(" - No landmark defined\n")
-  }
-  # we print the fac
-  .print.fac(Opn$fac)
-}
-
+# # The print method for Out objects
+# #' @export
+# print.Opn <- function(x, ...) {
+#   Opn <- validate(x)
+#   coo_nb <- length(Opn)
+#   if (coo_nb==0){
+#     cat("An empty Opn object")
+#     return()
+#   }
+#   ### Header
+#   cat("An Opn object with: \n")
+#   coo_len <- sapply(Opn$coo, nrow)
+#   coo_closed <- sapply(Opn$coo, coo_is_closed)
+#   # number of outlines
+#   cat(" - $coo:", coo_nb, "open outlines")
+#   # number of coordinates
+#   cat(" (", round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coordinates)\n", sep="")
+#   # number of landmarks
+#   if (length(Opn$ldk) != 0) {
+#     cat(" - $ldk:", length(Opn$ldk[[1]]), "landmark(s) defined\n")
+#   } else {
+#     #     cat(" - No landmark defined\n")
+#   }
+#   # we print the fac
+#   .print.fac(Opn$fac)
+# }
 
 # OpnCoe ---------------------------------------------------------
 #' Builds an OpnCoe object
@@ -121,12 +119,12 @@ print.Opn <- function(x, ...) {
 #' @param mod an R \link{lm} object, used to reconstruct shapes
 #' @param r2 numeric, the r-squared from every model
 #' @return an \code{OpnCoe} object
-#' @family Coe objects
+#' @family classes
 #' @examples
 #' # all OpnCoe classes
 #' methods(class='OpnCoe')
 #' @export
-OpnCoe <- function(coe = matrix(), fac = data.frame(), method = character(),
+OpnCoe <- function(coe = matrix(), fac = dplyr::data_frame(), method = character(),
                    baseline1 = numeric(), baseline2 = numeric(), mod = list(),
                    r2 = numeric()) {
   if (missing(method))
@@ -198,7 +196,7 @@ print.OpnCoe <- function(x, ...) {
   #         ", sd=",        signif(mean(r2), 3),
   #         ", max=",       signif(max(r2), 3), "\n", sep="")}
   # we print the fac
-  .print.fac(OpnCoe$fac)
+  .print_fac(OpnCoe$fac)
 }
 
 ###### end Opn

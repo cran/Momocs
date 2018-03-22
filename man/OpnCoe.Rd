@@ -4,7 +4,7 @@
 \alias{OpnCoe}
 \title{Builds an OpnCoe object}
 \usage{
-OpnCoe(coe = matrix(), fac = data.frame(), method = character(),
+OpnCoe(coe = matrix(), fac = dplyr::data_frame(), method = character(),
   baseline1 = numeric(), baseline2 = numeric(), mod = list(),
   r2 = numeric())
 }
@@ -32,12 +32,14 @@ In Momocs, \code{OpnCoe} classes objects are wrapping around
 lists of morphometric coefficients, along with other informations,
 on which generic methods such as plotting methods (e.g. \link{boxplot})
 and specific methods can be applied.
- \code{OpnCoe} objects are primarily \code{\link{Coe}} objects.
+\code{OpnCoe} objects are primarily \code{\link{Coe}} objects.
 }
 \examples{
 # all OpnCoe classes
 methods(class='OpnCoe')
 }
 \seealso{
-Other Coe objects: \code{\link{Coe}}, \code{\link{OutCoe}}
+Other classes: \code{\link{Coe}}, \code{\link{Coo}},
+  \code{\link{Opn}}, \code{\link{OutCoe}},
+  \code{\link{Out}}, \code{\link{TraCoe}}
 }

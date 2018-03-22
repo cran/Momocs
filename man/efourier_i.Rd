@@ -30,7 +30,6 @@ See \link{efourier} for the mathematical background.
 Directly borrowed for Claude (2008), and also called \code{iefourier} there.
 }
 \examples{
-data(bot)
 coo <- bot[1]
 coo_plot(coo)
 ef  <- efourier(coo, 12)
@@ -45,6 +44,6 @@ Ferson S, Rohlf FJ, Koehn RK. 1985. Measuring shape variation of
 two-dimensional outlines. \emph{Systematic Biology} \bold{34}: 59-68.
 }
 \seealso{
-Other efourier: \code{\link{efourier_norm}},
-  \code{\link{efourier_shape}}, \code{\link{efourier}}
+Other efourier: \code{\link{efourier_shape}},
+  \code{\link{efourier}}
 }

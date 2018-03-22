@@ -2,29 +2,70 @@
 % Please edit documentation in R/coo-utilities.R
 \name{coo_scale}
 \alias{coo_scale}
+\alias{coo_scale}
+\alias{coo_scale.default}
+\alias{coo_scale}
+\alias{coo_scale.Coo}
+\alias{coo_scale}
+\alias{coo_scalex}
+\alias{coo_scale}
+\alias{coo_scalex.default}
+\alias{coo_scale}
+\alias{coo_scalex.Coo}
+\alias{coo_scale}
+\alias{coo_scaley}
+\alias{coo_scale}
+\alias{coo_scaley.default}
+\alias{coo_scale}
+\alias{coo_scaley.Coo}
 \title{Scales coordinates}
 \usage{
 coo_scale(coo, scale)
+
+\method{coo_scale}{default}(coo, scale = coo_centsize(coo))
+
+\method{coo_scale}{Coo}(coo, scale)
+
+coo_scalex(coo, scale = 1)
+
+\method{coo_scalex}{default}(coo, scale = 1)
+
+\method{coo_scalex}{Coo}(coo, scale = 1)
+
+coo_scaley(coo, scale = 1)
+
+\method{coo_scaley}{default}(coo, scale = 1)
+
+\method{coo_scaley}{Coo}(coo, scale = 1)
 }
 \arguments{
-\item{coo}{a \code{matrix} of (x; y) coordinates or a \code{list}, or any \link{Coo} object.}
+\item{coo}{\code{matrix} of \code{(x; y)} coordinates or any \link{Coo} object.}
 
-\item{scale}{the scaling factor, by default, the centroid size.}
+\item{scale}{the scaling factor,
+by default, the centroid size for \code{coo_scale}; 1 for \code{scalex} and \code{scaley}.}
 }
 \value{
-a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
+a single shape or a \code{Coo} object
 }
 \description{
-Scales the coordinates by a 'scale' factor. If not provided,
+\code{coo_scale} scales the coordinates by a 'scale' factor. If not provided,
 assumed to be the centroid size. It involves three steps: centering from current position,
-dividing coordinates by 'scale', pusing back to the original position.
+dividing coordinates by 'scale', pushing back to the original position.
+\code{coo_scalex} applies a scaling (or shrinking) parallel to the x-axis,
+\code{coo_scaley} does the same for the y axis.
 }
 \examples{
-coo_plot(bot[1])
-coo_plot(coo_scale(bot[1]))
-# on Coo objects
-stack(coo_center(bot))
-stack(coo_scale(coo_center(bot)))
+# on a single shape
+b <- bot[1] \%>\% coo_center \%>\% coo_scale
+coo_plot(b, lwd=2)
+coo_draw(coo_scalex(b, 1.5), bor="blue")
+coo_draw(coo_scaley(b, 0.5), bor="red")
+# this also works on Coo objects:
+stack(bot)
+bot \%>\% coo_center \%>\% coo_scale \%>\% stack
+bot \%>\% coo_center \%>\% coo_scaley(0.5) \%>\% stack
+#equivalent to:
+#bot \%>\% coo_center \%>\% coo_scalex(2) \%>\% stack
 }
 \seealso{
 Other coo_ utilities: \code{\link{coo_aligncalliper}},
@@ -34,17 +75,18 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_boundingbox}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
   \code{\link{coo_center}}, \code{\link{coo_centpos}},
-  \code{\link{coo_chull_onion}}, \code{\link{coo_close}},
-  \code{\link{coo_down}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
-  \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
-  \code{\link{coo_left}}, \code{\link{coo_nb}},
-  \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
-  \code{\link{coo_perim}}, \code{\link{coo_rev}},
-  \code{\link{coo_right}}, \code{\link{coo_rotatecenter}},
-  \code{\link{coo_rotate}}, \code{\link{coo_samplerr}},
-  \code{\link{coo_sample}}, \code{\link{coo_scalex}},
+  \code{\link{coo_close}}, \code{\link{coo_down}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
+  \code{\link{coo_interpolate}},
+  \code{\link{coo_is_closed}}, \code{\link{coo_jitter}},
+  \code{\link{coo_left}},
+  \code{\link{coo_likely_clockwise}}, \code{\link{coo_nb}},
+  \code{\link{coo_perim}}, \code{\link{coo_range}},
+  \code{\link{coo_rev}}, \code{\link{coo_right}},
+  \code{\link{coo_rotatecenter}}, \code{\link{coo_rotate}},
+  \code{\link{coo_sample_prop}},
+  \code{\link{coo_samplerr}}, \code{\link{coo_sample}},
   \code{\link{coo_shearx}}, \code{\link{coo_slice}},
   \code{\link{coo_slidedirection}},
   \code{\link{coo_slidegap}}, \code{\link{coo_slide}},
@@ -52,9 +94,7 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_template}}, \code{\link{coo_trans}},
   \code{\link{coo_trimbottom}}, \code{\link{coo_trimtop}},
   \code{\link{coo_trim}}, \code{\link{coo_up}},
-  \code{\link{is_clockwise}}, \code{\link{is_closed}},
   \code{\link{is_equallyspacedradii}}
 
-Other scaling functions: \code{\link{coo_scalex}},
-  \code{\link{coo_template}}
+Other scaling functions: \code{\link{coo_template}}
 }

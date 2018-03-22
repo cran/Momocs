@@ -17,7 +17,6 @@ Coo(...)
 Useful shortcuts are described below. See \code{browseVignettes("Momocs")} for
 a detail of the design behind Momocs' classes.
 
-
 \code{Coo} class is the 'parent' class of the following 'child' classes \itemize{
 \item \code{\link{Out}} for closed \bold{out}lines
 \item \code{\link{Opn}} for \bold{op}e\bold{n} outlines
@@ -39,9 +38,13 @@ with \code{methods(class=Coo)}.
 \dontrun{
 # to see all methods for Coo objects.
 methods(class='Coo')
+
+# to see all methods for Out objects.
+methods(class='Out') # same for Opn and Ldk
+
 # Let's take an Out example. But all methods shown here
-# work on Ldk (try data(wings) ) and on Opn (try data(olea))
-data(bot)
+# work on Ldk (try on 'wings') and on Opn ('olea')
+bot
 
 # Primarily a 'Coo' object, but also an 'Out'
 class(bot)
@@ -84,5 +87,7 @@ names(bot2) <- paste0('newnames', 1:length(bot2)) # define new names
 }
 }
 \seealso{
-Other Coo objects: \code{\link{Opn}}, \code{\link{Out}}
+Other classes: \code{\link{Coe}}, \code{\link{OpnCoe}},
+  \code{\link{Opn}}, \code{\link{OutCoe}},
+  \code{\link{Out}}, \code{\link{TraCoe}}
 }

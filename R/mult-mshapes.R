@@ -15,22 +15,20 @@
 #' @return the averaged shape; on Coe objects, a list with two components: \code{$Coe} object of the same class, and
 #' \code{$shp} a list of matrices of (x, y) coordinates.
 #' @details Note that on Coe objects, the average can be made within levels of the passed $fac (if any);
-#' in that case, the other columns of the fac are also returned, usingthe first row within every level, but they may
-#' not be representive of the group. Also notice that for PCA objects, mean scores are returned
-#' within a PCA object (accesible with PCA$x) that can be plotted directly but other slots are left
+#' in that case, the other columns of the fac are also returned, using the first row within every level, but they may
+#' not be representative of the group. Also notice that for PCA objects, mean scores are returned
+#' within a PCA object (accessible with `PCA$x`) that can be plotted directly but other slots are left
 #' unchanged.
 #' @rdname mshapes
+#' @family multivariate
 #' @examples
 #' #### on shapes
-#' data(wings)
 #' mshapes(wings)
 #' mshapes(wings$coo)
-#' data(bot)
 #' mshapes(coo_sample(bot, 24)$coo)
 #' stack(wings)
 #' coo_draw(mshapes(wings))
 #'
-#' data(bot)
 #' bot.f <- efourier(bot, 12)
 #' mshapes(bot.f) # the mean (global) shape
 #' ms <- mshapes(bot.f, 'type')
@@ -41,13 +39,11 @@
 #' coo_draw(ms$whisky, border='forestgreen')
 #' tps_arr(ms$whisky, ms$beer) #etc.
 #'
-#' data(olea)
 #' op <- npoly(filter(olea, view=='VL'), 5)
 #' ms <- mshapes(op, 'var') #etc
 #' ms$Coe
 #' panel(Opn(ms$shp), names=TRUE)
 #'
-#' data(wings)
 #' wp <- fgProcrustes(wings, tol=1e-4)
 #' ms <- mshapes(wp, 1)
 #' ms$Coe
@@ -95,7 +91,7 @@ mshapes.OutCoe <- function(x, fac, FUN=mean, nb.pts = 120, ...) {
         return(efourier_i(xf, nb.pts = nb.pts))
     }
 
-    f <- OutCoe$fac[, fac]
+    f <- fac_dispatcher(x, fac)
     fl <- levels(f)
     shp <- list()
     rows <- numeric()
@@ -138,7 +134,8 @@ mshapes.OpnCoe <- function(x, fac, FUN=mean, nb.pts = 120, ...) {
         return(method_i(mod.mshape))
     }
 
-    f <- OpnCoe$fac[, fac]
+    f <- fac_dispatcher(x, fac)
+
     fl <- levels(f)
     shp <- list()
     rows <- numeric()
@@ -170,7 +167,9 @@ mshapes.LdkCoe <- function(x, fac, FUN=mean, ...) {
         message("no 'fac' provided. Returns meanshape")
         return(mshapes(LdkCoe$coo))
     }
-    f <- LdkCoe$fac[, fac]
+
+    f <- fac_dispatcher(x, fac)
+
     fl <- levels(f)
     shp <- list()
     rows <- numeric()
@@ -188,7 +187,7 @@ mshapes.LdkCoe <- function(x, fac, FUN=mean, ...) {
 mshapes.PCA <- function(x, fac, ...){
   # cehck for single individuals within a group..
   x0 <- x
-  f <- x$fac[, fac]
+  f <- fac_dispatcher(x, fac)
   x <- x$x
   res <- matrix(NA, nrow=nlevels(f), ncol=ncol(x),
                 dimnames=list(levels(f), colnames(x)))
@@ -202,7 +201,7 @@ mshapes.PCA <- function(x, fac, ...){
   }
   x0$x <- res
   # should retain the true name and not "fac"
-  x0$fac <- data.frame(fac=levels(f))
+  x0$fac <- dplyr::data_frame(fac=levels(f))
   x0
 }
 

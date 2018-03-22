@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{at_least}
 \alias{at_least}
-\title{Retains group with at least a certain number of individuals}
+\title{Retain groups with at least n shapes}
 \usage{
 at_least(x, fac, N)
 }
@@ -20,8 +20,7 @@ Examples are self-speaking.
 if N is too ambitious the original object is returned with a message
 }
 \examples{
-data(trilo)
-table(trilo, "onto")
+table(trilo$onto)
 at_least(trilo, "onto", 9)
 at_least(trilo, "onto", 16)
 at_least(trilo, "onto", 2000) # too ambitious !
@@ -29,10 +28,10 @@ at_least(trilo, "onto", 2000) # too ambitious !
 \seealso{
 Other handling functions: \code{\link{arrange}},
   \code{\link{chop}}, \code{\link{combine}},
-  \code{\link{dissolve}}, \code{\link{filter}},
-  \code{\link{mutate}}, \code{\link{rename}},
+  \code{\link{dissolve}}, \code{\link{fac_dispatcher}},
+  \code{\link{filter}}, \code{\link{mutate}},
+  \code{\link{rescale}}, \code{\link{rm_harm}},
   \code{\link{rm_uncomplete}}, \code{\link{rw_fac}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

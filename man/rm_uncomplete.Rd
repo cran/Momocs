@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{rm_uncomplete}
 \alias{rm_uncomplete}
-\title{Removes shapes with incomplete slices}
+\title{Remove shapes with incomplete slices}
 \usage{
 rm_uncomplete(x, id, by)
 }
@@ -26,25 +26,25 @@ data(olea)
 # we select the var Aglan since it is the only one complete
 ol <- filter(olea, var == "Aglan")
 # everything seems fine
-table(ol, "view", "ind")
+table(ol$view, ol$ind)
 # indeed
 rm_uncomplete(ol, id="ind", by="view")
 
 # we mess the ol object by removing a single shape
 ol.pb <- slice(ol, -1)
-table(ol.pb, "view", "ind")
+table(ol.pb$view, ol.pb$ind)
 # the counterpart has been removed with a notice
 ol.ok <- rm_uncomplete(ol.pb, "ind", "view")
 # now you can combine them
-table(ol.ok, "view", "ind")
+table(ol.ok$view, ol.ok$ind)
 }
 \seealso{
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{filter}}, \code{\link{mutate}},
-  \code{\link{rename}}, \code{\link{rw_fac}},
+  \code{\link{fac_dispatcher}}, \code{\link{filter}},
+  \code{\link{mutate}}, \code{\link{rescale}},
+  \code{\link{rm_harm}}, \code{\link{rw_fac}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

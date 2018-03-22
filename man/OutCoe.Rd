@@ -4,7 +4,7 @@
 \alias{OutCoe}
 \title{Builds an OutCoe object}
 \usage{
-OutCoe(coe = matrix(), fac = data.frame(), method, norm)
+OutCoe(coe = matrix(), fac = dplyr::data_frame(), method, norm)
 }
 \arguments{
 \item{coe}{\code{matrix} of harmonic coefficients}
@@ -24,7 +24,7 @@ In Momocs, \code{OutCoe} classes objects are wrapping around
 lists of morphometric coefficients, along with other informations,
 on which generic methods such as plotting methods (e.g. \link{boxplot})
 and specific methods can be applied.
- \code{OutCoe} objects are primarily \code{\link{Coe}} objects.
+\code{OutCoe} objects are primarily \code{\link{Coe}} objects.
 }
 \details{
 These methods can be applied on \code{Out} objects:
@@ -34,5 +34,7 @@ These methods can be applied on \code{Out} objects:
 methods(class='OutCoe')
 }
 \seealso{
-Other Coe objects: \code{\link{Coe}}, \code{\link{OpnCoe}}
+Other classes: \code{\link{Coe}}, \code{\link{Coo}},
+  \code{\link{OpnCoe}}, \code{\link{Opn}},
+  \code{\link{Out}}, \code{\link{TraCoe}}
 }

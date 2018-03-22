@@ -4,14 +4,12 @@
 \alias{fgProcrustes}
 \title{Full Generalized Procrustes alignment between shapes}
 \usage{
-fgProcrustes(x, tol, verbose, coo)
+fgProcrustes(x, tol, coo)
 }
 \arguments{
 \item{x}{an array, a list of configurations, or an \link{Out}, \link{Opn} or \link{Ldk} object}
 
 \item{tol}{numeric when to stop iterations}
-
-\item{verbose}{logical whether to print outputs (iteration number, and gain)}
 
 \item{coo}{logical, when working on \code{Out} or \code{Opn}, whether to use \code{$coo} rather than \code{$ldk}}
 }
@@ -22,7 +20,7 @@ a list with components:
 \item \code{iterationnumber} number of iterations
 \item \code{Q} convergence criterion
 \item \code{Qi} full list of Q
-\item \code{Qd} difference between succesive Q
+\item \code{Qd} difference between successive Q
 \item \code{interproc.dist} minimal sum of squared norms of pairwise differences between
 all shapes in the superimposed sample
 \item \code{mshape} mean shape configuration
@@ -39,6 +37,8 @@ but in that case, all shapes must have the same number of coordinates (\link{coo
 }
 \note{
 Slightly less optimized than procGPA in the shapes package (~20% on my machine).
+Will be optimized when performance will be the last thing to improve!
+Silent message and progress bars (if any) with \code{options("verbose"=FALSE)}.
 }
 \examples{
 \dontrun{

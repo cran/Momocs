@@ -1,16 +1,10 @@
 # PCA plotters ------
 
-### if high nb of group or if long, abbreviate auto
-### change labelsgroups in lda
-### cahnge confell in lda
-### integrate .cex
-
-#todo: add deformation grids on the extreme PC axes (pos / meanshape)
 #' Plots Principal Component Analysis
 #'
 #' The Momocs' \code{\link{PCA}} plotter with morphospaces and many graphical options.
 #'
-#' @param x an object of class "PCA", typically obtained with \link{PCA}
+#' @param x `PCA`, typically obtained with [PCA]
 #' @param fac name or the column id from the $fac slot, or a formula combining colum names
 #' from the $fac slot (cf. examples). A factor or a numeric of the same length
 #' can also be passed on the fly.
@@ -25,13 +19,15 @@
 #' @param palette a \link{palette}
 #' @param center.origin logical whether to center the plot onto the origin
 #' @param zoom to keep your distances
+#' @param xlim numeric of length two ; if provided along with ylim, the x and y lims to use
+#' @param ylim numeric of length two ; if provided along with xlim, the x and y lims to use
 #' @param bg color for the background
 #' @param grid logical whether to draw a grid
 #' @param nb.grids and how many of them
 #' @param morphospace logical whether to add the morphological space
-#' @param pos.shp passed to \link{pos.shapes}, one of
+#' @param pos.shp passed to \link{morphospace_positions}, one of
 #' \code{"range", "full", "circle", "xy", "range_axes", "full_axes"}. Or directly
-#' a matrix of positions. See \link{pos.shapes}
+#' a matrix of positions. See \link{morphospace_positions}
 #' @param amp.shp amplification factor for shape deformation
 #' @param size.shp the size of the shapes
 #' @param nb.shp (pos.shp="circle") the number of shapes on the compass
@@ -83,6 +79,10 @@
 #' @details Widely inspired by the "layers" philosophy behind graphical functions
 #' of the ade4 R package.
 #' @seealso \link{plot.LDA}
+#' @note  NAs is \code{$fac} are handled quite experimentally.
+#' More importantly, as of early 2018, I plan I complete rewrite of
+#' \code{plot.PCA} and other multivariate plotters.
+#'
 #' @examples
 #' \dontrun{
 #' bot.f <- efourier(bot, 12)
@@ -107,7 +107,6 @@
 #' # let's create a dummy factor of the correct length
 #' # and another added to the $fac with mutate
 #' # and a numeric of the correct length
-#' data(bot)
 #' f <- factor(rep(letters[1:2], 20))
 #' z <- factor(rep(LETTERS[1:2], 20))
 #' bot %<>% mutate(cs=coo_centsize(.), z=z)
@@ -117,32 +116,26 @@
 #' plot(bp, f)
 #' # numeric fac are allowed
 #' plot(bp, "cs", cex=3, color.legend=TRUE)
-#' # numeric can also be passed on the fly
-#' plot(bp, 1:40, cex=2)
 #' # formula allows combinations of factors
 #' plot(bp, ~type+z)
 #'
 #' ### other morphometric approaches works the same
 #' # open curves
-#' data(olea)
 #' op <- npoly(olea, 5)
 #' op.p <- PCA(op)
 #' op.p
 #' plot(op.p, ~ domes + var, morpho=TRUE) # use of formula
 #'
 #' # landmarks
-#' data(wings)
 #' wp <- fgProcrustes(wings, tol=1e-4)
 #' wpp <- PCA(wp)
 #' wpp
 #' plot(wpp, 1)
 #'
 #' # traditionnal measurements
-#' data(flower)
 #' flower %>% PCA %>% plot(1)
 #'
 #' # plot.PCA can be used after a PCA
-#' data(iris)
 #' PCA(iris[, 1:4], fac=iris$Species)  %>% plot(1)
 #'
 #' ### Cosmetic options
@@ -203,7 +196,7 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
                      #points arguments
                      points=TRUE, col="#000000", pch=20, cex=0.5, palette=col_solarized,
                      #.frame
-                     center.origin=FALSE, zoom=1, bg=par("bg"),
+                     center.origin=FALSE, zoom=1, xlim=NULL, ylim=NULL, bg=par("bg"),
                      #.grid
                      grid=TRUE, nb.grids=3,
                      #shapes
@@ -265,26 +258,38 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
     fac <- NULL
     col.groups <- col
   } else {
-    # fac provided ------------------------
-    # fac provided, as formula ============
-    if (class(fac) == "formula") {
-      column_name <- attr(terms(fac), "term.labels")
-      # we check for wrong formula
-      if (any(is.na(match(column_name, colnames(PCA$fac)))))
-        stop("formula provided must match with $fac column names")
-      # otherwise we retrive the column(s)
-      fac <- PCA$fac[, column_name]
-      # multicolumn/fac case
-      if (is.data.frame(fac))
-        fac <- factor(apply(fac, 1, paste, collapse="_"))
-    }
-    # fac provided, as column name or id
-    if (length(fac)==1){
-      fac <- PCA$fac[, fac]
-    }
+    # # fac provided ------------------------
+    # # fac provided, as formula ============
+    # if (class(fac) == "formula") {
+    #   column_name <- attr(terms(fac), "term.labels")
+    #   # we check for wrong formula
+    #   if (any(is.na(match(column_name, colnames(PCA$fac)))))
+    #     stop("formula provided must match with $fac column names")
+    #   # otherwise we retrive the column(s)
+    #   fac <- PCA$fac[, column_name]
+    #   # multicolumn/fac case
+    #   if (is.data.frame(fac))
+    #     fac <- factor(apply(fac, 1, paste, collapse="_"))
+    # }
+    # # fac provided, as column name or id
+    # if (length(fac)==1){
+    #   fac <- PCA$fac[, fac]
+    # }
+
+    fac <- fac_dispatcher(x, fac)
 
     # if fac is a factor
     if (is.factor(fac)){
+
+
+      # handles NAs
+      nas <- which(is.na(fac))
+      if (length(nas)>0){
+        fac <- factor(fac[-nas])
+        xy <- xy[-nas,]
+      }
+      # end NA patch
+
       if (!missing(col)){
         if (length(col)==nlevels(fac)) {
           col.groups <- col
@@ -315,18 +320,19 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
   if (is.numeric(fac)){
     if (missing(col)){
       if (missing(palette)){
-        palette <- col_gallus
+        palette <- pal_qual
       }
       cols_breaks = 1000
       cols_all <- palette(cols_breaks)
       cols_id <- fac  %>% .normalize()  %>% cut(breaks = cols_breaks)  %>% as.numeric()
       col <- cols_all[cols_id]
+      col.groups <- pal_qual(1)
     }
   }
   # if Rcolors are passed...
-  if (any(col %in% colors()) & any(col.groups %in% colors())){
-    col.groups[which(col.groups %in% colors())] %<>% .rcolors2hex()
-    col[which(col %in% colors())] %<>% .rcolors2hex()
+  if (any(col %in% grDevices::colors()) & any(col.groups %in% grDevices::colors())){
+    col.groups[which(col.groups %in% grDevices::colors())] %<>% .rcolors2hex()
+    col[which(col %in% grDevices::colors())] %<>% .rcolors2hex()
   }
 
   # cosmetics
@@ -346,7 +352,7 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
   if (old.par) on.exit(par(opar))
   par(mar = rep(0.1, 4)) #0.1
   # we initate it
-  .frame(xy, center.origin, zoom=zoom, bg=bg)
+  .frame(xy, xlim=xlim, ylim=ylim, center.origin, zoom=zoom, bg=bg)
   if (grid)     .grid(nb.grids)
 
   # if numeric fac, we add the (cheap) legend
@@ -414,68 +420,21 @@ plot.PCA <- function(x, fac, xax=1, yax=2,
   if (box) box()
   # we return a df
   if (is.null(fac))
-    invisible(data.frame(x=xy[, 1], y=xy[, 2]))
+    invisible(dplyr::data_frame(x=xy[, 1], y=xy[, 2]))
   else
-    invisible(data.frame(x=xy[, 1], y=xy[, 2], fac=fac))
-}
-
-#' #' @describeIn plot.PCA
-#' #' @export
-#' mplot <- plot.PCA
-
-#' Plots a combination of the three first PCs
-#'
-#' Creates a 2 x 3 layout with, from top to bottom and form left to right: PC1-PC2,
-#' PC1-PC3, PC2-3, and the barplot of eigenvalues percentages.
-#' @param PCA a \link{PCA} object
-#' @param ... additional arguments to fed \link{plot.PCA}
-#' @rdname plot3.PCA
-#' @examples
-#' data(bot)
-#' bot.f <- efourier(bot, 12)
-#' bot.p <- PCA(bot.f)
-#' plot3(bot.p) # no groups
-#' plot3(bot.p, 1) # groups
-#' plot3(bot.p, "type", pos.shp="circle") # all plot.PCA args should work
-#' @export
-plot3 <- function(PCA, ...){UseMethod("plot3")}
-#' @rdname plot3.PCA
-#' @export
-plot3.PCA <- function(PCA,  ... ){
-  op1 <- par(mfrow=c(2, 2))
-  on.exit(par(op1))
-  # The three plot.PCA plots (we also prepare the df)
-  df <- plot(PCA, xax=1, yax=2, title=paste0(substitute(PCA),": ", "PC1-PC2"), eigen=FALSE, ...)
-  plot(PCA, xax=2, yax=3, title=paste0(substitute(PCA),": ", "PC2-PC3"), eigen=FALSE, ...)
-  plot(PCA, xax=1, yax=3, title=paste0(substitute(PCA),": ", "PC1-PC3"), eigen=FALSE,  ...)
-  # The eigen value plot
-  op2 <- par(mar=c(3, 8, 4, 8), xpd=NA)
-  var <- PCA$sdev^2
-  pc <- 100*var/sum(var)
-  cols <- rep("grey80", 5)
-  cols[1:3] <- "grey40"
-  v <- pc[1:5]
-  bp <- barplot(v, col=cols, border=NA, axes=FALSE, main="Eigenvalues")
-  text(bp, v+2, labels = paste0(round(v, 1), "%"), cex=0.8)
-  axis(1, at = bp, labels=paste0("PC", 1:5), line = -1, tick = FALSE, cex.axis=0.8)
-  # we return a df
-  if (is.null(df$fac))
-    invisible(data.frame(x=PCA$x[, 1], y=PCA$x[, 2], z=PCA$x[, 3]))
-  else
-    invisible(data.frame(x=PCA$x[, 1], y=PCA$x[, 2], z=PCA$x[, 3], fac=df$fac))
+    invisible(dplyr::data_frame(x=xy[, 1], y=xy[, 2], fac=fac))
 }
 
 # Boxplot ---------
 #' Boxplot on PCA objects
 #'
 # @method boxplot PCA
-#' @param x an object of class "PCA", typically obtained with \link{PCA}
+#' @param x `PCA`, typically obtained with [PCA]
 #' @param fac factor, or a name or the column id from the $fac slot
-#' @param nax the range of PC to plot
+#' @param nax the range of PC to plot (1 to 99pc total variance by default)
 #' @param ... useless here
 #' @return a ggplot object
 #' @examples
-#' data(bot)
 #' bot.f <- efourier(bot, 12)
 #' bot.p <- PCA(bot.f)
 #' boxplot(bot.p)
@@ -483,12 +442,19 @@ plot3.PCA <- function(PCA,  ... ){
 #' #p +  theme_minimal() + scale_fill_grey()
 #' #p + facet_wrap(~PC, scales = "free")
 #' @export
-boxplot.PCA <- function(x, fac=NULL, nax=1:3, ...){
+boxplot.PCA <- function(x, fac=NULL, nax, ...){
   PCA <- x
+  if (missing(nax))
+    nax <- 1:scree_min(x)
   if (max(nax) > ncol(PCA$x)) nax <- 1:ncol(PCA$x)
   if (is.null(fac)) {
     df <- data.frame(PCA$x[, nax])
-    df <- melt(df, id.vars=ncol(df), variable.name="PC")
+    df <- df %>% seq_along %>%
+      lapply(function(i) data.frame(Var1=rownames(df),
+                                    Var2=colnames(df)[i],
+                                    value=df[,i])) %>%
+      do.call("rbind", .) %>%
+      `colnames<-`(c("score", "PC", "value"))
     gg <- ggplot(data=df, aes_string(x="PC", y="value")) +
       geom_boxplot() + labs(x=NULL, y="score")
     return(gg)
@@ -501,20 +467,23 @@ boxplot.PCA <- function(x, fac=NULL, nax=1:3, ...){
     } else {
       ### fac provided
       # fac provided, as formula
-      if (class(fac)=="formula"){
-        f0 <- PCA$fac[, attr(terms(fac), "term.labels")]
-        fac <- interaction(f0)
-      }
-      # fac provided, as column name or id
-      if (!is.factor(fac)) { fac <- factor(PCA$fac[, fac]) }
-      fac <- factor(fac) # I love R
-      df <- data.frame(PCA$x[, nax], fac=fac)
-      df <- melt(df, id.vars=ncol(df), variable.name="PC")
+
+      fac <- fac_dispatcher(x, fac)
+
+      df <- data.frame(PCA$x[, nax])
+      df <- df %>% seq_along %>%
+        lapply(function(i) data.frame(fac=fac,
+                                      Var1=rownames(df),
+                                      Var2=colnames(df)[i],
+                                      value=df[,i])) %>%
+        do.call("rbind", .) %>%
+        `colnames<-`(c("fac", "name", "PC", "value"))
       gg <- ggplot(data=df, aes_string(x="PC", y="value", fill="fac")) +
         geom_boxplot() + labs(x=NULL, y="score", fill=NULL)
     }
     return(gg)
-  }}
+  }
+}
 
 
 # PCcontrib ----------
@@ -522,15 +491,14 @@ boxplot.PCA <- function(x, fac=NULL, nax=1:3, ...){
 #'
 #' Calculates and plots shape variation along Principal Component axes.
 #'
-#' @param PCA a \code{\link{PCA}} object
-#' @param nax a single or a range of PC axes
+#' @param PCA a `PCA` object
+#' @param nax the range of PCs to plot (1 to 99pc total variance by default)
 #' @param sd.r a single or a range of mean +/- sd values (eg: c(-1, 0, 1))
 #' @param gap for combined-Coe, an adjustment variable for gap between shapes. (bug)Default
 #' to 1 (whish should never superimpose shapes), reduce it to get a more compact plot.
 #' @param ... additional parameter to pass to \code{\link{coo_draw}}
 #' @return (invisibly) a list with \code{gg} the ggplot object and \code{shp} the list of shapes.
 #' @examples
-#' data(bot)
 #' bot.p <- PCA(efourier(bot, 12))
 #' PCcontrib(bot.p)
 #' \dontrun{
@@ -540,17 +508,22 @@ boxplot.PCA <- function(x, fac=NULL, nax=1:3, ...){
 #' }
 #' @rdname PCcontrib
 #' @export
-PCcontrib <- function(PCA, ...){UseMethod("PCcontrib")}
+PCcontrib <- function(PCA, ...){
+  UseMethod("PCcontrib")
+}
+
 #' @rdname PCcontrib
 #' @export
 PCcontrib.PCA <-
   function(PCA,
-           nax=1:4,
+           nax,
            sd.r=c(-2, -1, -0.5, 0, 0.5, 1, 2),
            gap=1,
            ...){
     x <- PCA
     shp <- list()
+    if (missing(nax))
+      nax <- 1:scree_min(x)
     for (i in seq(along=nax)){
       sd.i <- sd(x$x[, nax[i]])
       pos.i <- data.frame(x=sd.r*sd.i, y=rep(0, length(sd)))
@@ -577,6 +550,139 @@ PCcontrib.PCA <-
 
     list(gg=gg, shp=shp) %>% invisible()
   }
+
+
+#' Methods for PCA eigen values
+#'
+#' A set of functions around PCA/LDA eigen/trace. \code{scree} calculates their proportion and cumulated proportion;
+#' \code{scree_min} returns the minimal number of axis to use to retain a given proportion; \code{scree_plot} displays a screeplot.
+#'
+#' @param x a \link{PCA} object
+#' @param nax numeric range of axis to consider
+#' @param prop numeric how many axis are enough this proportion of variance, if too high then number of axis is returned.
+#' @return scree returns a data.frame, scree_min a numeric, scree_plot a ggplot.
+#' @examples
+#' # On PCA
+#' bp <- PCA(efourier(bot))
+#' scree(bp)
+#' scree_min(bp, 0.99)
+#' scree_min(bp, 1)
+#'
+#' scree_plot(bp)
+#' scree_plot(bp, 1:5)
+#'
+#' # on LDA, it uses svd
+#' bl <- LDA(PCA(opoly(olea)), "var")
+#' scree(bl)
+#'
+#' @export
+#' @rdname scree
+scree <- function(x, nax) {
+  UseMethod("scree")}
+
+#' @export
+#' @rdname scree
+scree.PCA <- function(x, nax=1:10){
+  eig <- (x$sdev^2)
+  eig <- eig / sum(eig)
+  if (max(nax)>length(eig)) nax <- 1:length(eig)
+  eig <- eig[nax]
+  df <-  dplyr::data_frame(axis=ordered(1:length(eig)), proportion=eig, cumsum=cumsum(eig))
+  df
+}
+
+#' @export
+#' @rdname scree
+scree.LDA <- function(x, nax=1:10){
+  eig <- (x$mod$svd^2)
+  eig <- eig / sum(eig)
+  if (max(nax)>length(eig)) nax <- 1:length(eig)
+  eig <- eig[nax]
+  df <-  dplyr::data_frame(axis=ordered(1:length(eig)), proportion=eig, cumsum=cumsum(eig))
+  df
+}
+
+#' @export
+#' @rdname scree
+scree_min <- function(x, prop=0.99){
+  enough <- scree(x)$cumsum >= prop
+  ifelse(any(enough), min(which(enough)), length(enough))
+}
+
+#' @export
+#' @rdname scree
+scree_plot <- function(x, nax=1:10){
+  df <- scree(x, nax)
+  gg <- ggplot(df, aes_string(x="axis", y="proportion")) +
+    geom_hline(yintercept=c(0.5, 0.90, 0.95, 0.99), linetype=2, alpha=0.5) +
+    geom_bar(stat="identity") + geom_text(label=round(df$cumsum, 3), vjust=0) +
+    labs(x="Components", y="Proportion")
+  gg
+}
+
+
+# selected=NULL,
+# return(df)
+# fills <- rep("black", nrow(df))
+# fills[selected] <- "red"
+# gg <- ggplot(data=df, aes(x=x, y=y), fill=fill) +
+#   geom_bar(fill=fills, stat="identity") +
+#   labs(x="Components", y="Variances")
+# gg
+
+
+
+#### borrowed from ggplot2 by Hadley
+calculate_ellipse <- function(data, vars, type, level, segments){
+  dfn <- 2
+  dfd <- nrow(data) - 1
+  if (!type %in% c("t", "norm", "euclid")){
+    message("unrecognized ellipse type")
+    ellipse <- rbind(as.numeric(c(NA, NA)))
+  } else if (dfd < 3){
+    ellipse <- rbind(as.numeric(c(NA, NA)))
+  } else {
+    if (type == "t"){
+      v <- MASS::cov.trob(data[,vars])
+    } else if (type == "norm"){
+      v <- cov.wt(data[,vars])
+    } else if (type == "euclid"){
+      v <- cov.wt(data[,vars])
+      v$cov <- diag(rep(min(diag(v$cov)), 2))
+    }
+    shape <- v$cov
+    center <- v$center
+    chol_decomp <- chol(shape)
+    if (type == "euclid"){
+      radius <- level/max(chol_decomp)
+    } else {
+      radius <- sqrt(dfn * qf(level, dfn, dfd))
+    }
+    angles <- (0:segments) * 2 * pi/segments
+    unit.circle <- cbind(cos(angles), sin(angles))
+    ellipse <- t(center + radius * t(unit.circle %*% chol_decomp))
+  }
+  ellipse <- as.data.frame(ellipse)
+  colnames(ellipse) <- vars
+  return(ellipse)
+}
+
+
+calculate_ellipseax <- function(ell){
+  if (any(is.na(ell))) {
+    na <- rep(NA, 2)
+    seg <- data.frame(x=na, y=na, xend=na, yend=na)
+    return(seg)
+  }
+  ell.al <- coo_align(ell)
+  ell.ids <- c(which.min(ell.al[, 1]), which.max(ell.al[, 1]),
+               which.min(ell.al[, 2]), which.max(ell.al[, 2]))
+  seg <- ell[ell.ids, ]
+  seg <- dplyr::bind_cols(slice(seg, c(1, 3)), slice(seg, c(2, 4)))
+  colnames(seg) <- c("x", "y", "xend", "yend")
+  seg
+}
+
 
 ##### end PCA plotters
 

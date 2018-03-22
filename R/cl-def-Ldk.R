@@ -6,8 +6,9 @@
 #' In Momocs, \code{Ldk} classes objects are
 #' lists of configurations of \bold{l}an\bold{d}mar\bold{k}s, with optionnal components,
 #' on which generic methods such as plotting methods (e.g. \link{stack})
-#' and specific methods (e.g. todo-Procrustes can be applied.
-#'  \code{Ldk} objects are primarily \code{\link{Coo}} objects.
+#' and specific methods (e.g. [fgProcrustes]).
+#'  \code{Ldk} objects are primarily \code{\link{Coo}} objects. In a sense, morphometrics methods
+#'  on Ldk objects preserves (x, y) coordinates and `LdkCoe` are also `Ldk` objects.
 #'
 #' All the shapes in x must have the same number of landmarks. If you are
 #' trying to make an Ldk object from an Out or an Opn object, try \link{coo_sample} beforehand
@@ -21,19 +22,20 @@
 #' specifying the grouping structure
 #' @return an \code{Ldk} object
 #' @details implementation of \code{$slidings} is inspired by \code{geomorph}
-#' @family Coo objects
+#' @family classes
 #' \code{Ldk} methods must be, so far, considered as experimental in Momocs.
+#' @aliases LdkCoe
 #' @examples
 #' #Methods on Ldk
 #' methods(class=Ldk)
 #' @export
-Ldk <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) {
+Ldk <- function(coo, links = NULL, slidings = NULL, fac = dplyr::data_frame()) {
   UseMethod("Ldk")
 }
 
 #' @export
-Ldk.default <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) {
-  if (is.shp(x))
+Ldk.default <- function(coo, links = NULL, slidings = NULL, fac = dplyr::data_frame()) {
+  if (is_shp(x))
     Ldk(list(x))
   else
     message("an Ldk object can only be build from a shape, a list, an array or a Coo object")
@@ -41,7 +43,7 @@ Ldk.default <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) 
 }
 
 #' @export
-Ldk.list <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) {
+Ldk.list <- function(coo, links = NULL, slidings = NULL, fac = dplyr::data_frame()) {
   if (missing(slidings) & identical(names(coo), c("coo", "slidings", "scale"))) {
     slidings <- coo$slidings
     coo <- coo$coo
@@ -57,7 +59,7 @@ Ldk.list <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) {
 }
 
 #' @export
-Ldk.array <- function(coo, links = NULL, slidings = NULL, fac = data.frame()) {
+Ldk.array <- function(coo, links = NULL, slidings = NULL, fac = dplyr::data_frame()) {
   x <- a2l(coo)
   Ldk <- Ldk(x, links = links, slidings = slidings, fac = fac)
   if (is.null(names(Ldk)))
@@ -74,40 +76,40 @@ Ldk.Coo <- function(coo, links = NULL, slidings = NULL, fac = coo$fac) {
   return(Ldk)
 }
 
-# The print method for Ldk objects
-#' @export
-print.Ldk <- function(x, ...) {
-  Ldk <- validate(x)
-  coo_nb <- length(Ldk)
-  if (coo_nb==0){
-    cat("An empty Ldk object")
-    return()
-  }
-  ### Header
-  cat("An Ldk object with: \n")
-  coo_nb <- length(Ldk)
-  coo_len <- sapply(Ldk$coo, nrow)
-  coo_closed <- sapply(Ldk$coo, is_closed)
-  cat(" - $coo:", coo_nb, "configurations of landmarks")
-
-  # number of coordinates
-  cat(" (", unique(coo_len), " coordinates)\n", sep = "")
-  # slidings partitions
-  if (is.slidings(Ldk)) {
-    scheme <- .slidings_scheme(Ldk$slidings)
-    n <- scheme$n
-    if (scheme$n == 1) {
-      cat(" - $slidings: ", 1, " partition of sliding landmarks (",
-          scheme$id[[1]][1], ":", scheme$id[[1]][2], ")\n", sep = "")
-    } else {
-      cat(" - $slidings: ", scheme$n, " partitions of sliding landmarks (",
-          paste(apply(scheme$id, 1, function(x) paste(x[1], x[2], sep=":")), collapse="; "),
-          ")\n", sep = "")
-    }
-  }
-  # we print the fac
-  .print.fac(Ldk$fac)
-}
+# # The print method for Ldk objects
+# #' @export
+# print.Ldk <- function(x, ...) {
+#   Ldk <- validate(x)
+#   coo_nb <- length(Ldk)
+#   if (coo_nb==0){
+#     cat("An empty Ldk object")
+#     return()
+#   }
+#   ### Header
+#   cat("An Ldk object with: \n")
+#   coo_nb <- length(Ldk)
+#   coo_len <- sapply(Ldk$coo, nrow)
+#   coo_closed <- sapply(Ldk$coo, coo_is_closed)
+#   cat(" - $coo:", coo_nb, "configurations of landmarks")
+#
+#   # number of coordinates
+#   cat(" (", unique(coo_len), " coordinates)\n", sep = "")
+#   # slidings partitions
+#   if (is_slidings(Ldk)) {
+#     scheme <- .slidings_scheme(Ldk$slidings)
+#     n <- scheme$n
+#     if (scheme$n == 1) {
+#       cat(" - $slidings: ", 1, " partition of sliding landmarks (",
+#           scheme$id[[1]][1], ":", scheme$id[[1]][2], ")\n", sep = "")
+#     } else {
+#       cat(" - $slidings: ", scheme$n, " partitions of sliding landmarks (",
+#           paste(apply(scheme$id, 1, function(x) paste(x[1], x[2], sep=":")), collapse="; "),
+#           ")\n", sep = "")
+#     }
+#   }
+#   # we print the fac
+#   .print_fac(Ldk$fac)
+# }
 
 # The print method for LdkCoe objects
 #' @export
@@ -118,7 +120,7 @@ print.LdkCoe <- function(x, ...) {
   cat(rep("-", 20), "\n", sep = "")
   coo_nb <- length(Ldk)
   coo_len <- sapply(Ldk$coo, nrow)
-  coo_closed <- sapply(Ldk$coo, is_closed)
+  coo_closed <- sapply(Ldk$coo, coo_is_closed)
   # # number of open outlines cat(' -', coo_nb, 'configurations of landmarks\n') #
   # one random outline eg <- sample(length(Ldk$coo), 1) coo_eg <- Ldk$coo[[eg]]
   # colnames(coo_eg) <- c('x', 'y') cat(' - One random configuration in $coo: '',
@@ -130,5 +132,5 @@ print.LdkCoe <- function(x, ...) {
   cat(" (", round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coordinates)\n",
     sep = "")
   # we print the fac
-  .print.fac(Ldk$fac)
+  .print_fac(Ldk$fac)
 }

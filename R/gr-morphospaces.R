@@ -18,7 +18,7 @@ morphospacePCA <- function(PCA, xax, yax, pos.shp, nb.shp = 24,
   rot <- PCA$rotation[, c(xax, yax)]
   mshape <- PCA$mshape
   # we define the position of shapes
-  pos <- pos.shapes(xy, pos.shp = pos.shp, nb.shp = nb.shp,
+  pos <- morphospace_positions(xy, pos.shp = pos.shp, nb.shp = nb.shp,
                     nr.shp = nr.shp, nc.shp = nc.shp)
   # according to the type of morphometrics applied, we switch the method
   # and the way we plot reconstruct shapes (polygon, lines, points for Out, Opn, Ldk)
@@ -53,7 +53,7 @@ morphospacePCA <- function(PCA, xax, yax, pos.shp, nb.shp = 24,
   if (lm==4){ #form top left, clockwise
     dx <- c(-d, d, -d, d)
     dy <- c(d, d, -d, -d)}
-  # indices of succesive coe to select
+  # indices of successive coe to select
   if (lm==1){
     col.start <- 1
     col.end   <- length(mshape)
@@ -170,7 +170,7 @@ morphospaceLDA <- function(LDA, xax, yax, pos.shp, nb.shp = 24,
   }
 
   # we define the position of shapes
-  pos <- pos.shapes(xy, pos.shp = pos.shp, nb.shp = nb.shp,
+  pos <- morphospace_positions(xy, pos.shp = pos.shp, nb.shp = nb.shp,
                     nr.shp = nr.shp, nc.shp = nc.shp)
   # according to the type of morphometrics applied, we
   # reconstruct shapes
@@ -181,24 +181,7 @@ morphospaceLDA <- function(LDA, xax, yax, pos.shp, nb.shp = 24,
                             amp.shp = amp.shp, pts.shp = pts.shp)
     cd <- TRUE
   }
-  # if (method=='rfourier'){ shp <- PCA2shp_rfourier(pos=pos,
-  # rot=rot, mshape=mshape, amp.shp=amp.shp, pts.shp=pts.shp)
-  # cd <- TRUE} if (method=='tfourier'){ shp <-
-  # PCA2shp_tfourier(pos=pos, rot=rot, mshape=mshape,
-  # amp.shp=amp.shp, pts.shp=pts.shp) cd <- TRUE} ## open
-  # outlines if (method=='opoly'){ shp <-
-  # PCA2shp_polynomials(pos=pos, rot=rot, mshape=mshape,
-  # amp.shp=amp.shp, pts.shp=pts.shp, ortho=TRUE,
-  # baseline1=PCA$baseline1, baseline2=PCA$baseline2) cd <-
-  # FALSE} if (method=='npoly'){ shp <-
-  # PCA2shp_polynomials(pos=pos, rot=rot, mshape=mshape,
-  # amp.shp=amp.shp, pts.shp=pts.shp, ortho=FALSE,
-  # baseline1=PCA$baseline1, baseline2=PCA$baseline2) cd <-
-  # FALSE} if (method=='procrustes'){ shp <-
-  # PCA2shp_procrustes(pos=pos, rot=rot, mshape=mshape,
-  # amp.shp=amp.shp) cd <- FALSE} width <- (par('usr')[4] -
-  # par('usr')[3]) * size.shp shp <- lapply(shp, coo_scale,
-  # 1/width) not enough compact. #todo
+
   shp <- lapply(shp, coo_template, size = (size.shp*max(.wdw())/14))
   shp <- lapply(shp, coo_close)
   for (i in 1:length(shp)) {
@@ -215,7 +198,8 @@ morphospaceLDA <- function(LDA, xax, yax, pos.shp, nb.shp = 24,
 
 #' Calculates nice positions on a plane for drawing shapes
 #'
-#' @param xy todo
+#' @param xy a matrix of points typically from a PCA or other multivariate method on
+#' which morphospace can be calculated
 #' @param pos.shp how shapes should be positionned: \code{range} of xy,
 #' \code{full} extent of the plane, \code{circle} as a rosewind,
 #' on \code{xy} values provided, \code{range_axes} on the range of xy
@@ -228,7 +212,7 @@ morphospaceLDA <- function(LDA, xax, yax, pos.shp, nb.shp = 24,
 #' @param circle.r.shp if circle, its radius
 #' @details See \link{plot.PCA} for self-speaking examples
 #' @export
-pos.shapes <- function(xy, pos.shp = c("range", "full", "circle", "xy",
+morphospace_positions <- function(xy, pos.shp = c("range", "full", "circle", "xy",
                                        "range_axes", "full_axes")[1],
                        nb.shp = 12, nr.shp = 6, nc.shp = 5, circle.r.shp) {
   if (is.data.frame(pos.shp) | is.matrix(pos.shp)) {

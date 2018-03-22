@@ -4,15 +4,17 @@ test_that("import .txt", {
   fns <- c("butterfly.txt", "cat.txt")
   export(shapes[3], file=fns[1])
   export(shapes[4], file=fns[2])
-  expect_true(is_shp(import_txt(fns[1], header=TRUE, verbose = FALSE)$butterfly))
-  expect_s3_class(import_txt(rep(fns, 6), header=TRUE, verbose = FALSE) %>% Out(), "Out")
+  expect_true(is_shp(import_txt(fns[1], header=TRUE)$butterfly))
+  expect_s3_class(import_txt(rep(fns, 6), header=TRUE) %>% Out(), "Out")
   shut_up <- file.remove(fns)
 })
 
 test_that("import_Conte works fine",{
-  system.file("extdata/beer_chimay.jpg", package="Momocs") %>%
+  expect_true(
+    system.file("extdata/beer_chimay.jpg", package="Momocs") %>%
     jpeg::readJPEG()  %>%
-    import_Conte(round(dim(.)/2))
+    import_Conte(round(dim(.)/2)) %>% is_shp()
+  )
 })
 
 test_that("import_jpg1 works fine",{
@@ -25,7 +27,7 @@ test_that("import_jpg1 works fine",{
 test_that("import_jpg works fine",{
   paths <- c(system.file("extdata/beer_chimay.jpg", package="Momocs"),
              system.file("extdata/whisky_jb.jpg", package="Momocs"))
-  expect_true(paths %>% import_jpg(verbose = FALSE) %>% Out %>% is_Out)
+  expect_true(paths %>% import_jpg() %>% Out %>% is_Out)
 })
 
 test_that("import_tps works fine",{
@@ -41,12 +43,3 @@ test_that("import_tps works fine",{
   expect_true(x$scale %>% is.list)
   expect_true(x$scale %>% sapply(is.numeric) %>% all)
 })
-
-# expect_that("bind_db works fine", {
-#   df <- data.frame(foo_id=40:1,
-#                    fake1=rnorm(40),
-#                    fake2=factor(rep(letters[1:4], 10)))
-#   bot <- mutate(bot, hello=1:length(bot))
-#   x <- bind_db(bot, "hello", df, "foo_id")
-#   expect_true(ncol(x$fac)==4)
-# })

@@ -4,7 +4,7 @@
 \alias{Opn}
 \title{Builds an Opn object}
 \usage{
-Opn(x, fac = data.frame(), ldk = list())
+Opn(x, fac = dplyr::data_frame(), ldk = list())
 }
 \arguments{
 \item{x}{\code{list} of matrices of (x; y) coordinates}
@@ -22,13 +22,12 @@ In Momocs, \code{Opn} classes objects are
 lists of \bold{op}e\bold{n} outlines, with optionnal components,
 on which generic methods such as plotting methods (e.g. \link{stack})
 and specific methods (e.g. \link{npoly} can be applied.
- \code{\link{Opn}} objects are primarily \code{\link{Coo}} objects.
+\code{\link{Opn}} objects are primarily \code{\link{Coo}} objects.
 }
 \examples{
 #Methods on Opn
 methods(class=Opn)
 # we load some open outlines. See ?olea for credits
-data(olea)
 olea
 panel(olea)
 # orthogonal polynomials
@@ -46,5 +45,7 @@ olda
 plot(olda)
 }
 \seealso{
-Other Coo objects: \code{\link{Coo}}, \code{\link{Out}}
+Other classes: \code{\link{Coe}}, \code{\link{Coo}},
+  \code{\link{OpnCoe}}, \code{\link{OutCoe}},
+  \code{\link{Out}}, \code{\link{TraCoe}}
 }

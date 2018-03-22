@@ -13,34 +13,34 @@
 #' specifying the grouping structure
 #' @param ldk (optional) \code{list} of landmarks as row number indices
 #' @return an \code{Out} object
-#' @family Coo objects
+#' @family classes
 #' @aliases Out
 #' @examples
 #' methods(class=Out)
 #' @export
-Out <- function(x, fac = data.frame, ldk = list()) {
+Out <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   UseMethod("Out")
 }
 
 #' @export
-Out.default <- function(x, fac = data.frame(), ldk = list()) {
-  if (is.shp(x))
+Out.default <- function(x, fac = dplyr::data_frame(), ldk = list()) {
+  if (is_shp(x))
     Out(list(x))
   else
     message("an Out object can only be build from a shape, a list, an array or a Coo object")
 }
 
 #' @export
-Out.list <- function(x, fac = data.frame(), ldk = list()) {
+Out.list <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   Out <- structure(list(coo = x, fac = fac, ldk = ldk), class=c("Out", "Coo"))
   if (!is.null(Out$fac))
-    Out$fac <- as.data.frame(Out$fac, stringsAsFactors = FALSE)
+    Out$fac <- dplyr::as_data_frame(Out$fac, stringsAsFactors = FALSE)
   if (is.null(names(Out))) names(Out) <- paste0("shp", 1:length(Out))
   return(Out)
 }
 
 #' @export
-Out.array <- function(x, fac = data.frame(), ldk = list()) {
+Out.array <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   x <- a2l(x)
   Out <- Out(x, fac = fac, ldk = ldk)
   if (is.null(names(Out))) names(Out) <- paste0("shp", 1:length(Out))
@@ -48,100 +48,99 @@ Out.array <- function(x, fac = data.frame(), ldk = list()) {
 }
 
 #' @export
-Out.Coo <- function(x, fac = data.frame(), ldk = list()) {
+Out.Coo <- function(x, fac = dplyr::data_frame(), ldk = list()) {
   Out <- Out(x = x$coo, fac = x$fac, ldk = x$ldk)
   if (is.null(names(Out))) names(Out) <- paste0("shp", 1:length(Out))
   return(Out)
 }
 
-#' Convert an OutCoe object into an Out object
-#'
-#' Uses the \code{$method} to do the inverse corresponding function. For instance,
-#' an \link{OutCoe} object obtained with \link{efourier}, will be converted to an \link{Out}
-#' object (outlines from harmonic coefficients), using \link{efourier_i}.
-#'
-#' Note that the 'positionnal' coefficients (\code{ao} and \code{co} if any) are lost, so for a proper
-#' comparison between a raw \code{Out} and a \code{Out} from \code{Out -> OutCoe -> Out},
-#' the raw \code{Out} should be centered.
-#'
-#' This method is useful since it allows a direct inspection at how Fourier-based
-#' methods handle outlines, and in particular how they normalize it (when they do). If you
-#' have bad "reconstruction" using \code{as.Out}, this probably means that you have to think
-#' about alternative alignements on the raw outlines. For instance, it is obvious
-#' that normalization does a good job on the bottle example, yet it -pi/2 turns the "outlines"
-#' yet neutral for further analysis (and that can be manage with the argument \code{rotate.shp} in
-#' functions/methods that use reconstructed outlines, e.g. \link{plot.PCA}).
-#' @param object an OutCoe object
-#' @param OutCoe used by \code{as}, useless for the front user
-#' @param nb.pts number of point for the reconstructed outlines
-#' @return an \link{Out} object.
-#' @examples
-#' data(bot)
-#' bot <- coo_center(bot)
-#' bot.f <- rfourier(bot, 120)
-#' bot.fi <- as.Out(bot.f)
-#' op <- par(mfrow=c(1, 2))
-#' stack(bot, title="raw bot")
-#' stack(bot.fi, title="outlines from bot.f")
-#' par(op)
-#' @export
-as.Out <- function(object, OutCoe, nb.pts=120){
-  # we swith among methods, with a messsage
-  method <- object$method
-  if (is.null(method)) {
-    stop("'$method' is missing. Not a regular Coe object")
-  } else {
-    p <- pmatch(tolower(method), c("efourier", "rfourier", "tfourier"))
-    method.i <- switch(p, efourier_i, rfourier_i, tfourier_i)
-    cph      <- switch(p, 4, 2, 2)
-  }
-  coe <- object$coe
-  nb.h <- ncol(coe)/cph
-  coo <- list()
-  for (i in 1:nrow(coe)){
-    ef.i <- coeff_split(coe[i, ], nb.h = nb.h, cph = cph)
-    coo[[i]] <- method.i(ef.i, nb.pts = nb.pts)}
-  names(coo) <- rownames(coe)
-  return(Out(coo, fac=object$fac))}
+# #' Convert an OutCoe object into an Out object
+# #'
+# #' Uses the \code{$method} to do the inverse corresponding function. For instance,
+# #' an \link{OutCoe} object obtained with \link{efourier}, will be converted to an \link{Out}
+# #' object (outlines from harmonic coefficients), using \link{efourier_i}.
+# #'
+# #' Note that the 'positionnal' coefficients (\code{ao} and \code{co} if any) are lost, so for a proper
+# #' comparison between a raw \code{Out} and a \code{Out} from \code{Out -> OutCoe -> Out},
+# #' the raw \code{Out} should be centered.
+# #'
+# #' This method is useful since it allows a direct inspection at how Fourier-based
+# #' methods handle outlines, and in particular how they normalize it (when they do). If you
+# #' have bad "reconstruction" using \code{as_Out}, this probably means that you have to think
+# #' about alternative alignements on the raw outlines. For instance, it is obvious
+# #' that normalization does a good job on the bottle example, yet it -pi/2 turns the "outlines"
+# #' yet neutral for further analysis (and that can be manage with the argument \code{rotate.shp} in
+# #' functions/methods that use reconstructed outlines, e.g. \link{plot.PCA}).
+# #' @param object an OutCoe object
+# #' @param OutCoe used by \code{as}, useless for the front user
+# #' @param nb.pts number of point for the reconstructed outlines
+# #' @return an \link{Out} object.
+# #' @examples
+# #' bot <- coo_center(bot)
+# #' bot.f <- rfourier(bot, 120)
+# #' bot.fi <- as_Out(bot.f)
+# #' op <- par(mfrow=c(1, 2))
+# #' stack(bot, title="raw bot")
+# #' stack(bot.fi, title="outlines from bot.f")
+# #' par(op)
+# #' @export
+# as_Out <- function(object, OutCoe, nb.pts=120){
+#   # we swith among methods, with a messsage
+#   method <- object$method
+#   if (is.null(method)) {
+#     stop("'$method' is missing. Not a regular Coe object")
+#   } else {
+#     p <- pmatch(tolower(method), c("efourier", "rfourier", "tfourier"))
+#     method.i <- switch(p, efourier_i, rfourier_i, tfourier_i)
+#     cph      <- switch(p, 4, 2, 2)
+#   }
+#   coe <- object$coe
+#   nb.h <- ncol(coe)/cph
+#   coo <- list()
+#   for (i in 1:nrow(coe)){
+#     ef.i <- coeff_split(coe[i, ], nb.h = nb.h, cph = cph)
+#     coo[[i]] <- method.i(ef.i, nb.pts = nb.pts)}
+#   names(coo) <- rownames(coe)
+#   return(Out(coo, fac=object$fac))}
 
 
-# The print method for Out objects
-#' @export
-print.Out <- function(x, ...) {
-  Out <- validate(x)
-  coo_nb <- length(Out)
-  if (coo_nb==0){
-    cat("An empty Out object")
-    return()
-  }
-  ### Header
-  cat("An Out object with: \n")
-  coo_len <- sapply(Out$coo, nrow)
-  coo_closed <- sapply(Out$coo, is_closed)
-  # number of outlines
-  cat(" - $coo:", coo_nb, "outlines")
-
-  # number of coordinates
-  cat(" (", round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coordinates, ", sep="")
-  # outlines closed or not
-  if (all(coo_closed)) {
-    cat("all closed)\n")
-  } else {
-    if (any(!coo_closed)) {
-      cat("all unclosed)\n")
-    } else {
-      cat(sum(coo_closed), " closed\n")
-    }
-  }
-  # number of landmarks
-  if (length(Out$ldk) != 0) {
-    cat(" - $ldk:", length(Out$ldk[[1]]), "landmark(s) defined\n")
-  } else {
-    #cat(" - No landmark defined\n")
-  }
-  # we print the fac
-  .print.fac(Out$fac)
-}
+# # The print method for Out objects
+# #' @export
+# print.Out <- function(x, ...) {
+#   Out <- validate(x)
+#   coo_nb <- length(Out)
+#   if (coo_nb==0){
+#     cat("An empty Out object")
+#     return()
+#   }
+#   ### Header
+#   cat("An Out object with: \n")
+#   coo_len <- sapply(Out$coo, nrow)
+#   coo_closed <- sapply(Out$coo, coo_is_closed)
+#   # number of outlines
+#   cat(" - $coo:", coo_nb, "outlines")
+#
+#   # number of coordinates
+#   cat(" (", round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coordinates, ", sep="")
+#   # outlines closed or not
+#   if (all(coo_closed)) {
+#     cat("all closed)\n")
+#   } else {
+#     if (any(!coo_closed)) {
+#       cat("all unclosed)\n")
+#     } else {
+#       cat(sum(coo_closed), " closed\n")
+#     }
+#   }
+#   # number of landmarks
+#   if (length(Out$ldk) != 0) {
+#     cat(" - $ldk:", length(Out$ldk[[1]]), "landmark(s) defined\n")
+#   } else {
+#     #cat(" - No landmark defined\n")
+#   }
+#   # we print the fac
+#   .print.fac(Out$fac)
+# }
 
 
 
@@ -161,12 +160,12 @@ print.Out <- function(x, ...) {
 #' @param norm the normalisation used to obtain these coefficients
 #' @return an \code{OutCoe} object
 #' @details These methods can be applied on \code{Out} objects:
-#' @family Coe objects
+#' @family classes
 #' @examples
 #' # all OutCoe methods
 #' methods(class='OutCoe')
 #' @export
-OutCoe <- function(coe = matrix(), fac = data.frame(), method,
+OutCoe <- function(coe = matrix(), fac = dplyr::data_frame(), method,
                    norm) {
   if (missing(method))
     stop("a method must be provided to OutCoe")
@@ -214,7 +213,7 @@ print.OutCoe <- function(x, ...) {
     #cat(" - $coe: harmonic coefficients\n")
   }
   # we print the fac
-  .print.fac(OutCoe$fac)
+  .print_fac(OutCoe$fac)
 }
 
 
@@ -242,9 +241,15 @@ print.OutCoe <- function(x, ...) {
 #' Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors
 #' and principal component analysis. Annals of Botany, 94(5), 657-64. doi:10.1093/aob/mch190
 #' }
+#' @note What we call symmetry here is bilateral symmetry.
+#' By comparing coefficients resulting from \link{efourier},
+#' with AD responsible for amplitude of the Fourier functions,
+#'  and BC for their phase, it results in the plane and for
+#'  fitted/reconstructed shapes that symmetry. As long as your shapes are
+#'   aligned along their bilateral symmetry axis, you can use the approach
+#'   coined by Iwata et al., and here implemented in Momocs.
 #' @seealso \link{rm_asym} and \link{rm_sym}.
 #' @examples
-#' data(bot)
 #' bot.f <- efourier(bot, 12)
 #' res <- symmetry(bot.f)
 #' hist(res[, 'sym'])
@@ -289,9 +294,8 @@ symmetry.OutCoe <- function(OutCoe) {
 #' Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors
 #' and principal component analysis. Annals of Botany, 94(5), 657-64. doi:10.1093/aob/mch190
 #' }
-#' @seealso \link{symmetry}.
+#' @seealso \link{symmetry} and the note there.
 #' @examples
-#' data(bot)
 #' botf <- efourier(bot, 12)
 #' botSym <- rm_asym(botf)
 #' boxplot(botSym)

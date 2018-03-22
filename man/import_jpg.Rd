@@ -2,10 +2,10 @@
 % Please edit documentation in R/babel-import.R
 \name{import_jpg}
 \alias{import_jpg}
-\title{Extracts outline coordinates from multiple .jpg files}
+\title{Extract outline coordinates from multiple .jpg files}
 \usage{
 import_jpg(jpg.paths = .lf.auto(), auto.notcentered = TRUE,
-  fun.notcentered = NULL, threshold = 0.5, verbose = TRUE)
+  fun.notcentered = NULL, threshold = 0.5)
 }
 \arguments{
 \item{jpg.paths}{a vector of paths corresponding to the .jpg files to import. If not
@@ -21,8 +21,6 @@ a black pixel is not satisfactory. See \link{import_jpg1} help and examples.}
 
 \item{threshold}{the threshold value use to binarize the images. Above, pixels
 are turned to 1, below to 0.}
-
-\item{verbose}{whether to print which file is being treated. Useful to detect problems.}
 }
 \value{
 a list of matrices of (x; y) coordinates that can be passed to \link{Out}
@@ -36,25 +34,28 @@ see \link{import_jpg1} for important informations about how the outlines are ext
 and \link{import_Conte} for the algorithm itself.
 
 If \code{jpg.paths} is not provided (or \code{NULL}), you will have to select any \code{.jpg}
-file in the folder taht contains all your files. All the outlines should be imported then.
+file in the folder that contains all your files. All the outlines should be imported then.
+}
+\note{
+Note this function will be deprecated from Momocs
+when \code{Momacs} and \code{Momit}
+will be fully operationnal.
+
+Silent message and progress bars (if any) with \code{options("verbose"=FALSE)}.
 }
 \examples{
 \dontrun{
 
-# if your images are in the folder '/foo/jpgs/'
 lf <- list.files('/foo/jpegs', full.names=TRUE)
 coo <- import_jpg(lf)
 Out(coo)
 
-# 'automatic' version
 coo <- import_jpg()
 }
 }
 \seealso{
-Other babel functions: \code{\link{bind_db}},
-  \code{\link{chc2Out}}, \code{\link{chc2pix}},
+Other import functions: \code{\link{import_Conte}},
   \code{\link{import_StereoMorph_curve1}},
-  \code{\link{import_tps}}, \code{\link{nef2Coe}},
-  \code{\link{ntsrow2Coo}}, \code{\link{pix2chc}},
-  \code{\link{tie_jpg_txt}}, \code{\link{tps2coo}}
+  \code{\link{import_jpg1}}, \code{\link{import_tps}},
+  \code{\link{import_txt}}, \code{\link{pix2chc}}
 }

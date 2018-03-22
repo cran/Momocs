@@ -7,7 +7,7 @@
 \alias{PCA.LdkCoe}
 \alias{PCA.TraCoe}
 \alias{PCA.default}
-\alias{as.PCA}
+\alias{as_PCA}
 \title{Principal component analysis on Coe objects}
 \usage{
 PCA(x, scale., center, fac)
@@ -20,36 +20,37 @@ PCA(x, scale., center, fac)
 
 \method{PCA}{TraCoe}(x, scale. = TRUE, center = TRUE, fac)
 
-\method{PCA}{default}(x, scale. = TRUE, center = TRUE, fac = data.frame())
+\method{PCA}{default}(x, scale. = TRUE, center = TRUE,
+  fac = dplyr::data_frame())
 
-as.PCA(x, fac)
+as_PCA(x, fac)
 }
 \arguments{
-\item{x}{a \link{Coe} object or an appropriate object (eg \link{prcomp}) for \code{as.PCA}}
+\item{x}{a \link{Coe} object or an appropriate object (eg \link{prcomp}) for \code{as_PCA}}
 
 \item{scale.}{logical whether to scale the input data}
 
 \item{center}{logical whether to center the input data}
 
-\item{fac}{any factor or data.frame to be passed to \code{as.PCA} and for use with \link{plot.PCA}}
+\item{fac}{any factor or data.frame to be passed to \code{as_PCA} and for use with \link{plot.PCA}}
 }
 \value{
 a 'PCA' object on which to apply \link{plot.PCA}, among others. This list has several
 components, most of them inherited from the \code{prcomp} object:
 \enumerate{
-  \item \code{sdev} the standard deviations of the principal components
-   (i.e., the square roots of the eigenvalues of the
-   covariance/correlation matrix, though the calculation
-   is actually done with the singular values of the data matrix)
-   \item \code{eig} the cumulated proportion of variance along the PC axes
-  \item \code{rotation} the matrix of variable loadings (i.e., a matrix whose columns contain the eigenvectors).
-  The function princomp returns this in the element loadings.
-  \item \code{center}, scale the centering and scaling used
-  \item \code{x} PCA scores (the value of the rotated data (the centred (and scaled if requested)
-  data multiplied by the rotation matrix))
-  \item other components are inherited from the \code{Coe} object passed to \code{PCA},
-  eg \code{fac}, \code{mshape}, \code{method}, \code{baseline1} and \code{baseline2}, etc. They
-  are documented in the corresponding \code{*Coe} file.
+\item \code{sdev} the standard deviations of the principal components
+(i.e., the square roots of the eigenvalues of the
+covariance/correlation matrix, though the calculation
+is actually done with the singular values of the data matrix)
+\item \code{eig} the cumulated proportion of variance along the PC axes
+\item \code{rotation} the matrix of variable loadings (i.e., a matrix whose columns contain the eigenvectors).
+The function princomp returns this in the element loadings.
+\item \code{center}, scale the centering and scaling used
+\item \code{x} PCA scores (the value of the rotated data (the centred (and scaled if requested)
+data multiplied by the rotation matrix))
+\item other components are inherited from the \code{Coe} object passed to \code{PCA},
+eg \code{fac}, \code{mshape}, \code{method}, \code{baseline1} and \code{baseline2}, etc. They
+are documented in the corresponding \code{*Coe} file.
 }
 }
 \description{
@@ -60,20 +61,17 @@ By default, methods on \link{Coe} object do not scale the input data but center 
 There is also a generic method (eg for traditional morphometrics) that centers and scales data.
 }
 \examples{
-data(bot)
 bot.f <- efourier(bot, 12)
 bot.p <- PCA(bot.f)
 bot.p
 plot(bot.p, morpho=FALSE)
 plot(bot.p, 'type')
 
-data(olea)
 op <- npoly(olea, 5)
 op.p <- PCA(op)
 op.p
 plot(op.p, 1, morpho=TRUE)
 
-data(wings)
 wp <- fgProcrustes(wings, tol=1e-4)
 wpp <- PCA(wp)
 wpp
@@ -82,7 +80,7 @@ plot(wpp, 1)
 # "foreign prcomp"
 head(iris)
 iris.p <- prcomp(iris[, 1:4])
-iris.p <- as.PCA(iris.p, iris[, 5])
+iris.p <- as_PCA(iris.p, iris[, 5])
 class(iris.p)
 plot(iris.p, 1)
 }
@@ -90,5 +88,6 @@ plot(iris.p, 1)
 Other multivariate: \code{\link{CLUST}},
   \code{\link{KMEANS}}, \code{\link{LDA}},
   \code{\link{MANOVA_PW}}, \code{\link{MANOVA}},
-  \code{\link{classification_metrics}}
+  \code{\link{classification_metrics}},
+  \code{\link{mshapes}}
 }

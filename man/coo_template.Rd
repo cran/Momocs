@@ -2,9 +2,33 @@
 % Please edit documentation in R/coo-utilities.R
 \name{coo_template}
 \alias{coo_template}
+\alias{coo_template}
+\alias{coo_template.default}
+\alias{coo_template}
+\alias{coo_template.list}
+\alias{coo_template}
+\alias{coo_template.Coo}
+\alias{coo_template}
+\alias{coo_template_relatively}
+\alias{coo_template}
+\alias{coo_template_relatively.list}
+\alias{coo_template}
+\alias{coo_template_relatively.Coo}
 \title{'Templates' shapes}
 \usage{
 coo_template(coo, size)
+
+\method{coo_template}{default}(coo, size = 1)
+
+\method{coo_template}{list}(coo, size = 1)
+
+\method{coo_template}{Coo}(coo, size = 1)
+
+coo_template_relatively(coo, size = 1)
+
+\method{coo_template_relatively}{list}(coo, size = 1)
+
+\method{coo_template_relatively}{Coo}(coo, size = 1)
 }
 \arguments{
 \item{coo}{A \code{list} or a \code{matrix} of coordinates.}
@@ -16,7 +40,10 @@ the shape.}
 Returns a matrix of \code{(x; y)}coordinates.
 }
 \description{
-\code{coo_template} returns shape centered on the origin and inscribed in a \code{size}-side square
+\code{coo_template} returns shape centered on the origin
+and inscribed in a \code{size}-side square. \code{coo_template_relatively}
+does the same but the biggest shape (as \code{prod(coo_diffrange)}) will
+be of \code{size=size} and consequently not defined on single shapes.
 }
 \details{
 See \link{coo_listpanel} for an illustration of this function. The morphospaces
@@ -24,7 +51,6 @@ functions also take profit of this function. May be useful to develop other grap
 }
 \examples{
 
-data(bot)
 coo <- bot[1]
 coo_plot(coo_template(coo), xlim=c(-1, 1), ylim=c(-1, 1))
 rect(-0.5, -0.5, 0.5, 0.5)
@@ -41,17 +67,18 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_boundingbox}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
   \code{\link{coo_center}}, \code{\link{coo_centpos}},
-  \code{\link{coo_chull_onion}}, \code{\link{coo_close}},
-  \code{\link{coo_down}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
-  \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
-  \code{\link{coo_left}}, \code{\link{coo_nb}},
-  \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
-  \code{\link{coo_perim}}, \code{\link{coo_rev}},
-  \code{\link{coo_right}}, \code{\link{coo_rotatecenter}},
-  \code{\link{coo_rotate}}, \code{\link{coo_samplerr}},
-  \code{\link{coo_sample}}, \code{\link{coo_scalex}},
+  \code{\link{coo_close}}, \code{\link{coo_down}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
+  \code{\link{coo_interpolate}},
+  \code{\link{coo_is_closed}}, \code{\link{coo_jitter}},
+  \code{\link{coo_left}},
+  \code{\link{coo_likely_clockwise}}, \code{\link{coo_nb}},
+  \code{\link{coo_perim}}, \code{\link{coo_range}},
+  \code{\link{coo_rev}}, \code{\link{coo_right}},
+  \code{\link{coo_rotatecenter}}, \code{\link{coo_rotate}},
+  \code{\link{coo_sample_prop}},
+  \code{\link{coo_samplerr}}, \code{\link{coo_sample}},
   \code{\link{coo_scale}}, \code{\link{coo_shearx}},
   \code{\link{coo_slice}},
   \code{\link{coo_slidedirection}},
@@ -59,10 +86,7 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_smoothcurve}}, \code{\link{coo_smooth}},
   \code{\link{coo_trans}}, \code{\link{coo_trimbottom}},
   \code{\link{coo_trimtop}}, \code{\link{coo_trim}},
-  \code{\link{coo_up}}, \code{\link{is_clockwise}},
-  \code{\link{is_closed}},
-  \code{\link{is_equallyspacedradii}}
+  \code{\link{coo_up}}, \code{\link{is_equallyspacedradii}}
 
-Other scaling functions: \code{\link{coo_scalex}},
-  \code{\link{coo_scale}}
+Other scaling functions: \code{\link{coo_scale}}
 }

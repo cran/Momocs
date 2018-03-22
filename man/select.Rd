@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{select}
 \alias{select}
-\title{Selects (ala dplyr) on Momocs objects}
+\title{Select and rename columns by name}
 \usage{
 select(.data, ...)
 }
@@ -21,7 +21,6 @@ Select variables by name, from the \code{$fac}. See examples and \code{?dplyr::s
 dplyr verbs are maintained.
 }
 \examples{
-data(olea)
 olea
 select(olea, var, view) # drops domes and ind
 select(olea, variety=var, domesticated_status=domes, view)
@@ -34,7 +33,6 @@ select(olea, domes, view)
 # remove some columns
 select(olea, -ind)
 # rename on the fly and select some columns
-# you can use rename instead
 select(olea, foo=domes)
 
 }
@@ -42,9 +40,9 @@ select(olea, foo=domes)
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{filter}}, \code{\link{mutate}},
-  \code{\link{rename}}, \code{\link{rm_uncomplete}},
+  \code{\link{fac_dispatcher}}, \code{\link{filter}},
+  \code{\link{mutate}}, \code{\link{rescale}},
+  \code{\link{rm_harm}}, \code{\link{rm_uncomplete}},
   \code{\link{rw_fac}}, \code{\link{sample_frac}},
-  \code{\link{sample_n}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{sample_n}}, \code{\link{slice}}
 }

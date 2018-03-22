@@ -18,9 +18,9 @@
 #' @family thin plate splines
 #' @export
 tps2d <- function(grid0, fr, to) {
-  if (is_closed(fr))
+  if (coo_is_closed(fr))
     fr <- coo_unclose(fr)
-  if (is_closed(to))
+  if (coo_is_closed(to))
     to <- coo_unclose(to)
   if (!is.matrix(grid0))
     grid0 <- as.matrix(grid0)
@@ -79,7 +79,6 @@ tps_apply <- function(fr, to, new){
 #' @family thin plate splines
 #' @examples
 #' \dontrun{
-#' data(bot)
 #' ms <- mshapes(efourier(bot, 10), "type")
 #' b <- ms$shp$beer
 #' w <- ms$shp$whisky
@@ -101,7 +100,9 @@ tps_raw <- function(fr, to, amp = 1,
     to <- to + (to - fr) * amp
   grid0 <- .grid.sample(fr, to, nside = round(grid.size), over = over)
   res <- list(grid=tps2d(grid0, fr, to),
-              dim=c(length(unique(grid0[, 1])), length(unique(grid0[, 2]))))
+              dim=c(length(unique(grid0[, 1])), length(unique(grid0[, 2]))),
+              fr=fr,
+              to=to)
   return(res)
 }
 
@@ -132,7 +133,6 @@ tps_raw <- function(fr, to, amp = 1,
 #' @return Nothing
 #' @family thin plate splines
 #' @examples
-#' data(bot)
 #' botF <- efourier(bot)
 #' x <- mshapes(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
@@ -156,7 +156,7 @@ tps_grid <- function(fr, to, amp = 1,
   dim.grid <- c(length(unique(grid0[, 1])), length(unique(grid0[, 2])))
   op <- par(mar = rep(0, 4))
   on.exit(par(op))
-  plot(NA, xlim = range(grid1[, 1]), ylim = range(grid1[, 2]),
+  plot(NA, xlim = range(grid1[, 1])*over, ylim = range(grid1[, 2])*over,
        asp = 1, ann = FALSE, axes = FALSE, mar = rep(0, 4))
   for (i in 1:dim.grid[2]) {
     lines(grid1[(1:dim.grid[1]) + (i - 1) * dim.grid[1],
@@ -216,7 +216,6 @@ tps_grid <- function(fr, to, amp = 1,
 #' @return Nothing.
 #' @family thin plate splines
 #' @examples
-#' data(bot)
 #' botF <- efourier(bot)
 #' x <- mshapes(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
@@ -240,13 +239,13 @@ tps_arr <- function(fr, to, amp = 1,
     grid0 <- .grid.sample(fr, to, nside = round(sqrt(arr.nb)), over = over)
   }
   else {
-    grid0 <- spsample(Polygon(coo_close(fr)), arr.nb, type='regular')@coords
+    grid0 <- sp::spsample(sp::Polygon(coo_close(fr)), arr.nb, type='regular')@coords
   }
   grid1 <- tps2d(grid0, fr, to)
   # grille simple, on affiche d'abord les deux courbes
   op <- par(mar = rep(0, 4))
   on.exit(par(op))
-  plot(NA, xlim = range(grid0[, 1]), ylim = range(grid0[, 2]),
+  plot(NA, xlim = range(grid0[, 1])*over, ylim = range(grid0[, 2])*over,
        asp = 1, axes = FALSE, ann = FALSE, mar = rep(0, 4))
   if (missing(arr.levels)) {
     arr.levels = arr.nb
@@ -308,7 +307,6 @@ tps_arr <- function(fr, to, amp = 1,
 #' @return No returned value
 #' @family thin plate splines
 #' @examples
-#' data(bot)
 #' botF <- efourier(bot)
 #' x <- mshapes(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
@@ -330,7 +328,7 @@ tps_iso <- function(fr, to, amp = 1,
   if (grid) {
     grid0 <- .grid.sample(fr, to, nside = round(sqrt(iso.nb)), over = over)
   } else {
-    grid0 <- spsample(Polygon(coo_close(fr)), iso.nb, type='regular')@coords
+    grid0 <- sp::spsample(sp::Polygon(coo_close(fr)), iso.nb, type='regular')@coords
   }
   grid1 <- tps2d(grid0, fr, to)
   def <- edm(grid0, grid1)
@@ -347,8 +345,8 @@ tps_iso <- function(fr, to, amp = 1,
   op <- par(mar = rep(1, 4))
   on.exit(par(op))
   image(x, y, im, col = iso.cols, asp = 1,
-        xlim = range(grid0[, 1]),
-        ylim = range(grid0[, 2]),
+        xlim = range(grid0[, 1])*over,
+        ylim = range(grid0[, 2])*over,
         axes = FALSE, frame = FALSE,
         ann = FALSE)
   if (cont) {

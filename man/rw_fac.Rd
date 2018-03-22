@@ -2,17 +2,14 @@
 % Please edit documentation in R/cl-handling.R
 \name{rw_fac}
 \alias{rw_fac}
-\alias{rw_rule}
 \title{Renames levels on Momocs objects}
 \usage{
 rw_fac(x, fac, from, to)
-
-rw_rule(x, fac, from, to)
 }
 \arguments{
 \item{x}{any Momocs object}
 
-\item{fac}{the id of the name of the $fac column to look for}
+\item{fac}{the id of the name of the $fac column to look for (\link{fac_dispatcher} not yet supported)}
 
 \item{from}{which level(s) should be renamed; passed as a single or several characters}
 
@@ -26,9 +23,8 @@ rw_fac stands for 'rewriting rule'. Typically useful to correct typos
 at the import, or merge some levels within covariates. Drops levels silently.
 }
 \examples{
-data(bot)
 # single renaming
-rw_fac(bot, "type", "whisky", "agua_de_fuego") # 1 instead of "type" is fine too
+rw_fac(bot, "type", "whisky", "agua_de_fuego")$type # 1 instead of "type" is fine too
 # several renaming
 bot2 <- mutate(bot, fake=factor(rep(letters[1:4], 10)))
 rw_fac(bot2, "fake", c("a", "e"), "ae")$fake
@@ -37,9 +33,9 @@ rw_fac(bot2, "fake", c("a", "e"), "ae")$fake
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{filter}}, \code{\link{mutate}},
-  \code{\link{rename}}, \code{\link{rm_uncomplete}},
+  \code{\link{fac_dispatcher}}, \code{\link{filter}},
+  \code{\link{mutate}}, \code{\link{rescale}},
+  \code{\link{rm_harm}}, \code{\link{rm_uncomplete}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

@@ -5,13 +5,13 @@
 #' just ad the other Momocs' classes
 #' @param coe a matrix of measurements
 #' @param fac a data.frame for covariates
+#' @family classes
 #' @examples
-#' data(iris)
 #' # let's (more or less) rebuild the flower dataset
-#' fl <- TraCoe(iris[, 1:4], data.frame(sp=iris$Species))
+#' fl <- TraCoe(iris[, 1:4], dplyr::data_frame(sp=iris$Species))
 #' fl %>% PCA() %>% plot("sp")
 #' @export
-TraCoe <- function(coe = matrix(), fac = data.frame()) {
+TraCoe <- function(coe = matrix(), fac = dplyr::data_frame()) {
   TraCoe <- list(coe = coe, fac = fac)
   TraCoe <- structure(list(coe = coe, fac = fac), class=c("TraCoe", "Coe"))
   return(TraCoe)
@@ -26,5 +26,5 @@ print.TraCoe <- function(x, ...) {
   var.nb <- ncol(TraCoe$coe)
   cat(" - $coe:", shp.nb, "shapes described with", var.nb, "variables\n")
   # we print the fac
-  .print.fac(TraCoe$fac)
+  .print_fac(TraCoe$fac)
 }

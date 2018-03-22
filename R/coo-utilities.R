@@ -6,8 +6,8 @@
 #' A simple utility, used internally, mostly in the coo functions and methods.
 #' Returns a matrix of coordinates, when passed with either a list or a \code{matrix} of coordinates.
 #'
-#' @param coo a \code{matrix} of (x; y) coordinates or a \code{list}, or any \link{Coo} object.
-#' @return a \code{matrix} of (x; y) coordinates or a Coo object.
+#' @param coo `matrix` of `(x; y)` coordinates or any [Coo] object.
+#' @return `matrix` of `(x; y)` coordinates or a [Coo] object.
 #' @examples
 #' #coo_check('Not a shape')
 #' #coo_check(iris)
@@ -35,11 +35,120 @@ coo_check.default <- function(coo) {
 
 #' @export
 coo_check.Coo <- function(coo){
+  .which.is.error <- function(x){
+  if (is.list(x))
+    return(which(sapply(x, .is.error)))
+  which(class(x)=="try-error")
+}
+
   res <- sapply(coo$coo, function(x) try(coo_check(x), silent=TRUE))
-  if (is.error(res)){
-    stop(paste(names(coo)[which.is.error(res)], collapse=", "), " do not pass coo_check")
+  if (.is.error(res)){
+    stop(paste(names(coo)[.which.is.error(res)], collapse=", "), " do not pass coo_check")
   }
   return(coo)
+}
+
+# coo_range ----------------
+#' Calculate coordinates range
+#'
+#' `coo_range` simply returns the range,
+#' `coo_range_enlarge` enlarges it by a `k` proportion.
+#' `coo_diffrange` return the amplitude (ie diff after `coo_range`)
+#'
+#' @inheritParams  coo_check
+#' @param k `numeric` proportion by which to enlarge it
+#'
+#' @return a matrix of range such as `(min, max) x (x, y)`
+#' @family coo_ utilities
+#' @name coo_range
+#' @rdname coo_range
+#' @examples
+#' bot[1] %>% coo_range # single shape
+#' bot    %>% coo_range # Coo object
+#'
+#' bot[1] %>% coo_range_enlarge(1/50) # single shape
+#' bot    %>% coo_range_enlarge(1/50) # Coo object
+#' @export
+coo_range <- function(coo){
+  UseMethod("coo_range")
+}
+
+#' @rdname coo_range
+#' @export
+coo_range.default <- function(coo){
+  res <- apply(coo, 2, range)
+  dimnames(res) <- list(c("min", "max"), c("x", "y"))
+  res
+}
+
+#' @rdname coo_range
+#' @export
+coo_range.Coo <- function(coo){
+  lapply(coo$coo, coo_range) %>%
+    do.call("rbind", .) %>%
+    coo_range
+}
+
+
+#' @rdname coo_range
+#' @export
+coo_range_enlarge <- function(coo, k){
+  UseMethod("coo_range_enlarge")
+}
+
+#' @rdname coo_range
+#' @export
+coo_range_enlarge.default <- function(coo, k=0){
+  m <- coo_range(coo)
+  g <- apply(m, 2, diff)*k
+  m[1, ] <- m[1, ] - g
+  m[2, ] <- m[2, ] + g
+  m
+}
+
+#' @rdname coo_range
+#' @export
+coo_range_enlarge.Coo <- coo_range_enlarge.default
+
+#' @rdname coo_range
+#' @export
+coo_range_enlarge.list <- function(coo, k=0){
+  m <- lapply(coo, coo_range) %>%
+    do.call("rbind", .) %>%
+    coo_range
+  g <- apply(m, 2, diff)*k
+  m[1, ] <- m[1, ] - g
+  m[2, ] <- m[2, ] + g
+  m
+}
+
+#' @rdname coo_range
+#' @export
+coo_diffrange <- function(coo){
+  UseMethod("coo_diffrange")
+}
+
+#' @rdname coo_range
+#' @export
+coo_diffrange.default <- function(coo){
+  res <- apply(coo, 2, function(x) diff(range(x)))
+  names(res) <- c("x", "y")
+  res
+}
+
+#' @rdname coo_range
+#' @export
+coo_diffrange.Coo <- function(coo){
+  lapply(x$coo, coo_diffrange) %>%
+    do.call("rbind", .)
+}
+
+
+#' @rdname coo_range
+#' @export
+coo_diffrange.list <- function(coo){
+  lapply(coo, coo_diffrange) %>%
+    do.call("rbind", .)
 }
 
 # coo_nb ----------------
@@ -114,35 +223,48 @@ coo_centre <- coo_center
 # coo_scale -----------------
 #' Scales coordinates
 #'
-#' Scales the coordinates by a 'scale' factor. If not provided,
+#' `coo_scale` scales the coordinates by a 'scale' factor. If not provided,
 #' assumed to be the centroid size. It involves three steps: centering from current position,
-#' dividing coordinates by 'scale', pusing back to the original position.
+#' dividing coordinates by 'scale', pushing back to the original position.
+#' `coo_scalex` applies a scaling (or shrinking) parallel to the x-axis,
+#'  `coo_scaley` does the same for the y axis.
 #'
-#' @aliases coo_scale
 #' @inheritParams coo_check
-#' @param scale the scaling factor, by default, the centroid size.
-#' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
+#' @param scale the scaling factor,
+#' by default, the centroid size for `coo_scale`; 1 for `scalex` and `scaley`.
+#' @return a single shape or a `Coo` object
 #' @family coo_ utilities
 #' @examples
-#' coo_plot(bot[1])
-#' coo_plot(coo_scale(bot[1]))
-#' # on Coo objects
-#' stack(coo_center(bot))
-#' stack(coo_scale(coo_center(bot)))
+#' # on a single shape
+#' b <- bot[1] %>% coo_center %>% coo_scale
+#' coo_plot(b, lwd=2)
+#' coo_draw(coo_scalex(b, 1.5), bor="blue")
+#' coo_draw(coo_scaley(b, 0.5), bor="red")
+#' # this also works on Coo objects:
+#' stack(bot)
+#' bot %>% coo_center %>% coo_scale %>% stack
+#' bot %>% coo_center %>% coo_scaley(0.5) %>% stack
+#' #equivalent to:
+#' #bot %>% coo_center %>% coo_scalex(2) %>% stack
 #' @family scaling functions
+#' @rdname coo_scale
+#' @name coo_scale
 #' @export
 coo_scale <- function(coo, scale) {
   UseMethod("coo_scale")
 }
 
+#' @rdname coo_scale
+#' @name coo_scale
 #' @export
 coo_scale.default <- function(coo, scale = coo_centsize(coo)) {
   coo <- coo_check(coo)
   cp  <- coo_centpos(coo)
-  coo <- coo_trans(coo_trans(coo, -cp[1], -cp[2])/scale, cp[1], cp[2])
-  return(coo)
+  coo %>% coo_center %>% `/`(scale) %>% coo_trans(cp[1], cp[2])
 }
 
+#' @rdname coo_scale
+#' @name coo_scale
 #' @export
 coo_scale.Coo <- function(coo, scale) {
   Coo <- coo
@@ -159,39 +281,59 @@ coo_scale.Coo <- function(coo, scale) {
   return(Coo)
 }
 
-# coo_scalexy -----------------
-#' Shrinks coordinates in one direction
-#'
-#' \code{coo_scalex} applies a scaling parallel to the x-axis to a matrix of (x; y)
-#' or a list of coordinates or any Coo object, \code{coo_scaley} does it parallel to the y-axis.
-#' @rdname coo_scalexy
-#' @inheritParams coo_check
-#' @param k \code{numeric} scaling factor
-#' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
-#' @family coo_ utilities
-#' @examples
-#' coo <- shapes[11] %>% coo_template()
-#' coo_plot(coo, xlim=c(-1, 1))
-#' coo %>% coo_scalex(1.5) %>% coo_draw(border="blue")
-#' coo %>% coo_scaley(1.5) %>% coo_draw(border="red")
-#' coo %>% coo_scalex(0.5) %>% coo_draw(border="blue", lty=2)
-#' coo %>% coo_scaley(0.5) %>% coo_draw(border="red", lty=2)
-#' @family scaling functions
+#' @rdname coo_scale
+#' @name coo_scale
 #' @export
-coo_scalex <- function(coo, k=1){
-  smat <- matrix(c(k, 0, 0, 1), nrow=2)
-  return(coo %*% smat)}
+coo_scalex <- function(coo, scale=1){
+  UseMethod("coo_scalex")
+}
 
-#' @rdname coo_scalexy
+#' @rdname coo_scale
+#' @name coo_scale
 #' @export
-coo_scaley <- function(coo, k=1){
-  smat <- matrix(c(1, 0, 0, k), nrow=2)
-  return(coo %*% smat)}
+coo_scalex.default <- function(coo, scale=1){
+  smat <- matrix(c(scale, 0, 0, 1), nrow=2)
+  return(coo %*% smat)
+}
+
+#' @rdname coo_scale
+#' @name coo_scale
+#' @export
+coo_scalex.Coo <- function(coo, scale=1){
+  coo$coo <- lapply(coo$coo, coo_scalex, scale=scale)
+  coo
+}
+
+#' @rdname coo_scale
+#' @name coo_scale
+#' @export
+coo_scaley <- function(coo, scale=1){
+  UseMethod("coo_scaley")
+}
+
+#' @rdname coo_scale
+#' @name coo_scale
+#' @export
+coo_scaley.default <- function(coo, scale=1){
+  smat <- matrix(c(1, 0, 0, scale), nrow=2)
+  return(coo %*% smat)
+}
+
+#' @rdname coo_scale
+#' @name coo_scale
+#' @export
+coo_scaley.Coo <- function(coo, scale=1){
+  coo$coo <- lapply(coo$coo, coo_scaley, scale=scale)
+  coo
+}
 
 # coo_template --------------
 #' 'Templates' shapes
 #'
-#' \code{coo_template} returns shape centered on the origin and inscribed in a \code{size}-side square
+#' \code{coo_template} returns shape centered on the origin
+#' and inscribed in a \code{size}-side square. `coo_template_relatively`
+#' does the same but the biggest shape (as `prod(coo_diffrange)`) will
+#' be of `size=size` and consequently not defined on single shapes.
 #'
 #' See \link{coo_listpanel} for an illustration of this function. The morphospaces
 #' functions also take profit of this function. May be useful to develop other graphical functions.
@@ -204,7 +346,6 @@ coo_scaley <- function(coo, k=1){
 #' @family coo_ utilities
 #' @examples
 #'
-#' data(bot)
 #' coo <- bot[1]
 #' coo_plot(coo_template(coo), xlim=c(-1, 1), ylim=c(-1, 1))
 #' rect(-0.5, -0.5, 0.5, 0.5)
@@ -213,11 +354,15 @@ coo_scaley <- function(coo, k=1){
 #' coo_plot(coo_template(coo, s))
 #' rect(-s/2, -s/2, s/2, s/2)
 #' @family scaling functions
+#' @rdname coo_template
+#' @name coo_template
 #' @export
 coo_template <- function(coo, size){
   UseMethod("coo_template")
 }
 
+#' @rdname coo_template
+#' @name coo_template
 #' @export
 coo_template.default <- function(coo, size = 1) {
   # only for matrices
@@ -231,11 +376,47 @@ coo_template.default <- function(coo, size = 1) {
   return(coo)
 }
 
+#' @rdname coo_template
+#' @name coo_template
+#' @export
+coo_template.list <- function(coo, size=1){
+  lapply(coo, coo_template, size=size)
+}
+
+#' @rdname coo_template
+#' @name coo_template
 #' @export
 coo_template.Coo <- function(coo, size=1){
   Coo <- coo
   Coo$coo <- lapply(Coo$coo, coo_template, size=size)
   return(Coo)
+}
+
+#' @rdname coo_template
+#' @name coo_template
+#' @export
+coo_template_relatively <- function(coo, size=1){
+  UseMethod("coo_template_relatively")
+}
+
+#' @rdname coo_template
+#' @name coo_template
+#' @export
+coo_template_relatively.list <- function(coo, size = 1) {
+  how_big <- coo_diffrange(coo) %>% apply(1, prod)
+  rel_big <- (how_big/(max(how_big))) * size
+  res <- lapply(seq_along(coo),
+                function(i) coo_template(coo[[i]], size = rel_big[i]))
+  names(res) <- names(coo)
+  res
+}
+
+#' @rdname coo_template
+#' @name coo_template
+#' @export
+coo_template_relatively.Coo <- function(coo, size = 1) {
+  coo$coo %<>% coo_template_relatively(size=size)
+  coo
 }
 
 # coo_rotate -----------------
@@ -449,7 +630,7 @@ coo_alignminradius.default <- function(coo){
   id_minrad <- which.min(coo_centdist(coo))
   coo <- coo_slide(coo, id_minrad)
   m <- matrix(c(coo[1, ],  0, 0, 1, 0), nrow=3, byrow=TRUE)
-  th <- coo_theta3(m)
+  th <- .coo_angle_edge1(m)
   coo_rotate(coo, -th)
 }
 
@@ -502,25 +683,56 @@ coo_trans.Coo <- function(coo, x = 0, y = 0) {
 #' slices returned as a list
 #' @inheritParams coo_check
 #' @param ids \code{numeric} of length >= 2, where to slice the shape(s)
+#' @param ldk \code{numeric} the id of the ldk to use as ids, only on \code{Out} and \code{Opn}.
+#' If provided, \code{ids} will be ignored.
 #' @return a list of shapes or a list of \link{Opn}
 #' @examples
+#' h <- slice(hearts, 1:5)  # speed purpose only
 #' # single shape, a list of matrices is returned
-#' sh <- coo_slice(hearts[1], c(12, 24, 36, 48))
+#' sh <- coo_slice(h[1], c(12, 24, 36, 48))
 #' coo_plot(sh[[1]])
 #' panel(Opn(sh))
 #' # on a Coo, a list of Opn is returned
 #' # makes no sense if shapes are not normalized first
-#' sh2 <- coo_slice(hearts, c(12, 24, 36, 48))
+#' sh2 <- coo_slice(h, c(12, 24, 36, 48))
 #' panel(sh2[[1]])
+#'
+#' # Use coo_slice with `ldk` instead:
+#' # hearts as an example
+#' x <- h %>% fgProcrustes(tol=1)
+#' # 4 landmarks
+#' stack(x)
+#' x$ldk[1:5]
+#'
+#' # here we slice
+#' y <- coo_slice(x, ldk=1:4)
+#'
+#' # plotting
+#' stack(y[[1]])
+#' stack(y[[2]])
+#'
+#' # new ldks from tipping points, new ldks from angle
+#' olea %>% slice(1:5) %>% # for the sake of speed
+#' def_ldk_tips %>%
+#' def_ldk_angle(0.75*pi) %>% def_ldk_angle(0.25*pi) %>%
+#' coo_slice(ldk =1:4) -> oleas
+#' oleas[[1]] %>% stack
+#' oleas[[2]] %>% stack # etc.
+#'
+#' # domestic operations
+#' y[[3]] %>% coo_area()
+#' # shape analysis of a slice
+#' y[[1]] %>% coo_bookstein() %>% npoly %>% PCA %>% plot(~aut)
+#'
 #' @family slicing functions
 #' @family coo_ utilities
 #' @export
-coo_slice <- function(coo, ids){
+coo_slice <- function(coo, ids, ldk){
   UseMethod("coo_slice")
 }
 
 #' @export
-coo_slice.default <- function(coo, ids){
+coo_slice.default <- function(coo, ids, ldk){
   n <- length(ids)
   if (n<=1)
     stop("'ids' must contain at least 2 ids")
@@ -538,7 +750,44 @@ coo_slice.default <- function(coo, ids){
 }
 
 #' @export
-coo_slice.Coo <- function(coo, ids){
+coo_slice.Out <- function(coo, ids, ldk){
+  # ldk case
+  if (!missing(ldk)){
+    n_ldk <- unique(sapply(coo$ldk, length))
+    .check(length(n_ldk == 1),
+           " * $ldk number must be homegeneous")
+    .check(length(ldk)<=n_ldk,
+           " * ldk must be <= the number of $ldk")
+
+    RES <- vector("list", length(ldk))
+    for (i in seq_along(coo)){
+      res <- coo_slice(coo$coo[[i]], coo$ldk[[i]][ldk])
+      for (j in seq_along(ldk)){
+        RES[[j]][[i]] <- res[[j]]
+      }
+    }
+  } else { # coo case
+    # some checks
+    .check(all(coo_nb(coo) > max(ids)),
+           " * max(ids) must be lower than any number of coordinates")
+
+    RES <- vector("list", length(ids))
+
+    for (i in seq_along(coo)){
+      res <- coo_slice(coo$coo[[i]], ids)
+      for (j in seq_along(ids)){
+        RES[[j]][[i]] <- res[[j]]
+      }
+    }
+  }
+  return(lapply(RES, Opn, fac=coo$fac))
+}
+
+#' @export
+coo_slice.Opn <- coo_slice.Out
+
+#' @export
+coo_slice.Ldk <- function(coo, ids, ldk){
   .check(all(coo_nb(coo) > max(ids)),
          " * max(ids) must be lower than any number of coordinates")
   RES <- vector("list", length(ids))
@@ -548,94 +797,267 @@ coo_slice.Coo <- function(coo, ids){
       RES[[j]][[i]] <- res[[j]]
     }
   }
-  return(lapply(RES, Opn))
+  return(lapply(RES, Ldk, fac=coo$fac))
 }
 
-###TODO: coo_slice_direction
-# #' @family slicing functions
 
 # coo_slide --------
 #' Slides coordinates
 #'
-#' Slides the coordinates so that the id1-th point become the first one.
+#' Slides the coordinates so that the id-th point become the first one.
 #' @aliases coo_slide
 #' @inheritParams coo_check
-#' @param id1 \code{numeric} the id(s) of the point that will become the new first point. See details below
+#' @param id \code{numeric} the id of the point that will become the new first point. See details below
 #' for the method on Coo objects.
-#' @param ldk \code{numeric} the id of the ldk to use as id1, only on \code{Out}
+#' @param ldk \code{numeric} the id of the ldk to use as id, only on \code{Out}
 #' @details For Coo objects, and in particular for Out and Opn three different ways of coo_sliding
 #' are available:
 #' \itemize{
-#' \item \strong{no ldk passed and a single id1 is passed}: all id1-th points
+#' \item \strong{no ldk passed and a single id is passed}: all id-th points
 #' within the shapes will become the first points. $ldk will be slided accordingly.
 #' \item \strong{no ldk passed and a vector of ids matching the length of the Coo}: for every shape,
-#' the id1-th point will be used as the id1-th point. $ldk will be slided accordingly.
+#' the id-th point will be used as the id-th point. $ldk will be slided accordingly.
 #' \item \strong{a single ldk is passed}: the ldk-th ldk will be used to slide every shape. If an ldk is passed,
-#' id1 is ignored with a message.
+#' id is ignored with a message.
 #' }
 #' See examples.
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
+#' @seealso \link{coo_slice} and friends.
 #' @examples
 #' stack(hearts)
 #' # set the first landmark as the starting point
 #' stack(coo_slide(hearts, ldk=1))
 #' # set the 50th point as the starting point (everywhere)
-#' stack(coo_slide(hearts, id1=50))
-#' # set the id1-random-th point as the starting point (everywhere)
+#' stack(coo_slide(hearts, id=50))
+#' # set the id-random-th point as the starting point (everywhere)
 #' set.seed(123) # just for the reproducibility
-#' id1_random <- sample(x=min(sapply(hearts$coo, nrow)), size=length(hearts),
+#' id_random <- sample(x=min(sapply(hearts$coo, nrow)), size=length(hearts),
 #' replace=TRUE)
-#' stack(coo_slide(hearts, id1=id1_random))
+#' stack(coo_slide(hearts, id=id_random))
 #' @family sliding functions
 #' @family coo_ utilities
 #' @export
-coo_slide <- function(coo, id1, ldk) {
+coo_slide <- function(coo, id, ldk) {
   UseMethod("coo_slide")
 }
 
 #' @export
-coo_slide.default <- function(coo, id1, ldk) {
+coo_slide.default <- function(coo, id, ldk) {
   coo <- coo_check(coo)
-  if (id1 == 0) {
+  if (id == 0) {
     return(coo)
   }
   n <- nrow(coo)
-  slided.rows <- c(id1:n, 1:(id1 - 1))
+  slided.rows <- c(id:n, 1:(id - 1))
   return(coo[slided.rows, ])
 }
 
 #' @export
-coo_slide.Coo <- function(coo, id1, ldk) {
+coo_slide.Coo <- function(coo, id, ldk) {
   Coo <- coo
   ##### ldk case #####
   if (!missing(ldk)) {
-    .check(is.ldk(Coo),
+    .check(is_ldk(Coo),
            "this object has no $ldk")
-    if (!missing(id1))        warning("'id1' provided will be ignored")
+    if (!missing(id))        warning("'id' provided will be ignored")
     for (i in seq(along = Coo$coo)) {
       Coo$coo[[i]] <- coo_slide(Coo$coo[[i]], Coo$ldk[[i]][ldk])
       Coo$ldk[[i]] <- (Coo$ldk[[i]] - (Coo$ldk[[i]][ldk] - 1)) %% nrow(Coo$coo[[i]])
     }
     return(Coo)
   } else {
-    ##### id1 case ######
-    if (length(id1)==1) id1 <- rep(id1, length(Coo))
+    ##### id case ######
+    if (length(id)==1) id <- rep(id, length(Coo))
 
-    # id1 case
-    # id1=1 just rep
+    # id case
+    # id=1 just rep
     #
-    # allows a vector of id1s to be passed
+    # allows a vector of ids to be passed
     slide_ldk <- (length(Coo$ldk) > 0)
     for (i in seq(along = Coo$coo)) {
-      Coo$coo[[i]] <- coo_slide(Coo$coo[[i]], id1[i])
+      Coo$coo[[i]] <- coo_slide(Coo$coo[[i]], id[i])
       if (slide_ldk){
-        new_ldk <- (Coo$ldk[[i]] - id1[i]) %% nrow(Coo$coo[[i]])
+        new_ldk <- (Coo$ldk[[i]] - id[i]) %% nrow(Coo$coo[[i]])
         Coo$ldk[[i]] <- ifelse(new_ldk==0, 1, new_ldk)
       }
 
     }
     return(Coo)
-  }}
+  }
+}
+
+# coo_intersect_segment -----------
+
+#' Nearest intersection between a shape and a segment
+#'
+#' Take a shape, and an intersecting segment, which point is the nearest
+#' of where the segment intersects with the shape? Most of the time,
+#' centering before makes more sense.
+#' @inheritParams coo_check
+#' @param seg a 2x2 \code{matrix} defining the starting and ending points;
+#' or a list or a numeric of length 4.
+#' @param center \code{logical} whether to center the shape (TRUE by default)
+#' @return \code{numeric} the id of the nearest point, a `list` for `Coo`. See examples.
+#' @family coo_ intersect
+#' @examples
+#' coo <- bot[1] %>% coo_center %>% coo_scale
+#' seg <- c(0, 0, 2, 2) # passed as a numeric of length(4)
+#' coo_plot(coo)
+#' segments(seg[1], seg[2], seg[3], seg[4])
+#' coo %>% coo_intersect_segment(seg) %T>% print %>%
+#' # prints on the console and draw it
+#'    coo[., , drop=FALSE] %>% points(col="red")
+#'
+#' # on Coo
+#' bot %>%
+#'     slice(1:3) %>% # for the sake of speed
+#'     coo_center %>%
+#'     coo_intersect_segment(matrix(c(0, 0, 1000, 1000), ncol=2, byrow=TRUE))
+#' @export
+coo_intersect_segment <- function(coo, seg, center=TRUE){
+  UseMethod("coo_intersect_segment")
+}
+
+#' @export
+coo_intersect_segment.default <- function(coo, seg, center=TRUE){
+  # in most cases, centering first is useful
+  if (center)
+    coo <- coo_center(coo)
+  # if seg is provided as a list, first unlist
+  if (is.list(seg) && length(seg)==4){
+    seg <- as.numeric(seg)
+  }
+  # if seg is now a numeric, then turn it into a shape
+  if (!is.matrix(seg) && length(seg)==4){
+    seg <- matrix(seg, ncol=2, byrow = TRUE)
+  }
+  # turns outlines into a SpatialPolygons
+  # and seg into a SpatialLines
+  sp_out <- coo %>%
+    sp::Polygon() %>% list %>%
+    sp::Polygons(ID="useless_yet_required") %>% list %>%
+    sp::SpatialPolygons()
+  sp_seg  <- seg %>%
+    sp::Line() %>% list %>%
+    sp::Lines(ID="useless_yet_required") %>% list %>%
+    sp::SpatialLines()
+  # rgeos function that returns another sp object
+  inter <- rgeos::gIntersection(sp_out, sp_seg)
+  # extract coordinates of intersection points
+  inter_xy <- inter@lines[[1]]@Lines[[1]]@coords
+  # find the if of the closest point on the coo
+  # and return its id
+  edm_nearest(inter_xy[2,, drop=FALSE], coo, full=TRUE)$pos
+}
+
+#' @export
+coo_intersect_segment.Coo <- function(coo, seg, center=TRUE){
+  lapply(coo$coo, coo_intersect_segment, seg=seg, center=center)
+}
+
+#' Nearest intersection between a shape and a segment specified with an angle
+#'
+#' Take a shape, and segment starting on the centroid and having a particular angle, which point is the nearest
+#' where the segment intersects with the shape?
+#' @inheritParams coo_check
+#' @param angle \code{numeric} an angle in radians (0 by default).
+#' @param direction \code{character} one of \code{"down", "left", "up", "right"} ("right" by default)
+#' @note shapes are always centered before this operation. If you need a simple
+#' direction such as \code{(down, left, up, right)ward}, then use \link{coo_intersect_direction} which
+#' does not need to find an intersection but relies on coordinates and is about 1000.
+#' @return \code{numeric} the id of the nearest point or a `list` for `Coo` See examples.
+#' @family coo_ intersect
+#' @examples
+#' coo <- bot[1] %>% coo_center %>% coo_scale
+#' coo_plot(coo)
+#' coo %>% coo_intersect_angle(pi/7) %>%
+#'    coo[., , drop=FALSE] %>% points(col="red")
+#'
+#'  # many angles
+#'  coo_plot(coo)
+#'  sapply(seq(0, pi, pi/12),
+#'        function(x) coo %>% coo_intersect_angle(x)) -> ids
+#'  coo[ids, ] %>% points(col="blue")
+#'
+#'  coo %>%
+#'  coo_intersect_direction("down") %>%
+#'  coo[.,, drop=FALSE] %>% points(col="orange")
+#'
+
+#' @export
+coo_intersect_angle <- function(coo, angle=0){
+  UseMethod("coo_intersect_angle")
+}
+
+#' @export
+coo_intersect_angle.default <- function(coo, angle=0){
+  # only defined on centered coo
+  coo <- coo_center(coo)
+  origin <- matrix(0, nrow=1, ncol=2)
+  # calculate a landing point "outside" the shape (modulus)
+  # in the right direction (argument)
+  # using complex numbers / polar coordinates
+  # below the "outside" (modulus) part
+  coo_centdist(coo) %>% max %>% `*`(2) %>%
+    complex(modulus = ., argument = angle) %>% cpx2coo() %>%
+    # add the origin
+    rbind(origin, .) %>%
+    coo_intersect_segment(coo, ., center=TRUE)
+}
+
+#' @export
+coo_intersect_angle.Coo <-
+  function(coo, angle=0){
+    lapply(coo$coo, coo_intersect_angle, angle=angle)
+  }
+
+#' @rdname coo_intersect_angle
+#' @export
+coo_intersect_direction <-
+  function(coo,
+           direction=c("down", "left", "up", "right")[4]){
+    UseMethod("coo_intersect_direction")
+  }
+
+
+#' @rdname coo_intersect_angle
+#' @export
+coo_intersect_direction.default <-
+  function(coo,
+           direction=c("down", "left", "up", "right")[4]){
+
+    coo <- coo_check(coo)
+
+    if (direction == "down") {
+      x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
+      id0 <- x0.ed[which(coo[x0.ed, 2] < 0)[1]]
+    }
+
+    if (direction == "left") {
+      y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
+      id0 <- y0.ed[which(coo[y0.ed, 1] < 0)[1]]
+    }
+
+    if (direction == "up") {
+      x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
+      id0 <- x0.ed[which(coo[x0.ed, 2] > 0)[1]]
+    }
+
+    if (direction == "right") {
+      y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
+      id0 <- y0.ed[which(coo[y0.ed, 1] > 0)[1]]
+    }
+    # return the id
+    id0
+  }
+
+#' @rdname coo_intersect_angle
+#' @export
+coo_intersect_direction.Coo <-
+  function(coo,
+           direction=c("down", "left", "up", "right")[4]){
+    lapply(coo$coo, coo_intersect_direction, direction=direction)
+  }
 
 # coo_slidedirection --------
 #' Slides coordinates in a particular direction
@@ -643,65 +1065,84 @@ coo_slide.Coo <- function(coo, id1, ldk) {
 #' Shapes are centered and then, according to direction, the point northwards, southwards,
 #' eastwards or westwards the centroid, becomes the first point with \link{coo_slide}.
 #' @inheritParams coo_check
-#' @param direction \code{character} among \code{'N'} (by default), \code{'S'}, \code{'E'}, or \code{'W'}.
+#' @param direction \code{character} one of \code{"down", "left", "up", "right"} ("right" by default)
 #' @param center \code{logical} whether to center or not before sliding
 #' @param id \code{numeric} whether to return the id of the point or the slided shapes
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
 #' b <- coo_rotate(bot[1], pi/6) # dummy example just to make it obvious
 #' coo_plot(b) # not the first point
-#' coo_plot(coo_slidedirection(b, 'N'))
-#' coo_plot(coo_slidedirection(b, 'E'))
-#' coo_plot(coo_slidedirection(b, 'W'))
-#' coo_plot(coo_slidedirection(b, 'S'))
+#' coo_plot(coo_slidedirection(b, "up"))
+#' coo_plot(coo_slidedirection(b, "right"))
+#' coo_plot(coo_slidedirection(b, "left"))
+#' coo_plot(coo_slidedirection(b, "down"))
 #'
 #' # on Coo objects
 #' stack(bot)
-#' stack(coo_slidedirection(bot, 'E'))
+#' stack(coo_slidedirection(bot, "left"))
 #'
 #' @family sliding functions
 #' @family coo_ utilities
 #' @export
-coo_slidedirection <- function(coo, direction, center, id) {
-  UseMethod("coo_slidedirection")
-}
+coo_slidedirection <-
+  function(coo, direction=c("down", "left", "up", "right")[4], center, id) {
+    UseMethod("coo_slidedirection")
+  }
 
 #' @export
-coo_slidedirection.default <- function(coo, direction = "N",
-                                       center=TRUE, id = FALSE) {
-  coo <- coo_check(coo)
-  if (center) coo <- coo_center(coo)
-  if (direction == "N") {
-    x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
-    id0 <- x0.ed[which(coo[x0.ed, 2] > 0)[1]]
-  }
-  if (direction == "S") {
-    x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
-    id0 <- x0.ed[which(coo[x0.ed, 2] < 0)[1]]
-  }
-  if (direction == "E") {
-    y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
-    id0 <- y0.ed[which(coo[y0.ed, 1] > 0)[1]]
-  }
-  if (direction == "W") {
-    y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
-    id0 <- y0.ed[which(coo[y0.ed, 1] < 0)[1]]
-  }
+coo_slidedirection.default <-
+  function(coo, direction=c("down", "left", "up", "right")[4],
+           center=TRUE, id = FALSE) {
+    # for the sake of compatibility
+    if (any(direction %in% c("S", "W", "N", "E"))){
+      message("direction specification has changed and retrocompatibility
+               wil be removed in future version. See ?coo_slidedirection")
+    }
+    if (direction=="S") direction <- "down"
+    if (direction=="W") direction <- "left"
+    if (direction=="N") direction <- "up"
+    if (direction=="E") direction <- "right"
 
-  if (id) {
-    return(id0) }
-  else {
-    coo <- coo_slide(coo, id0)
-    return(coo) }
-}
+    coo <- coo_check(coo)
+    if (center) coo <- coo_center(coo)
+
+    if (direction == "down") {
+      x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
+      id0 <- x0.ed[which(coo[x0.ed, 2] < 0)[1]]
+    }
+
+    if (direction == "left") {
+      y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
+      id0 <- y0.ed[which(coo[y0.ed, 1] < 0)[1]]
+    }
+
+    if (direction == "up") {
+      x0.ed <- order(abs(coo[, 1]), decreasing = FALSE)
+      id0 <- x0.ed[which(coo[x0.ed, 2] > 0)[1]]
+    }
+
+    if (direction == "right") {
+      y0.ed <- order(abs(coo[, 2]), decreasing = FALSE)
+      id0 <- y0.ed[which(coo[y0.ed, 1] > 0)[1]]
+    }
+
+    if (id) {
+      return(id0)
+    } else {
+      coo <- coo_slide(coo, id=id0)
+      return(coo)
+    }
+  }
 
 #' @export
-coo_slidedirection.Coo <- function(coo, direction, center = TRUE, id = TRUE) {
-  Coo <- coo
-  id0 <- sapply(Coo$coo, coo_slidedirection, direction, center, id=TRUE)
-  Coo <- coo_slide(Coo, id1 = id0)
-  return(Coo)
-}
+coo_slidedirection.Coo <-
+  function(coo, direction=c("down", "left", "up", "right")[4],
+           center = TRUE, id = TRUE) {
+    Coo <- coo
+    id0 <- sapply(Coo$coo, coo_slidedirection, direction, center, id=TRUE)
+    Coo <- coo_slide(Coo, id = id0)
+    return(Coo)
+  }
 
 # coo_slidegap ---------
 #' Slides coordinates using the widest gap
@@ -839,7 +1280,7 @@ coo_sample.default <- function(coo, n) {
 coo_sample.Out <- function(coo, n) {
   Out <- coo
   # if an $ldk is present, we have to change it.
-  if (length(Out$ldk)!=0) {
+  if (is_ldk(Out)) {
     coo_nb <- sapply(Out$coo, nrow)
     for (i in 1:length(Out)){
       ratio.i <- n / coo_nb[i]
@@ -856,7 +1297,55 @@ coo_sample.Out <- function(coo, n) {
 #' @export
 coo_sample.Opn <- coo_sample.Out
 
-## TODO: adapt $ldk for Out and Opn, deprecate for Ldk
+# coo_sample -------------
+#' Sample a proportion of coordinates (among points)
+#'
+#' A simple wrapper around \link{coo_sample}
+#'
+#' As for \link{coo_sample} if an \code{$ldk} component is defined,
+#' it is changed accordingly by multiplying the ids by n over the number of coordinates.
+#'
+#' @param coo either a \code{matrix} of (x; y) coordinates or an \link{Out} or an \link{Opn} object.
+#' @param prop \code{numeric}, the proportion of points to sample
+#' @return a \code{matrix} of (x; y) coordinates, or an \link{Out} or an \link{Opn} object.
+#' @examples
+#' # single shape
+#' bot[1] %>% coo_nb()
+#' bot[1] %>% coo_sample_prop(0.5) %>% coo_nb()
+#' @family sampling functions
+#' @family coo_ utilities
+#' @export
+coo_sample_prop <- function(coo, prop=1) {
+  UseMethod("coo_sample_prop")
+}
+
+#' @export
+coo_sample_prop.default <- function(coo, prop=1) {
+  coo <- coo_check(coo)
+  coo_sample(coo, round(nrow(coo)*prop))
+}
+
+#' @export
+coo_sample_prop.Out <- function(coo, prop=1) {
+  Out <- coo
+  # if an $ldk is present, we have to change it.
+  if (is_ldk(Out)) {
+    N <- coo_nb(Out)
+    n <- round(N*prop)
+    for (i in 1:length(Out)){
+      ratio.i <- n[i] / N[i]
+      Out$ldk[[i]] <- ceiling(Out$ldk[[i]] * (n[i] / N[i]))
+    }
+    message("$ldk has been changed accordingly")
+  }
+  # now sample $coo
+  Out$coo <- lapply(Out$coo, coo_sample_prop, prop)
+  return(Out)
+}
+
+#' @export
+coo_sample_prop.Opn <- coo_sample_prop.Out
+
 
 # coo_samplerr --------------
 #' Samples coordinates (regular radius)
@@ -962,7 +1451,7 @@ coo_interpolate <- function(coo, n) {
 #' @export
 coo_interpolate.default <- function(coo, n) {
   coo <- coo_check(coo)
-  if (!is_closed(coo)) {
+  if (!coo_is_closed(coo)) {
     coo <- coo_close(coo)
   }
   orig <- coo_perimcum(coo)
@@ -1070,41 +1559,41 @@ coo_smoothcurve.Opn <- function(coo, n) {
   return(Opn)
 }
 
-# is_closed ----------
-#' Tests if shapes are closed
+# coo_is_closed ----------
+#' Test if shapes are closed
 #'
 #' Returns TRUE/FALSE whether the last coordinate of the shapes is the same
 #' as the first one.
 #'
-#' @aliases is_closed
+#' @aliases coo_is_closed
 #' @inheritParams coo_check
 #' @return a single or a vector of \code{logical}.
 #' @family coo_ utilities
 #' @examples
-#' is_closed(matrix(1:10, ncol=2))
-#' is_closed(coo_close(matrix(1:10, ncol=2)))
-#' is_closed(bot)
-#' is_closed(coo_close(bot))
+#' coo_is_closed(matrix(1:10, ncol=2))
+#' coo_is_closed(coo_close(matrix(1:10, ncol=2)))
+#' coo_is_closed(bot)
+#' coo_is_closed(coo_close(bot))
 #' @export
-is_closed <- function(coo) {
-  UseMethod("is_closed")
+coo_is_closed <- function(coo) {
+  UseMethod("coo_is_closed")
 }
 
 #' @export
-is_closed.default <- function(coo) {
+coo_is_closed.default <- function(coo) {
   coo <- coo_check(coo)
   identical(coo[1, ], coo[nrow(coo), ])
 }
 
 #' @export
-is_closed.Coo <- function(coo) {
+coo_is_closed.Coo <- function(coo) {
   Coo <- coo
-  return(sapply(Coo$coo, is_closed))
+  return(sapply(Coo$coo, coo_is_closed))
 }
 
-#' @rdname is_closed
+#' @rdname coo_is_closed
 #' @export
-is_open <- function(coo) !is_closed(coo)
+is_open <- function(coo) !coo_is_closed(coo)
 
 # is_equallyspacedradii ----------
 #' Tests if coordinates likely have equally spaced radii
@@ -1114,9 +1603,8 @@ is_open <- function(coo) !is_closed(coo)
 #'
 #' @inheritParams coo_check
 #' @param thres numeric a threshold (arbitrarily \code{pi/90}, eg 2 degrees, by default)
-#' @return a single or a vector of \code{logical}. If \code{NA} are returned, they
-#' are produced by \link{coo_theta3} and some coordinates are likely identical, at least
-#' for x or y.
+#' @return a single or a vector of \code{logical}. If \code{NA} are returned,
+#' some coordinates are likely identical, at least for x or y.
 #' @family coo_ utilities
 #' @examples
 #' bot[1] %>% is_equallyspacedradii
@@ -1134,11 +1622,12 @@ is_equallyspacedradii <- function(coo, thres) {
 
 #' @export
 is_equallyspacedradii.default <- function(coo, thres=pi/90){
-  coo1 <- coo_slide(coo, id1 = 2)
+  coo1 <- coo_slide(coo, id = 2)
   cent <- coo_centpos(coo)
   res <- vector("numeric", nrow(coo))
   for (i in 1:nrow(coo)){
-    res[i] <- rbind(coo[i, ], cent, coo1[i, ]) %>% coo_theta3("acos")
+    res[i] <- rbind(coo[i, ], cent, coo1[i, ]) %>%
+      .coo_angle_edge1("acos")
   }
   sd(res) < thres
 }
@@ -1158,24 +1647,26 @@ is_equallyspacedradii.Coo <- function(coo, thres=pi/90){
 # coo_clockwise
 # see http://en.wikipedia.org/wiki/Shoelace_formula
 
-#' Tests if shapes are developping clockwise or anticlockwise
+#' Tests if shapes are (likely) developping clockwise or anticlockwise
 #'
 #' @inheritParams coo_check
 #' @return a single or a vector of \code{logical}.
 #' @family coo_ utilities
 #' @examples
 #' shapes[4] %>% coo_sample(64) %>% coo_plot()  #clockwise cat
-#' shapes[4] %>% is_clockwise()
-#' shapes[4] %>% coo_rev() %>% is_clockwise()
+#' shapes[4] %>% coo_likely_clockwise()
+#' shapes[4] %>% coo_rev() %>% coo_likely_clockwise()
 #'
 #' # on Coo
-#' shapes %>% is_clockwise %>% `[`(4)
+#' shapes %>% coo_likely_clockwise %>% `[`(4)
+#' @rdname coo_likely_clockwise
 #' @export
-is_clockwise <- function(coo)
-  UseMethod("is_clockwise")
+coo_likely_clockwise <- function(coo)
+  UseMethod("coo_likely_clockwise")
 
+#' @rdname coo_likely_clockwise
 #' @export
-is_clockwise.default <- function(coo){
+coo_likely_clockwise.default <- function(coo){
   res <- numeric(nrow(coo)-1)
   for (i in seq_along(res)){
     res[i] <- (coo[i+1, 1] - coo[i, 1]) * (coo[i+1, 2] - coo[i, 2])
@@ -1183,16 +1674,18 @@ is_clockwise.default <- function(coo){
   sum(res)>0
 }
 
+#' @rdname coo_likely_clockwise
 #' @export
-is_clockwise.Coo <- function(coo){
-  sapply(coo$coo, is_clockwise)
+coo_likely_clockwise.Coo <- function(coo){
+  sapply(coo$coo, coo_likely_clockwise)
 }
 
-#' @rdname is_clockwise
+#' @rdname coo_likely_clockwise
 #' @export
-is_anticlockwise <- function(coo){
-  !is_clockwise(coo)
+coo_likely_anticlockwise <- function(coo){
+  !coo_likely_clockwise(coo)
 }
+
 # coo_close -----------------
 #' Closes/uncloses shapes
 #'
@@ -1206,11 +1699,11 @@ is_anticlockwise <- function(coo){
 #' x2 <- coo_close(x)
 #' x3 <- coo_unclose(x2)
 #' x
-#' is_closed(x)
+#' coo_is_closed(x)
 #' x2
-#' is_closed(x2)
+#' coo_is_closed(x2)
 #' x3
-#' is_closed(x3)
+#' coo_is_closed(x3)
 #' @rdname coo_close
 #' @export
 coo_close <- function(coo) {
@@ -1220,7 +1713,7 @@ coo_close <- function(coo) {
 #' @export
 coo_close.default <- function(coo) {
   coo <- coo_check(coo)
-  ifelse(is_closed(coo), return(coo), return(rbind(coo, coo[1, ])))
+  ifelse(coo_is_closed(coo), return(coo), return(rbind(coo, coo[1, ])))
 }
 
 #' @export
@@ -1243,11 +1736,11 @@ coo_close.Coo <- function(coo) {
 #' x2 <- coo_close(x)
 #' x3 <- coo_unclose(x2)
 #' x
-#' is_closed(x)
+#' coo_is_closed(x)
 #' x2
-#' is_closed(x2)
+#' coo_is_closed(x2)
 #' x3
-#' is_closed(x3)
+#' coo_is_closed(x3)
 #' @rdname coo_close
 #' @export
 coo_unclose <- function(coo) {
@@ -1257,7 +1750,7 @@ coo_unclose <- function(coo) {
 #' @export
 coo_unclose.default <- function(coo) {
   coo <- coo_check(coo)
-  ifelse(is_closed(coo), return(coo[-nrow(coo), ]), return(coo))
+  ifelse(coo_is_closed(coo), return(coo[-nrow(coo), ]), return(coo))
 }
 
 #' @export
@@ -1272,8 +1765,6 @@ coo_unclose.Coo <- function(coo) {
 # on monday mornings.
 
 
-## TODO coo_closesharp # actuel force2close
-## TODO coo_closesmooth # distribuer la difference
 
 # coo_force2close -----------
 #' Forces shapes to close
@@ -1298,7 +1789,7 @@ coo_force2close <- function(coo){
 coo_force2close.default <- function(coo) {
   coo <- coo_check(coo)
   xy <- coo_centpos(coo)
-  if (is_closed(coo)) {
+  if (coo_is_closed(coo)) {
     return(coo)
   }
   n <- nrow(coo)
@@ -1427,18 +1918,33 @@ coo_flipy.Coo <- function(coo){
 #' Calculate abscissa and ordinate on a shape
 #'
 #' A simple wrapper to calculate dxi - dx1 and dyi - dx1.
-#' @param coo a matrix (or a list) of (x; y) coordinates
-#' @return a list with two components \code{dx} and \code{dy}
+#' @param coo a matrix (or a list) of (x; y) coordinates or any `Coo`
+#' @return a `data.frame` with two components \code{dx} and \code{dy} for single shapes
+#' or a `list` of such `data.frame`s for `Coo`
 #' @family exemplifying functions
 #' @family coo_ utilities
 #' @examples
-#' coo_dxy(bot[1])
+#' coo_dxy(coo_sample(bot[1], 12))
+#'
+#' bot %>%
+#'     slice(1:5) %>% coo_sample(12) %>%  # for readability and speed only
+#'     coo_dxy()
 #' @export
 coo_dxy <- function(coo) {
+  UseMethod("coo_dxy")
+}
+
+#' @export
+coo_dxy.default <- function(coo) {
   coo <- coo_check(coo)
   dx <- coo[, 1] - coo[1, 1]
   dy <- coo[, 2] - coo[1, 2]
-  return(list(dx = dx, dy = dy))
+  return(dplyr::data_frame(dx = dx, dy = dy))
+}
+
+#' @export
+coo_dxy.Coo <- function(coo) {
+  lapply(coo$coo, coo_dxy)
 }
 
 # 2. Handling / baselines on coo and Coo
@@ -1489,7 +1995,8 @@ coo_up.Coo <- function(coo, slidegap=FALSE){
   coo
 }
 
-#' coo_down -----------------
+# coo_donw --------
+#' coo_down
 #' Retains coordinates with negative y-coordinates
 #'
 #' Useful when shapes are aligned along the x-axis (e.g. because of a
@@ -1730,7 +2237,6 @@ coo_bookstein.default <- function(coo, ldk1 = 1, ldk2 = nrow(coo)) {
 
 #' @export
 coo_bookstein.Out <- function(coo, ldk1=1, ldk2=2) {
-  # id1 ?
   Out <- coo
   for (i in seq(along = Out$coo)) {
     Out$coo[[i]] <- coo_bookstein(Out$coo[[i]], Out$ldk[[i]][ldk1], Out$ldk[[i]][ldk2])
@@ -1741,7 +2247,6 @@ coo_bookstein.Out <- function(coo, ldk1=1, ldk2=2) {
 
 #' @export
 coo_bookstein.Opn <- function(coo, ldk1=1, ldk2=2) {
-  # id1 ?
   Opn <- coo
   # by default, using the first and last coordinate
   if (length(Opn$ldk) == 0) {
@@ -1808,7 +2313,7 @@ coo_baseline.default <- function(coo,
   ty <- t2y - t1y
   # returns difference angle and norm ratios between two
   # vectors given as 4 numeric.
-  vi <- vecs_param(rx, ry, tx, ty)
+  vi <- .vecs_param(rx, ry, tx, ty)
   # we rotate accordingly with a center defined as the first
   # landmark (trans, rot, untrans)
   ref <- coo_trans(ref, -t1x, -t1y)
@@ -1929,57 +2434,101 @@ coo_centdist.Coo <- function(coo){
 }
 
 # coo_perimpts --------------
-#' Calculates the chordal distance along a shape.
+#' Calculates perimeter and variations
 #'
-#' Calculates the euclidean distance between every points of a shape for coo_perimpts.
-#' The cumulative sum for coo_perimcum
-#' @param coo \code{matrix} of (x; y) coordinates.
-#' @return \code{numeric} the distance between every point.
+#' `coo_perim` calculates the perimeter;
+#' `coo_perimpts` calculates the euclidean distance between every points of a shape;
+#'`coo_perimcum` does the same and calculates and cumulative sum.
+#' @param coo \code{matrix} of (x; y) coordinates or any `Coo`
+#' @return \code{numeric} the distance between every point or
+#' a `list` of those.
 #' @examples
-#' b <- coo_sample(bot[1], 24)
-#' coo_perimpts(b)
+#' # for speed sake
+#' b1 <- coo_sample(bot[1], 12)
+#' b5 <- bot %>% slice(1:5) %>% coo_sample(12)
+#'
+#' # coo_perim
+#' coo_perim(b1)
+#' coo_perim(b5)
+#'
+#' # coo_perimpts
+#' coo_perimpts(b1)
+#' b5 %>% coo_perimpts()
+#'
+#' # coo_perimcum
+#' b1 %>% coo_perimcum()
+#' b5 %>% coo_perimcum()
 #' @family perimeter functions
 #' @family coo_ utilities
+#' @rdname coo_perim
+#' @name coo_perim
 #' @export
 coo_perimpts <- function(coo) {
+  UseMethod("coo_perimpts")
+}
+
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perimpts.default <- function(coo) {
   coo <- coo_check(coo)
   n <- nrow(coo)
   d <- sqrt(apply((coo - coo_slide(coo, n))^2, 1, sum))[-1]
   return(d)
 }
 
-# coo_perimcum --------------
-#' Calculates the cumulative chordal distance along a shape.
-#'
-#' Just a wrapper for \code{cumsum(coo_perimpts)}. See \link{coo_perimpts}.
-#' @param coo a \code{matrix} of (x; y) coordinates.
-#' @return \code{numeric} the cumulate sum of chrodal distances
-#' @examples
-#' b <- coo_sample(bot[1], 24)
-#' coo_perimcum(b)
-#' @family perimeter functions
-#' @family coo_ utilities
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perimpts.Coo <- function(coo) {
+  lapply(coo$coo, coo_perimpts)
+}
+
+#' @rdname coo_perim
+#' @name coo_perim
 #' @export
 coo_perimcum <- function(coo) {
+  UseMethod("coo_perimcum")
+}
+
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perimcum.default <- function(coo) {
   coo <- coo_check(coo)
   d <- cumsum(sqrt(apply((coo - rbind(coo[1, ], coo[-(dim(coo)[1]),
                                                     ]))^2, 1, sum)))
   return(d)
 }
 
-# coo_perim -----------------
-#' Calculates the perimeter
-#' @param coo a \code{matrix} of (x; y) coordinates.
-#' @return \code{numeric}, the perimeter.
-#' @examples
-#' coo_perim(bot[1])
-#' hist(sapply(bot$coo, coo_perim), breaks=10)
-#' @family perimeter functions
-#' @family coo_ utilities
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perimcum.Coo <- function(coo) {
+  lapply(coo$coo, coo_perimcum)
+}
+
+#' @rdname coo_perim
+#' @name coo_perim
 #' @export
 coo_perim <- function(coo) {
+  UseMethod("coo_perim")
+}
+
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perim.default <- function(coo) {
   return(sum(coo_perimpts(coo)))
 }
+
+#' @rdname coo_perim
+#' @name coo_perim
+#' @export
+coo_perim.Coo <- function(coo) {
+  lapply(coo$coo, coo_perim)
+}
+
 
 # coo_calliper --------------
 #' Calculates the calliper length
@@ -1987,22 +2536,37 @@ coo_perim <- function(coo) {
 #' Also called the Feret's diameter, the longest distance between two points of
 #' the shape provided.
 #' @aliases coo_calliper
-#' @param coo a \code{matrix} of (x; y) coordinates.
+#' @param coo a \code{matrix} of (x; y) coordinates or any `Coo`
 #' @param arr.ind \code{logical}, see below.
-#' @return \code{numeric}, the centroid size. If \code{arr.ind=TRUE}, a list with the calliper length \code{$length}
-#' and the two points \code{$arr.ind}. If \code{arr.ind=TRUE}, only the calliper length as a numeric.
+#' @return \code{numeric}, the centroid size. If \code{arr.ind=TRUE}, a `data_frame`.
 #' @examples
 #' b <- bot[1]
 #' coo_calliper(b)
 #' p <- coo_calliper(b, arr.ind=TRUE)
+#' p
 #' p$length
-#' ids <- p$arr.ind
+#' ids <- p$arr_ind[[1]]
 #' coo_plot(b)
 #' segments(b[ids[1], 1], b[ids[1], 2], b[ids[2], 1], b[ids[2], 2], lty=2)
+#'
+#' # on a Coo
+#' bot %>%
+#' coo_sample(32) %>% # for speed sake
+#' coo_calliper()
+#'
+#' bot %>%
+#' coo_sample(32) %>% # for speed sake
+#' coo_calliper(arr.ind=TRUE)
+#'
 #' @family calliper functions
 #' @family coo_ utilities
 #' @export
-coo_calliper <- function(coo, arr.ind = FALSE) {
+coo_calliper <- function(coo, arr.ind=FALSE){
+  UseMethod("coo_calliper")
+}
+
+#' @export
+coo_calliper.default <- function(coo, arr.ind = FALSE) {
   coo <- coo_check(coo)
   d <- dist(coo, method = "euclidean")
   # we check if there is no ex aequo
@@ -2015,10 +2579,19 @@ coo_calliper <- function(coo, arr.ind = FALSE) {
     # to return a vector (numeric and sorted) of the rows between
     # which the max length has been found
     arr.ind <- sort(as.numeric(arr.ind[1, ]))
-    return(list(length = max(d), arr.ind = arr.ind))
+    return(dplyr::data_frame(length = max(d), arr_ind = list(arr.ind)))
   } else {
     return(max(d))
   }
+}
+
+#' @export
+coo_calliper.Coo <- function(coo, arr.ind = FALSE) {
+  if (arr.ind)
+    lapply(coo$coo, coo_calliper, arr.ind=arr.ind) %>%
+    do.call("rbind", .)
+  else
+    lapply(coo$coo, coo_calliper, arr.ind=arr.ind)
 }
 
 # coo_trim ------------------
@@ -2106,6 +2679,111 @@ coo_trimbottom.default <- function(coo, trim=1){
 #' @export
 coo_trimbottom.Coo <- function(coo, trim=1){
   coo$coo %<>% lapply(coo_trimbottom, trim)
+}
+
+# distance utils ------------
+
+#' Calculates euclidean distance between two points.
+#'
+#' \code{ed} simply calculates euclidean distance between two points defined by
+#' their (x; y) coordinates.
+#'
+#' @param pt1 (x; y) coordinates of the first point.
+#' @param pt2 (x; y) coordinates of the second point.
+#' @return Returns the euclidean distance between the two points.
+#' @seealso \link{edm}, \link{edm_nearest}, \link{dist}.
+#' @examples
+#' ed(c(0,1), c(1,0))
+#' @export
+ed <- function(pt1, pt2) {
+  return(sqrt((pt1[1] - pt2[1])^2 + (pt1[2] - pt2[2])^2))
+}
+
+#' Calculates euclidean intermediate between two points.
+#'
+#' \code{edi} simply calculates coordinates of a points at the relative
+#' distance \code{r} on the \code{pt1-pt2} defined by their (x; y) coordinates.
+#' This function is used internally but may be of interest for other analyses.
+#'
+#' @param pt1 \eqn{(x; y)} coordinates of the first point.
+#' @param pt2 \eqn{(x; y)} coordinates of the second point.
+#' @param r the relative distance from \code{pt1} to \code{pt2}.
+#' @return returns the \eqn{(x; y)} interpolated coordinates.
+#' @seealso \link{ed}, \link{edm}.
+#' @examples
+#' edi(c(0,1), c(1,0), r = 0.5)
+#' @export
+edi <- function(pt1, pt2, r = 0.5) {
+  return(r * (pt2 - pt1) + pt1)
+}
+
+#' Calculates euclidean distance every pairs of points in two matrices.
+#'
+#' \code{edm} returns the euclidean distances between points \eqn{1 -> n} of
+#' two 2-col matrices of the same dimension. This function is used internally
+#' but may be of interest for other analyses.
+#'
+#' If one wishes to align two (or more shapes) Procrustes surimposition may
+#' provide a better solution.
+#' @param m1 The first \code{matrix} of coordinates.
+#' @param m2 The second \code{matrix} of coordinates.
+#' @return Returns a \code{vector} of euclidean distances between pairwise
+#' coordinates in the two matrices.
+#' @seealso \link{ed}, \link{edm_nearest}, \link{dist}.
+#' @examples
+#' x <- matrix(1:10, nc=2)
+#' edm(x, x)
+#' edm(x, x+1)
+#' @export
+edm <- function(m1, m2) {
+  return(sqrt(apply((m1 - m2)^2, 1, sum)))
+}
+
+#' Calculates the shortest euclidean distance found for every point of one
+#' matrix among those of a second.
+#'
+#' \code{edm_nearest} calculates the shortest euclidean distance found for
+#' every point of one matrix among those of a second. In other words, if
+#' \code{m1, m2} have \code{n} rows, the result will be the shortest distance
+#' for the first point of \code{m1} to any point of \code{m2} and so on,
+#' \code{n} times. This function is used internally but may be of interest for
+#' other analyses.
+#'
+#' So far this function is quite time consumming since it performs \eqn{ n
+#' \times n } euclidean distance computation.  If one wishes to align two (or
+#' more shapes) Procrustes surimposition may provide a better solution.
+#' @param m1 The first \code{list} or \code{matrix} of coordinates.
+#' @param m2 The second \code{list} or \code{matrix} of coordinates.
+#' @param full \code{logical}. Whether to returns a condensed version of the
+#' results.
+#' @return If \code{full} is \code{TRUE}, returns a \code{list} with two
+#' components: \code{d} which is for every point of \code{m1} the shortest
+#' distance found between it and any point in \code{m2}, and \code{pos} the
+#' (\code{m2}) row indices of these points. Otherwise returns \code{d} as a
+#' numeric vector of the shortest distances.
+#' @seealso \link{ed}, \link{edm}, \link{dist}.
+#' @examples
+#' x <- matrix(1:10, nc=2)
+#' edm_nearest(x, x+rnorm(10))
+#' edm_nearest(x, x+rnorm(10), full=TRUE)
+#' @export
+edm_nearest <- function(m1, m2, full = FALSE) {
+  m1 <- coo_check(m1)
+  m2 <- coo_check(m2)
+  if (!is.matrix(m1) | !is.matrix(m2))
+    stop("Matrices must be provided")
+  if (ncol(m1) != 2 | ncol(m2) != 2)
+    stop("2-cols matrices must be provided")
+  nr <- nrow(m1)
+  pos <- d <- numeric(nr)
+  for (i in 1:nr) {
+    m1.i <- m1[i, ]
+    di <- apply(m2, 1, function(x) sqrt(sum((x - m1.i)^2)))
+    d[i] <- min(di)
+    pos[i] <- which.min(di)
+  }
+  if (full)
+    return(list(d = d, pos = pos)) else return(d)
 }
 
 # end of coo_utilities

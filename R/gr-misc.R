@@ -1,5 +1,6 @@
 ##### graphics cosmetics
 
+# Palettes -------------------------------------------------
 #' Some color palettes
 #'
 #' Colors, colors, colors.
@@ -10,6 +11,7 @@
 #' Among available color palettes, \code{col_solarized} is based on Solarized: \url{http://ethanschoonover.com/solarized};
 #' \code{col_div}, \code{col_qual}, \code{col_heat}, \code{col_cold}
 #' and \code{col_gallus} are based on on ColorBrewer2: \url{http://colorbrewer2.org/}.
+#'
 #' @examples
 #'
 #' wheel <- function(palette, n=10){
@@ -38,16 +40,18 @@
 #'
 #'  # Black only for pubs
 #'  wheel(col_black)
+#' @name color_palettes
 #' @rdname color_palettes
 #' @export
-col_summer <- colorRampPalette(c(
+col_summer <- grDevices::colorRampPalette(c(
   "#4876FF",
   "#FFFF00",
   "#FF3030"
 ))
+
 #' @rdname color_palettes
 #' @export
-col_summer2 <- colorRampPalette(c(
+col_summer2 <- grDevices::colorRampPalette(c(
   "#781C81",
   "#413B93",
   "#4065B1",
@@ -61,9 +65,10 @@ col_summer2 <- colorRampPalette(c(
   "#E6642C",
   "#D92120"
 ))
+
 #' @rdname color_palettes
 #' @export
-col_spring <- colorRampPalette(c(
+col_spring <- grDevices::colorRampPalette(c(
   "#a3baff",
   "#ffff7f",
   "#ff9797"
@@ -71,7 +76,7 @@ col_spring <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_autumn <- colorRampPalette(c(
+col_autumn <- grDevices::colorRampPalette(c(
   "#3353b3",
   "#b1b100",
   "#b32222"
@@ -79,7 +84,7 @@ col_autumn <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_black <- colorRampPalette(c(
+col_black <- grDevices::colorRampPalette(c(
   "#000000",
   "#000000"
 ))
@@ -87,7 +92,7 @@ col_black <- colorRampPalette(c(
 ### solarized
 #' @rdname color_palettes
 #' @export
-col_solarized <- colorRampPalette(c(
+col_solarized <- grDevices::colorRampPalette(c(
   "#dc322f",
   "#d33682",
   "#6c71c4",
@@ -99,7 +104,7 @@ col_solarized <- colorRampPalette(c(
 ### colorspace
 #' @rdname color_palettes
 #' @export
-col_gallus <- colorRampPalette(c(
+col_gallus <- grDevices::colorRampPalette(c(
   "#d7191c",
   "#fdae61",
   "#ffffbf",
@@ -109,7 +114,7 @@ col_gallus <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_qual <- colorRampPalette(c(
+col_qual <- grDevices::colorRampPalette(c(
   "#a6cee3",
   "#1f78b4",
   "#b2df8a",
@@ -123,7 +128,7 @@ col_qual <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_heat <- colorRampPalette(c(
+col_heat <- grDevices::colorRampPalette(c(
   "#ffffb2",
   "#fecc5c",
   "#fd8d3c",
@@ -133,7 +138,7 @@ col_heat <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_hot <- colorRampPalette(c(
+col_hot <- grDevices::colorRampPalette(c(
   "#fee5d9",
   "#fcae91",
   "#fb6a4a",
@@ -142,7 +147,7 @@ col_hot <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_cold <- colorRampPalette(c(
+col_cold <- grDevices::colorRampPalette(c(
   "#f2f0f7",
   "#cbc9e2",
   "#9e9ac8",
@@ -152,27 +157,27 @@ col_cold <- colorRampPalette(c(
 
 #' @rdname color_palettes
 #' @export
-col_sari <- colorRampPalette(c(
+col_sari <- grDevices::colorRampPalette(c(
   "#551A8B",
   "#47A23E",
   "#FF7F00"
 ))
 #' @rdname color_palettes
 #' @export
-col_india <- colorRampPalette(c(
+col_india <- grDevices::colorRampPalette(c(
   "#FF9933",
   "#FFFFFF",
   "#138808"
 ))
 #' @rdname color_palettes
 #' @export
-col_bw <- colorRampPalette(c(
+col_bw <- grDevices::colorRampPalette(c(
   "#000000",
   "#FFFFFF"
 ))
 #' @rdname color_palettes
 #' @export
-col_grey <- colorRampPalette(c(
+col_grey <- grDevices::colorRampPalette(c(
   "#B3B3B3",
   "#4D4D4D"
 ))
@@ -185,7 +190,7 @@ col_grey <- colorRampPalette(c(
 #' @param ceiling the maximal opacity (from 0 to 1)
 #' @param cols on or more colors, provided as hexadecimal values
 #' @param transp numeric between 0 and 1, the value of the transparency to obtain
-#' @rdname colors_transp
+#' @rdname color_transparency
 #' @examples
 #' x <- col_transp(10, col='#000000')
 #' x
@@ -207,7 +212,8 @@ col_transp <- function(n, col = "#000000", ceiling = 1) {
   alpha.hex[nchar(alpha.hex) < 2] <- paste0("f", alpha.hex[nchar(alpha.hex) < 2])
   return(paste0(col, alpha.hex))
 }
-#' @rdname colors_transp
+
+#' @rdname color_transparency
 #' @export
 col_alpha <- function(cols, transp = 0) {
   alpha.int <- as.integer((1 - transp) * 255)
@@ -217,6 +223,15 @@ col_alpha <- function(cols, transp = 0) {
   return(paste0(cols, alpha.hex))
 }
 
+# utils ----------------------------------------------------
+# is_palette <- function(x){
+#   any(class(x)=="palette")
+# }
+#
+# as_palette <- function(x){
+#   class(x) <- unique(c(class(x), "palette"))
+#   x
+# }
 
 .cex <- function(x) {
   3/(log(x + 1) + 1)

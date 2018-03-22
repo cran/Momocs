@@ -2,17 +2,30 @@
 
 # create an empty frame
 #' @export
-.frame <- function(xy, center.origin = FALSE, zoom = 1, bg="white") {
+.frame <- function(xy, xlim=NULL, ylim=NULL, center.origin = FALSE, zoom = 1, bg="white") {
   op <- par(bg=bg)
   on.exit(par(op))
-  if (center.origin) {
-    w <- (1/zoom) * max(abs(xy))
-    plot(NA, xlim = c(-w, w), ylim = c(-w, w), asp = 1, axes = FALSE,
-         frame = FALSE)
+
+  if (!is.null(xlim) | !is.null(xlim)){
+    if (is.null(xlim)){
+      plot(NA, ylim=ylim, asp=1, axes = FALSE, frame = FALSE)
+    }
+    if (is.null(ylim)){
+      plot(NA, xlim=xlim, asp=1, axes = FALSE, frame = FALSE)
+    }
+    if (!is.null(xlim) & !is.null(xlim)){
+      plot(NA, xlim=xlim, ylim=ylim, asp=1, axes = FALSE, frame = FALSE)
+    }
   } else {
-    w <- (1/zoom) * apply(abs(xy), 2, max)
-    plot(xy, xlim = c(-w[1], w[1]), ylim = c(-w[2], w[2]),
-         type = "n", asp = 1, axes = FALSE, frame = FALSE)
+    if (center.origin) {
+      w <- (1/zoom) * max(abs(xy))
+      plot(NA, xlim = c(-w, w), ylim = c(-w, w), asp = 1, axes = FALSE,
+           frame = FALSE)
+    } else {
+      w <- (1/zoom) * apply(abs(xy), 2, max)
+      plot(xy, xlim = c(-w[1], w[1]), ylim = c(-w[2], w[2]),
+           type = "n", asp = 1, axes = FALSE, frame = FALSE)
+    }
   }
 }
 
@@ -77,6 +90,7 @@
 # rug
 #' @export
 .rug <- function(xy, fac, col) {
+
   xy <- jitter(xy, 5)
   g <- 0.0075
   y0 <- par("usr")[3]
@@ -105,6 +119,12 @@
 # confidence ellipses
 #' @export
 .ellipses <- function(xy, fac, conf, col) {
+  nas <- which(is.na(fac))
+  if (length(nas)>0){
+    fac <- factor(fac[-nas])
+    xy <- xy[-nas,]
+    col <- col[nas]
+  }
   for (i in seq(along = levels(fac))) {
     pts.i <- xy[fac == levels(fac)[i], ]
     if (is.matrix(pts.i)) {
@@ -121,6 +141,13 @@
 # confidence ellipses
 #' @export
 .ellipsesax <- function(xy, fac, conf, col, lty = 1, lwd = 1) {
+
+  nas <- which(is.na(fac))
+  if (length(nas)>0){
+    fac <- factor(fac[-nas])
+    xy <- xy[-nas,]
+  }
+
   if (length(conf) > 1) {
     conf <- sort(conf, decreasing = FALSE)
     if (missing(lwd) | length(lwd) != length(conf)) {
@@ -152,6 +179,13 @@
 # convex hulls
 #' @export
 .chull <- function(coo, fac, col, lty) {
+  nas <- which(is.na(fac))
+  if (length(nas)>0){
+    fac <- factor(fac[-nas])
+    coo <- coo[-nas,]
+    col <- col[nas]
+    lty <- lty[nas]
+  }
   for (i in seq(along = levels(fac))) {
     coo_i <- coo[fac == levels(fac)[i], ]
     if (is.matrix(coo_i)) {
@@ -166,6 +200,13 @@
 # filled convex hulls
 #' @export
 .chullfilled <- function(coo, fac, col) {
+  nas <- which(is.na(fac))
+  if (length(nas)>0){
+    fac <- factor(fac[-nas])
+    coo <- coo[-nas,]
+    col <- col[nas]
+    lty <- lty[nas]
+  }
   for (i in seq(along = levels(fac))) {
     coo_i <- coo[fac == levels(fac)[i],, drop=FALSE]
     if (nrow(coo_i) > 1) {
@@ -234,13 +275,13 @@
 .density <- function(xy, fac, levels, col, transp, n.kde2d = 50) {
   if (missing(fac) | is.null(fac))
     fac <- factor(rep("f", nrow(xy)))
-  # z0 <- kde2d(xy[, 1], xy[, 2], n=n.kde2d, lims =
+  # z0 <- MASS::kde2d(xy[, 1], xy[, 2], n=n.kde2d, lims =
   # c(par('usr')))$z zmin <- min(z0) zmax <- max(z0)
   xy <- as.matrix(xy)
   for (i in seq(along = levels(fac))) {
     xy.i <- xy[fac == levels(fac)[i], ]
     if (is.matrix(xy.i)) {
-      ki <- kde2d(xy.i[, 1], xy.i[, 2], n = n.kde2d, lims = c(par("usr")))
+      ki <- MASS::kde2d(xy.i[, 1], xy.i[, 2], n = n.kde2d, lims = c(par("usr")))
       # ki$z <- .normalize(ki$z, zmin, zmax)
       ki$z <- .normalize(ki$z)
       image(ki$x, ki$y, ki$z, add = TRUE, xlim = range(ki$x),
@@ -255,13 +296,13 @@
 .contour <- function(xy, fac, levels, col, transp, n.kde2d = 50) {
   if (missing(fac) | is.null(fac))
     fac <- factor(rep("f", nrow(xy)))
-  # z0 <- kde2d(xy[, 1], xy[, 2], n=n.kde2d, lims =
+  # z0 <- MASS::kde2d(xy[, 1], xy[, 2], n=n.kde2d, lims =
   # c(par('usr')))$z zmin <- min(z0) zmax <- max(z0)
   xy <- as.matrix(xy)
   for (i in seq(along = levels(fac))) {
     xy.i <- xy[fac == levels(fac)[i], ]
     if (is.matrix(xy.i)) {
-      ki <- kde2d(xy.i[, 1], xy.i[, 2], n = n.kde2d, lims = c(par("usr")))
+      ki <- MASS::kde2d(xy.i[, 1], xy.i[, 2], n = n.kde2d, lims = c(par("usr")))
       # ki$z <- .normalize(ki$z, zmin, zmax)
       ki$z <- .normalize(ki$z)
       contour(ki$x, ki$y, ki$z, add = TRUE, nlevels = levels,
@@ -365,51 +406,6 @@
   text(pos[1], pos[3] + gy, pos = 4, labels = title, font = 2, cex = 0.8)
 }
 
-# Experimental and maybe useless --------------------
-# combine factor (a quick wrapper around interaction)
-# for PCA, LDA or any data.frame
-.combine.fac <- function(x, formula){
-  if (any(c("LDA", "PCA")==class(x)[1])) x <- x$fac
-  f0 <- x[, attr(terms(formula), "term.labels")]
-  return(interaction(f0))}
-
-# smart color grouping provided with a fac after interaction
-# data(olea)
-# op <- PCA(npoly(olea))
-# f <- .combine.fac(op, ~view+domes)
-# cols <- .smartpalette(f)
-# plot(op, f, col=cols)
-.smartpalette <- function(fac, gap.intra=1, gap.inter=5, palette=col_qual){
-  # determine ranking within a factor
-  rank <- function(s){
-    s <- as.numeric(factor(s))
-    rank <- (1:length(unique(s)))
-    rank[match(s, unique(s))]}
-  # adds gaps between the levels of a factor
-  gap.that <- function(s, gap.intra=1){
-    s <- as.numeric(factor(s))
-    add <- (1:length(unique(s))) + (0:(length(unique(s))-1))*gap.intra
-    add[match(s, unique(s))]}
-  # we start here
-  fac0 <- factor(unique(fac))
-  # we resplit the factors
-  df <- t(data.frame(strsplit(as.character(fac0), ".", fixed=TRUE), row.names=NULL))
-  #df <- df[, ncol(df):1]
-  # we calculate ranks
-  df.rank <- apply(df, 2, rank)
-  df.rank[, 1] <- gap.that(df.rank[, 1], gap.intra=gap.intra)
-  # we gap.that consecutive levels
-  if (ncol(df.rank)>1){
-    for (i in 2:ncol(df.rank)){
-      gap.i <- length(unique(df.rank[, (i-1)])) * (gap.inter*i+gap.intra)
-      df.rank[, i] <- gap.that(df.rank[, i], gap.intra=gap.i)}}
-  # we add ranks and eventually have our indices
-  ids <- apply(df.rank, 1, sum)
-  ids <- ids-min(ids)+1
-  cols <- palette(max(ids))[ids]
-  return(cols)}
-
-
 # misc ------------------------
 
 .center_range <- function(x){
@@ -417,11 +413,11 @@
   c(-m, m)
 }
 .x.range.gg <- function(gg){
-  ggplot_build(gg)$panel$ranges[[1]]$x.range
+  ggplot2::ggplot_build(gg)$panel$ranges[[1]]$x.range
 }
 
 .y.range.gg <- function(gg){
-  ggplot_build(gg)$panel$ranges[[1]]$y.range
+  ggplot2::ggplot_build(gg)$panel$ranges[[1]]$y.range
 }
 
 .wdw.gg <- function(gg){

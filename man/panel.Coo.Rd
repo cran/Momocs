@@ -4,7 +4,6 @@
 \alias{panel}
 \alias{panel.Coo}
 \alias{panel.Out}
-\alias{panel.OutCoe}
 \alias{panel.Opn}
 \alias{panel.Ldk}
 \title{Family picture of shapes}
@@ -14,8 +13,6 @@ panel(x, ...)
 \method{panel}{Out}(x, dim, cols, borders, fac, palette = col_summer,
   coo_sample = 120, names = NULL, cex.names = 0.6, points = TRUE,
   points.pch = 3, points.cex = 0.2, points.col, ...)
-
-\method{panel}{OutCoe}(x, nb.pts = 120, ...)
 
 \method{panel}{Opn}(x, cols, borders, fac, palette = col_summer,
   coo_sample = 120, names = NULL, cex.names = 0.6, points = TRUE,
@@ -45,8 +42,7 @@ Either a single value or of length exactly equals to the number of coordinates.}
 
 \item{coo_sample}{if not NULL the number of point per shape to display (to plot quickly)}
 
-\item{names}{whether to plot names or not. If TRUE uses shape names, a column name or number from
-$fac can be supllied, or even a character of the same length of the Coo}
+\item{names}{whether to plot names or not. If TRUE uses shape names, or something for \link{fac_dispatcher}}
 
 \item{cex.names}{a cex for the names}
 
@@ -57,8 +53,6 @@ $fac can be supllied, or even a character of the same length of the Coo}
 \item{points.cex}{(for Ldk) and a cex for these points}
 
 \item{points.col}{(for Ldk) and a col  for these points}
-
-\item{nb.pts}{the number of points to use for the shape reconstruction}
 }
 \description{
 Plots all the outlines, side by side, from
@@ -68,18 +62,13 @@ a \link{Coo} (\link{Out}, \link{Opn} or \link{Ldk}) objects.
 If you want to reorder shapes according to a factor, use \link{arrange}.
 }
 \examples{
-data(mosquito)
 panel(mosquito, names=TRUE, cex.names=0.5)
-data(olea)
 panel(olea)
-data(bot)
 panel(bot, c(4, 10))
-bot.f <- efourier(bot, 12)
-panel(bot.f)
 # an illustration of the use of fac
 panel(bot, fac='type', palette=col_spring, names=TRUE)
 }
 \seealso{
-Other Coo_graphics: \code{\link{panel2}},
-  \code{\link{plot.Coo}}, \code{\link{stack.Coo}}
+Other Coo_graphics: \code{\link{inspect}},
+  \code{\link{stack}}
 }

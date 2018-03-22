@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{sample_frac}
 \alias{sample_frac}
-\title{Samples a fraction of shapes in Momocs objects}
+\title{Sample a fraction of shapes}
 \usage{
 sample_frac(tbl, size, replace, fac, ...)
 }
@@ -25,12 +25,10 @@ the resulting fraction is rounded with \link{ceiling}.
 }
 \examples{
 
-data(bot)
-bot
 # samples 50\% of the bottles no matter their type
 sample_frac(bot, 0.5)
 # 80\% bottles of beer and of whisky
-table(sample_frac(bot, 0.8, fac="type"))
+table(sample_frac(bot, 0.8, fac="type")$fac)
 # bootstrap the same number of bootles of each type but with replacement
 table(names(sample_frac(bot, 1, replace=TRUE)))
 
@@ -39,9 +37,9 @@ table(names(sample_frac(bot, 1, replace=TRUE)))
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{chop}},
   \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{filter}}, \code{\link{mutate}},
-  \code{\link{rename}}, \code{\link{rm_uncomplete}},
+  \code{\link{fac_dispatcher}}, \code{\link{filter}},
+  \code{\link{mutate}}, \code{\link{rescale}},
+  \code{\link{rm_harm}}, \code{\link{rm_uncomplete}},
   \code{\link{rw_fac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

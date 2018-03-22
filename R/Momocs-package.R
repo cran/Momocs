@@ -1,8 +1,78 @@
 
-##### We include magrittr pipes when loading Momocs
+##### Package documentation and NAMESPACE import
 
+#' Momocs
+#'
+#' The goal of Momocs is to provide a complete, convenient,
+#' reproducible and open-source toolkit for 2D morphometrics.
+#' It includes most common 2D morphometrics approaches on outlines,
+#' open outlines, configurations of landmarks, traditional
+#' morphometrics, and facilities for data preparation,
+#' manipulation and visualization with a consistent grammar throughout.
+#' It allows reproducible, complex morphometric analyses
+#' and other morphometrics approaches should be easy to
+#' plug in, or develop from, on top of this canvas.
+#'
+#' To cite Momocs in publications: \code{citation("Momocs")}.
+#'
+#' @seealso
+#' \itemize{
+#'  \item \bold{Homepage}: \url{https://github.com/MomX/Momocs}
+#'  \item \bold{Issues}: \url{https://github.com/MomX/Momocs/issues}
+#'  \item \bold{Tutorial}: \code{browseVignettes("Momocs")} or \url{http://momx.github.io/Momocs/}
+#'  \item \bold{Email}: \code{bonhomme.vincent@gmail.com} to contribute to dev,
+#'  ask for something, propose collaboration, share your data, etc.
+#' }
+#'
+#' @references
+#' \itemize{
+#' \item Bonhomme V, Picq S, Gaucherel C, Claude J. 2014. Momocs: Outline Analysis Using R.
+#' \emph{Journal of Statistical Software} \bold{56}. \url{http://www.jstatsoft.org/v56/i13}.
+#' \item Claude J. 2008. \emph{Morphometrics with R}. Springer-Verlag, New-York.
+#' }
+#' @section Cheers:
+#' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Matt Bulbert, Simon Crameri, Julia Cooke, April Dinwiddie,
+#' Carl Lipo, Cedric Gaucherel, Catherine Girard, QGouil (GitHub), Christian Steven Hoggard,
+#' Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
+#' Matthias Mace, Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
+#' Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
+#' Asher Wishkerman, John Wood for their helpful ideas and bug reports.
+# #' @import ape
+# #' @import dplyr
+# #' @importFrom dplyr arrange arrange_ data_frame as_data_frame count select select_ slice filter filter_ bind_rows bind_cols group_by group_by_ mutate transmute
+# #' @import sp
+#' @import ggplot2
+# #' @importFrom geometry delaunayn convhulln
+# #' @importFrom geomorph gpagen
+# #' @importFrom grDevices colorRamp
+# #' @importFrom jpeg readJPEG
+# #' @importFrom MASS lda ginv kde2d cov.trob
+# only stack should remain todo when stack.Coo will be removed definitely
+# #' @importFrom utils stack browseURL combn ls.str modifyList methods
+# #' packageVersion read.table
+# #' txtProgressBar write.table
+#' @importFrom utils stack
+# #' @importFrom grDevices chull colors rgb colorRampPalette
+#' @importFrom graphics abline arrows axis barplot box boxplot
+#' contour hist image layout legend lines locator
+#' par plot points polygon rasterImage rect rug
+#' segments strheight strwidth text title
+# #' @importFrom RColorBrewer brewer.pal brewer.pal.info
+# #' @importFrom rgeos gIntersection
+#' @importFrom stats cor cov cov.wt df dist dnorm fft
+#' hclust kmeans lm manova median na.omit
+#' poly prcomp predict qf qnorm rnorm
+#' runif sd symnum terms var
+
+#' @docType package
+#' @name Momocs
+NULL
+
+
+##### We include magrittr pipes when loading Momocs
+#' @importFrom magrittr %>%
 #' @export
-dplyr::`%>%`
+magrittr::`%>%`
 
 #' @importFrom magrittr %<>%
 #' @export
@@ -16,84 +86,35 @@ magrittr::`%$%`
 #' @export
 magrittr::`%T>%`
 
-##### Package documentation and NAMESPACE import
-
-#' Momocs
-#'
-#' A complete toolkit for morphometrics, from data extraction to multivariate analyses.
-#' Most common 2D morphometrics approaches are included:
-#' outlines, open outlines, configurations of landmarks, traditional morphometrics,
-#' and facilities for data preparation, manipulation and visualization
-#' with a consistent grammar throughout.
-#' Momocs allows reproducible, complex morphometric analyses,
-#' paves the way for a pure open-source workflow in R,
-#' and other morphometrics approaches should be easy to plug in,
-#' or develop from, on top of this canvas.
-#'
-#' To cite Momocs in publications: \code{citation("Momocs")}.
-#'
-#' @seealso
-#' \itemize{
-#'  \item \bold{Homepage}: \url{https://github.com/vbonhomme/Momocs}
-#'  \item \bold{Issues}: \url{https://github.com/vbonhomme/Momocs/issues}
-#'  \item \bold{Tutorial}: \code{browseVignettes("Momocs")}
-#'  \item \bold{Email}: \code{bonhomme.vincent@gmail.com} to contribute to dev, ask for something, share your data, etc.
-#' }
-#'
-#' @references
-#' \itemize{
-#' \item Bonhomme V, Picq S, Gaucherel C, Claude J. 2014. Momocs: Outline Analysis Using R.
-#' \emph{Journal of Statistical Software} \bold{56}. \url{http://www.jstatsoft.org/v56/i13}.
-#' \item Claude J. 2008. \emph{Morphometrics with R}. Springer-Verlag, New-York.
-#' }
-#' @section Cheers:
-#' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Matt Bulbert, Simon Crameri, Julia Cooke, April Dinwiddie,
-#' Carl Lipo, Cedric Gaucherel, Catherine Girard, Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
-#' Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
-#' Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
-#' Asher Wishkerman, John Wood for their helpful ideas and bug reports.
-#' @import ape
-#' @importFrom plyr ldply ddply
-#' @import dplyr
-#' @import sp
-#' @import reshape2
-#' @import ggplot2
-#' @importFrom geometry delaunayn convhulln
-#' @importFrom geomorph gpagen
-#' @importFrom graphics boxplot
-#' @importFrom jpeg readJPEG
-#' @importFrom MASS lda ginv kde2d cov.trob
-#' @importFrom utils stack browseURL combn ls.str modifyList methods
-#' packageVersion read.table setTxtProgressBar
-#' txtProgressBar write.table
-#' @importFrom grDevices chull colors rgb
-#' @importFrom graphics abline arrows axis barplot box
-#' contour hist image layout legend lines locator
-#' par points polygon rasterImage rect rug
-#' segments strheight strwidth text title
-#' @importFrom stats cor cov cov.wt df dist dnorm fft
-#' hclust kmeans lm manova median na.omit
-#' poly prcomp predict qf qnorm rnorm
-#' runif sd symnum terms var
-
-#' @docType package
-#' @name Momocs
-NULL
 
 # prevents "no visible binding for global variable"
 # http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
 globalVariables(c("x", "y", "f", "xend", "yend", "shp1", "ddply",
-                  "x_c", "x_d", "y_c", "y_d", ".id",
+                  "x_c", "x_d", "y_c", "y_d", ".id", "id", "count",
                   "node", "label", "angle", "hjust", "Freq",
                   "locus", "name", ".", "actual", "classified"))
 
-
+# welcome message
 .onAttach <- function(lib, pkg) {
   packageStartupMessage('This is Momocs ',
                         utils::packageDescription('Momocs', field='Version'),
-                        appendLF = TRUE) }
+                        appendLF = TRUE)
+}
 
+#on load add Momocs' options
+.onLoad <- function(libname, pkgname){
+  op <- options()
+  op.Momocs <- list(
+    Momocs_verbose = TRUE
+    # Momocs_message = TRUE,
+    # Momocs_pal_qual_default=pal_qual_Set2,
+    # Momocs_pal_seq_default=pal_seq_viridis,
+    # Momocs_pal_div_default=pal_div_RdBu
+  )
+  toset <- !(names(op.Momocs) %in% names(op))
+  if(any(toset)) options(op.Momocs[toset])
 
+  invisible()
 
-
-
+}
+# pal_qual_default <- options("Momocs_pal_qual_default")[[1]]

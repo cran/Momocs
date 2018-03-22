@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{arrange}
 \alias{arrange}
-\title{Arranges (ala dplyr) on Momocs objects}
+\title{Arrange rows by variables}
 \usage{
 arrange(.data, ...)
 }
@@ -15,7 +15,7 @@ arrange(.data, ...)
 a Momocs object of the same class.
 }
 \description{
-Arange shapes by variables, from the \code{$fac}. See examples and \code{?dplyr::arrange}.
+Arrange shapes by variables, from the \code{$fac}. See examples and \code{?dplyr::arrange}.
 }
 \details{
 dplyr verbs are maintained.
@@ -30,10 +30,10 @@ olea \%>\% mutate(id=1:length(.)) \%>\% arrange(desc(id)) \%$\% fac$id
 \seealso{
 Other handling functions: \code{\link{at_least}},
   \code{\link{chop}}, \code{\link{combine}},
-  \code{\link{dissolve}}, \code{\link{filter}},
-  \code{\link{mutate}}, \code{\link{rename}},
+  \code{\link{dissolve}}, \code{\link{fac_dispatcher}},
+  \code{\link{filter}}, \code{\link{mutate}},
+  \code{\link{rescale}}, \code{\link{rm_harm}},
   \code{\link{rm_uncomplete}}, \code{\link{rw_fac}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

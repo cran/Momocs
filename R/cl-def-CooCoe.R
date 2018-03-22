@@ -29,14 +29,18 @@
 #' You can access all the methods available for \code{Coo} objects
 #' with \code{methods(class=Coo)}.
 #'
-#' @family Coo objects
+#' @family classes
 #' @examples
 #' \dontrun{
 #' # to see all methods for Coo objects.
 #' methods(class='Coo')
+#'
+#' # to see all methods for Out objects.
+#' methods(class='Out') # same for Opn and Ldk
+#'
 #' # Let's take an Out example. But all methods shown here
-#' # work on Ldk (try data(wings) ) and on Opn (try data(olea))
-#' data(bot)
+#' # work on Ldk (try on 'wings') and on Opn ('olea')
+#' bot
 #'
 #' # Primarily a 'Coo' object, but also an 'Out'
 #' class(bot)
@@ -85,7 +89,7 @@ Coo <- function(...) {
 #' Coe "super" class
 #'
 #'\code{Coe} class is the 'parent' or 'super' class of
-#' \code{\link{OutCoe}}, \code{\link{OpnCoe}} and \code{LdkCoe} classes.
+#' \code{\link{OutCoe}}, \code{\link{OpnCoe}}, \code{LdkCoe} and \code{TraCoe} classes.
 #'
 #' Useful shortcuts are described below. See \code{browseVignettes("Momocs")} for
 #' a detail of the design behind Momocs' classes.
@@ -106,12 +110,13 @@ Coo <- function(...) {
 #' You can access all the methods available for \code{Coe} objects
 #' with \code{methods(class=Coe)}.
 #'
-#' @family Coe objects
+#' @family classes
 #' @examples
-#' # to see all methods for Coo objects.
+#' # to see all methods for Coe objects.
 #' methods(class='Coe')
+#' # to see all methods for OutCoe objects.
+#' methods(class='OutCoe') # same for OpnCoe, LdkCoe, TraCoe
 #'
-#' data(bot)
 #' bot.f<- efourier(bot, 12)
 #' bot.f
 #' class(bot.f)
@@ -132,13 +137,11 @@ Coo <- function(...) {
 #' bot.f[1:5]
 #'
 #' # An illustration of Momocs desing. See also browseVignettes("Momocs")
-#' data(olea)
 #' op <- opoly(olea, 5)
 #' op
 #' class(op)
 #' op$coe # same thing
 #'
-#' data(wings)
 #' wp <- fgProcrustes(wings, tol=1e-4)
 #' wp
 #' class(wp) # for Ldk methods, LdkCoe objects can also be considered as Coo objects
@@ -150,18 +153,56 @@ Coe <- function(...) {
     message("Coe constructor does not exist alone. See ?Coe")
 }
 
+# print ----------
+
+# The print method for Out objects
+#' @export
+print.Coo <- function(x, n=6, ...) {
+  x <- validate(x)
+  coo_nb <- length(x)
+  if (coo_nb==0){
+    cat("empty", class(x)[1])
+    return()
+  }
+  ### Header
+  if (is_Out(x)){
+    what <- "outlines"
+    cat("Out (outlines)\n")
+  }
+  if (is_Opn(x)){
+    what <- "curves"
+    cat("Opn (curves)\n")
+  }
+  if (is_Ldk(x)){
+    what <- "landmarks"
+    cat("Ldk (landmarks)\n")
+  }
+  coo_len <- sapply(x$coo, nrow)
+  coo_closed <- sapply(x$coo, coo_is_closed)
+  # number of outlines
+  cat("  - ", coo_nb, " ", what, ", ",
+      round(mean(coo_len)), " +/- ", round(sd(coo_len)), " coords (in $coo)\n", sep="")
+  # we print the fac
+  #.print_fac(x$fac, n)
+  paste0("  - ", ncol(x$fac), " classifiers (in $fac): \n") %>% cat
+  # summary(x$fac) %>% print
+  .print_fac(x$fac, n=n)
+  .other_components(x)
+  cat("\n")
+}
+
 # str.* ----------------------
 # allows to maintain the traditionnal str() behaviour
 # actually useless but dont remember why/where
 #' @export
 str.Coo <- function(object, ...) {
     Coo <- object
-    ls.str(Coo)
+    utils::ls.str(Coo)
 }
 #' @export
 str.Coe <- function(object, ...) {
     Coe <- object
-    ls.str(Coe)
+    utils::ls.str(Coe)
 }
 
 # getters ---------------

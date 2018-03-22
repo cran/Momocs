@@ -6,11 +6,11 @@
 \usage{
 \method{plot}{LDA}(x, fac = x$fac, xax = 1, yax = 2, points = TRUE,
   col = "#000000", pch = 20, cex = 0.5, palette = col_solarized,
-  center.origin = FALSE, zoom = 1, bg = par("bg"), grid = TRUE,
-  nb.grids = 3, morphospace = FALSE, pos.shp = c("range", "full",
-  "circle", "xy", "range_axes", "full_axes")[1], amp.shp = 1, size.shp = 1,
-  nb.shp = 12, nr.shp = 6, nc.shp = 5, rotate.shp = 0,
-  flipx.shp = FALSE, flipy.shp = FALSE, pts.shp = 60,
+  center.origin = FALSE, zoom = 1, xlim = NULL, ylim = NULL,
+  bg = par("bg"), grid = TRUE, nb.grids = 3, morphospace = FALSE,
+  pos.shp = c("range", "full", "circle", "xy", "range_axes", "full_axes")[1],
+  amp.shp = 1, size.shp = 1, nb.shp = 12, nr.shp = 6, nc.shp = 5,
+  rotate.shp = 0, flipx.shp = FALSE, flipy.shp = FALSE, pts.shp = 60,
   border.shp = col_alpha("#000000", 0.5), lwd.shp = 1,
   col.shp = col_alpha("#000000", 0.95), stars = FALSE, ellipses = FALSE,
   conf.ellipses = 0.5, ellipsesax = TRUE, conf.ellipsesax = c(0.5, 0.9),
@@ -52,6 +52,10 @@ or for every individual, see examples)}
 
 \item{zoom}{to keep your distances}
 
+\item{xlim}{numeric of length two ; if provided along with ylim, the x and y lims to use}
+
+\item{ylim}{numeric of length two ; if provided along with xlim, the x and y lims to use}
+
 \item{bg}{color for the background}
 
 \item{grid}{logical whether to draw a grid}
@@ -60,9 +64,9 @@ or for every individual, see examples)}
 
 \item{morphospace}{logical whether to add the morphological space}
 
-\item{pos.shp}{passed to \link{pos.shapes}, one of
+\item{pos.shp}{passed to \link{morphospace_positions}, one of
 \code{"range", "full", "circle", "xy", "range_axes", "full_axes"}. Or directly
-a matrix of positions. See \link{pos.shapes}}
+a matrix of positions. See \link{morphospace_positions}}
 
 \item{amp.shp}{amplification factor for shape deformation}
 
@@ -173,7 +177,6 @@ is shared with \link{plot.PCA} waiting for a general rewriting of a multivariate
 See https://github.com/vbonhomme/Momocs/issues/121
 }
 \examples{
-data(bot)
 bot.f <- efourier(bot, 24)
 bot.l <- LDA(PCA(bot.f), "type")
 plot(bot.l)

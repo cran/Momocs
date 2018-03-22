@@ -15,7 +15,7 @@ coo_ruban(coo, dev, palette = col_heat, normalize = TRUE, ...)
 
 \item{normalize}{logical whether to normalize (TRUE by default) distances}
 
-\item{...}{other paremeters to fed segments, eg lwd (see examples)}
+\item{...}{other parameters to fed segments, eg lwd (see examples)}
 }
 \value{
 nothing
@@ -24,7 +24,6 @@ nothing
 Useful to display differences between shapes
 }
 \examples{
-data(bot)
 ms <- mshapes(efourier(bot , 10), "type")
 b <- ms$shp$beer
 w <- ms$shp$whisky
@@ -43,22 +42,22 @@ coo_ruban(m, d, palette=col_summer2, lwd=5)
 
 #If you want linewidth rather than color
 coo_plot(m, plot=FALSE)
-coo_ruban(m, d, palette=col_black, lwd=.normalize(d)*10)
+coo_ruban(m, d, palette=col_black)
 }
 \seealso{
-Other plotting functions: \code{\link{Ntable}},
-  \code{\link{conf_ell}}, \code{\link{coo_arrows}},
+Other plotting functions: \code{\link{coo_arrows}},
   \code{\link{coo_draw}}, \code{\link{coo_listpanel}},
   \code{\link{coo_lolli}}, \code{\link{coo_plot}},
   \code{\link{ldk_chull}}, \code{\link{ldk_confell}},
   \code{\link{ldk_contour}}, \code{\link{ldk_labels}},
-  \code{\link{ldk_links}}, \code{\link{plot_devsegments}}
+  \code{\link{ldk_links}}, \code{\link{plot_devsegments}},
+  \code{\link{plot_table}}
 
-Other plotting functions: \code{\link{Ntable}},
-  \code{\link{conf_ell}}, \code{\link{coo_arrows}},
+Other plotting functions: \code{\link{coo_arrows}},
   \code{\link{coo_draw}}, \code{\link{coo_listpanel}},
   \code{\link{coo_lolli}}, \code{\link{coo_plot}},
   \code{\link{ldk_chull}}, \code{\link{ldk_confell}},
   \code{\link{ldk_contour}}, \code{\link{ldk_labels}},
-  \code{\link{ldk_links}}, \code{\link{plot_devsegments}}
+  \code{\link{ldk_links}}, \code{\link{plot_devsegments}},
+  \code{\link{plot_table}}
 }

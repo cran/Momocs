@@ -2,41 +2,52 @@
 
 #' Exports Coe objects and shapes
 #'
-#' Writes a \code{.txt} or \code{.xls} or whatever readable from a \link{Coe}, or PCA
-#' object, along with individual names and grouping factors. A simple wrapper
-#' around \link{write.table}.
-#' @param x a Coe object
+#' Writes a \code{.txt} or \code{.xls} or whatever readable from a single shape,
+#' a  \link{Coe}, or a \link{PCA} object, along with individual names and \code{$fac}.
+#'
+#' @note This is a simple wrapper around \link{write.table}.
+#' @param x a \code{Coe} or \code{PCA} object
 #' @param file the filenames \code{data.txt} by default
-#' @param sep the field separator string (see \code{sep} in \link{write.table}). A
+#' @param sep the field separator string to feed \link{write.table}). (default to tab)
 #' tab by default
-#' @param dec the string to use for decimal points (see \code{dec} in \link{write.table}). A dot
+#' @param dec the string  to feed \link{write.table}) (default \code{"."})
 #' by default.
-#' @note Default parameters will write a \code{.txt} file, directly readable by MS Excel
-#' and other programs. With default parameters, numbers will dots as decimal points, which is
-#' considered as a character chain in Excel in many countries (locale versions.) this can be solved
-#' using \code{dec=','} as in the examples below.
 #'
-#' If you are new to R, you may be looking for where this damn file has been saved. With the defaults
-#' settings, \code{getwd()} will provide the answer.
+#' @note Default parameters will write a \code{.txt} file,
+#' readable by foreign programs.
+#' With default parameters, numbers will use dots as decimal points, which is
+#' considered as a character chain in Excel in many countries (locale versions).
+#' This can be solved by using \code{dec=','} as in the examples below.
 #'
-#' I have to mention that everytime you use this function, escape from R to use Excel and
-#' do 'statistics' there, an adorable kitten is probably murdered somewhere. Use R, not Excel!
+#' If you are looking for your file, and did not specified \code{file},
+#'  \code{getwd()} will help.
+#'
+#' I have to mention that everytime you use this function,
+#' and cowardly run from R to Excel and
+#' do 'statistics' there, an innocent and adorable kitten
+#' is probably murdered somewhere. Use R!
 #'
 #' @examples
 #' \dontrun{
 #' # Will write files on your machine!
-#' data(bot)
-#' bot.f <- efourier(bot, 6)
-#' export(bot.f) # data.txt which can be opened by every software including MS Excel
-#' # If you are French, or another country that has not been invaded by anglo-american rules.
-#' # and for use in Excel.
-#' export(bot.f, dec=',')
-#' export(bot.f, file='data.xls', dec=',')
+#' bf <- efourier(bot, 6)
+#' # Export Coe (here Fourier coefficients)
+#' export(bf) # data.txt which can be opened by every software including MS Excel
+#'
+#' # If you come from a country that uses comma as decimal separator (not recommended, but...)
+#' export(bf, dec=',')
+#' export(bf, file='data.xls', dec=',')
+#'
+#' # Export PCA scores
+#' bf %>% PCA %>% export()
 #'
 #' # for shapes (matrices)
 #'  export(bot[1], file='bot1.txt')
+#'
+#'  # remove these files from your machine
+#'  file.remove("coefficients.txt", "data.xls", "scores.txt")
 #' }
-#' @seealso babel functions
+#' @family bridges functions
 #' @export
 export <- function(x, file, sep, dec) {
     UseMethod("export")
@@ -45,25 +56,25 @@ export <- function(x, file, sep, dec) {
 #' @export
 export.Coe <- function(x, file = "coefficients.txt", sep = "\t", dec = ".") {
     data <- cbind(name = rownames(x$coe), x$fac, x$coe)
-    write.table(data, file = file, row.names = FALSE, col.names = TRUE,
+    utils::write.table(data, file = file, row.names = FALSE, col.names = TRUE,
         quote = FALSE, sep = sep, dec = dec)
-    message("File written: ", file)
+    message("file written: ", file)
 }
 
 #' @export
 export.PCA <- function(x, file = "scores.txt", sep = "\t", dec = ".") {
   data <- cbind(name = rownames(x$x), x$fac, x$x)
-  write.table(data, file = file, row.names = FALSE, col.names = TRUE,
+  utils::write.table(data, file = file, row.names = FALSE, col.names = TRUE,
               quote = FALSE, sep = sep, dec = dec)
-  message("File written: ", file)
+  message("file written: ", file)
 }
 
 #' @export
 export.matrix <- function(x, file = "data.txt", sep = "\t", dec = ".") {
     colnames(x) <- c("x", "y")
-    write.table(x = x, file = file, quote = FALSE, row.names = FALSE,
+    utils::write.table(x = x, file = file, quote = FALSE, row.names = FALSE,
         col.names = TRUE, sep = "\t", dec = ".")
-    message("File written: ", file)
+    message("file written: ", file)
 }
 
 ##### end export

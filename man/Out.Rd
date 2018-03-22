@@ -4,7 +4,7 @@
 \alias{Out}
 \title{Builds an Out object}
 \usage{
-Out(x, fac = data.frame, ldk = list())
+Out(x, fac = dplyr::data_frame(), ldk = list())
 }
 \arguments{
 \item{x}{a \code{list} of matrices of \eqn{(x; y)} coordinates,
@@ -22,11 +22,13 @@ an \code{Out} object
 In Momocs, \code{Out}-classes objects are lists of closed \bold{out}lines,
 with optional components, and on which generic methods such as plotting methods (e.g. \link{stack})
 and specific methods (e.g. \link{efourier} can be applied.
- \code{Out} objects are primarily \code{\link{Coo}} objects.
+\code{Out} objects are primarily \code{\link{Coo}} objects.
 }
 \examples{
 methods(class=Out)
 }
 \seealso{
-Other Coo objects: \code{\link{Coo}}, \code{\link{Opn}}
+Other classes: \code{\link{Coe}}, \code{\link{Coo}},
+  \code{\link{OpnCoe}}, \code{\link{Opn}},
+  \code{\link{OutCoe}}, \code{\link{TraCoe}}
 }

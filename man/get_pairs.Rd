@@ -20,11 +20,10 @@ first level of the \code{fac} provided; \code{x2} same thing for the second leve
 }
 \description{
 If you have paired individuals, i.e. before and after a treatment or for repeated measures,
-and if you have coded coded it into \code{$fac}, this methods allows you to retrieve the cooresponding PC/LD scores,
+and if you have coded coded it into \code{$fac}, this methods allows you to retrieve the corresponding PC/LD scores,
 or coefficients for \link{Coe} objects.
 }
 \examples{
-data(bot)
 bot2 <- bot1 <- coo_scale(coo_center(coo_sample(bot, 60)))
 bot1$fac$session <- factor(rep("session1", 40))
 # we simulate an measurement error

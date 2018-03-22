@@ -12,14 +12,17 @@
 #' @family Coo_graphics
 #' @examples
 #' \dontrun{
-#' data(bot)
-#' plot(bot, 5)
-#' plot(bot)
-#' plot(bot, 5, pch=3, points=TRUE) # an example of '...' use
+#' inspect(bot, 5)
+#' inspect(bot)
+#' inspect(bot, 5, pch=3, points=TRUE) # an example of '...' use
 #' }
-#' @method plot Coo
 #' @export
-plot.Coo <- function(x, id, ...) {
+inspect <- function(x, id, ...){
+  UseMethod("inspect")
+}
+
+#' @export
+inspect.Coo <- function(x, id, ...) {
   Coo <- x
   if (missing(id)) {
     repeat {
@@ -78,13 +81,10 @@ plot.Coo <- function(x, id, ...) {
 #' @family Coo_graphics
 #' @examples
 #' \dontrun{
-#' data(bot)
 #' stack(bot)
 #' bot.f <- efourier(bot, 12)
 #' stack(bot.f)
-#' data(mosquito)
 #' stack(mosquito, borders='#1A1A1A22', first.point=FALSE)
-#' data(hearts)
 #' stack(hearts)
 #' stack(hearts, ldk=FALSE)
 #' stack(hearts, borders='#1A1A1A22', ldk=TRUE, ldk_col=col_summer(4), ldk_pch=20)
@@ -96,6 +96,8 @@ plot.Coo <- function(x, id, ...) {
 #' }
 #' @rdname stack.Coo
 #' @aliases stack.Coo
+#' @aliases stack
+#' @name stack
 #' @export
 stack.Coo <-
   function(x,
@@ -109,6 +111,7 @@ stack.Coo <-
            ldk_confell = FALSE, ldk_contour = FALSE,
            ldk_chull = FALSE, ldk_labels = FALSE,
            xy.axis = TRUE, title=substitute(x), ...) {
+    message("will soon be deprecated, see ?pile")
     Coo <- x
     # downsize
     if (is.numeric(coo_sample)) {
@@ -134,7 +137,7 @@ stack.Coo <-
     }
     # but if fac is provided
     if (!missing(fac)){
-      fac <- Coo$fac[, fac]
+      fac <- fac_dispatcher(Coo, fac)
       cols <- NA
       borders <- palette(nlevels(fac))[fac]
     }
@@ -158,7 +161,7 @@ stack.Coo <-
     for (i in 1:length(Coo)) {
       coo_draw(Coo$coo[[i]], col = cols[i], border = borders[i],
                points = points, first.point = TRUE, centroid = centroid)
-      if (ldk & is.ldk(Coo)) {
+      if (ldk & is_ldk(Coo)) {
         points(ldks[[i]][, 1], ldks[[i]][ ,2], pch = ldk_pch,
                col = ldk_col, cex = ldk_cex)
       }
@@ -173,6 +176,7 @@ stack.Ldk <- function(x, cols, borders, first.point = TRUE, centroid = TRUE,
                       ldk_links = FALSE, ldk_confell = FALSE, ldk_contour = FALSE,
                       ldk_chull = FALSE, ldk_labels = FALSE,
                       slidings=TRUE, slidings_pch="", xy.axis = TRUE, title=substitute(x), ...) {
+  message("will soon be deprecated, see ?pile")
   Coo <- x
   if (missing(cols)) {
     cols <- rep(NA, length(Coo))
@@ -196,7 +200,7 @@ stack.Ldk <- function(x, cols, borders, first.point = TRUE, centroid = TRUE,
     abline(h = 0, v = 0, col = "grey80", lty = 2)
   }
   # semilandmarks lines
-  if (slidings & is.slidings(Coo)){
+  if (slidings & is_slidings(Coo)){
     sl <- get_slidings(Coo)
     for (i in 1:length(sl)) {
       lapply(sl[[i]], lines, col=col_alpha("#000000", 0.9))
@@ -209,13 +213,13 @@ stack.Ldk <- function(x, cols, borders, first.point = TRUE, centroid = TRUE,
   # }
   lapply(get_ldk(Coo), points, pch = ldk_pch, col = ldk_col, cex = ldk_cex)
   # semilandmarks
-  # if (is.slidings(Coo)){
+  # if (is_slidings(Coo)){
   #   cur_binded <- get_cur_binded(Coo)
   #   for (i in 1:length(Coo)) {
   #     points(cur_binded[[i]], pch = cur_pch, col = ldk_col, cex = ldk_cex*0.25)
   #   }
   # }
-  # Specific to Ldk not very clean below #todo
+  # Specific to Ldk not very clean below
   # A <- l2a(Coo$coo)
   # mA <- mshapes(A)
 
@@ -232,7 +236,7 @@ stack.Ldk <- function(x, cols, borders, first.point = TRUE, centroid = TRUE,
       ldk_chull(A, col = meanshape_col)
     }
     if (ldk_links | missing(ldk_links))  {
-      if (is.links(Coo))
+      if (is_links(Coo))
         ldk_links(mshapes(A), Coo$links, col=ldk_col)
     }
     if (ldk_labels) {
@@ -244,23 +248,22 @@ stack.Ldk <- function(x, cols, borders, first.point = TRUE, centroid = TRUE,
 }
 
 # stack2 ----
-#' Family picture of shapes (ggplot2)
-#'
-#' Will replace stack soon.
-#' @param Coo a Coo object
-#' Family picture of shapes
-#' @return a ggplot2 object
-#' @examples
-#' data(bot)
-#' stack2(bot)
-#' @export
-stack2 <- function(Coo){
-  df <- as_df(Coo)
-  gg <- ggplot(df, aes_string(x="x", y="y", group="id")) +
-    geom_path() +
-    coord_equal()
-  gg
-}
+# #' Family picture of shapes (ggplot2)
+# #'
+# #' Will replace stack soon.
+# #' @param Coo a Coo object
+# #' Family picture of shapes
+# #' @return a ggplot2 object
+# #' @examples
+# #' stack2(bot)
+# #' @export
+# stack2 <- function(Coo){
+#   df <- as_df(Coo)
+#   gg <- ggplot2::ggplot(df, aes_string(x="x", y="y", group="id")) +
+#     ggplot2::geom_path() +
+#     ggplot2::coord_equal()
+#   gg
+# }
 
 # panel ---------------------------------------------------
 #' Family picture of shapes
@@ -278,26 +281,19 @@ stack2 <- function(Coo){
 #' @param fac a factor within the $fac slot for colors
 #' @param palette a color \link{palette}
 #' @param coo_sample if not NULL the number of point per shape to display (to plot quickly)
-#' @param names whether to plot names or not. If TRUE uses shape names, a column name or number from
-#'  $fac can be supllied, or even a character of the same length of the Coo
+#' @param names whether to plot names or not. If TRUE uses shape names, or something for [fac_dispatcher]
 #' @param cex.names a cex for the names
 #' @param points \code{logical} (for Ldk) whether to draw points
 #' @param points.pch (for Ldk) and a pch for these points
 #' @param points.cex (for Ldk) and a cex for these points
 #' @param points.col (for Ldk) and a col  for these points
-#' @param nb.pts the number of points to use for the shape reconstruction
 #' @param ... additional arguments to feed generic \code{plot}
 #' @note If you want to reorder shapes according to a factor, use \link{arrange}.
 #' @family Coo_graphics
 #' @examples
-#' data(mosquito)
 #' panel(mosquito, names=TRUE, cex.names=0.5)
-#' data(olea)
 #' panel(olea)
-#' data(bot)
 #' panel(bot, c(4, 10))
-#' bot.f <- efourier(bot, 12)
-#' panel(bot.f)
 #' # an illustration of the use of fac
 #' panel(bot, fac='type', palette=col_spring, names=TRUE)
 #' @aliases panel.Coo
@@ -324,10 +320,11 @@ panel.Out <- function(x, dim, cols, borders, fac,
   }
 
   if (!missing(fac)) {
+    f <- fac_dispatcher(Coo, fac)
     if (missing(cols)) {
-      cols <- palette(nlevels(Coo$fac[, fac]))[Coo$fac[, fac]]
+      cols <- palette(nlevels(f))[f]
     } else {
-      cols <- cols[Coo$fac[, fac]]
+      cols <- cols[f]
     }
   }
   if (missing(cols)) {
@@ -349,24 +346,19 @@ panel.Out <- function(x, dim, cols, borders, fac,
     if (is.logical(names)) {
       text(pos[, 1], pos[, 2], labels = names(Coo), cex = cex.names)
     } else {
-      if (length(names) != length(Coo)) {
-        text(pos[, 1], pos[, 2],
-             labels = Coo$fac[, names], cex = cex.names)
-
-      } else {
-        text(pos[, 1], pos[, 2],
-             labels = names, cex = cex.names)
-      }
+      names <- fac_dispatcher(Coo, names) %>% as.character()
+      text(pos[, 1], pos[, 2],
+           labels = names, cex = cex.names)
     }
   }
 }
 
-#' @rdname panel.Coo
-#' @export
-panel.OutCoe <- function(x, nb.pts=120, ...){
-  OutCoe <- x
-  Out <- as.Out(x, nb.pts=nb.pts)
-  panel(Out, title=paste0(substitute(x),".i"),...)}
+# #' @rdname panel.Coo
+# #' @export
+# panel.OutCoe <- function(x, nb.pts=120, ...){
+#   OutCoe <- x
+#   Out <- as.Out(x, nb.pts=nb.pts)
+#   panel(Out, title=paste0(substitute(x),".i"),...)}
 
 
 #' @rdname panel.Coo
@@ -386,12 +378,11 @@ panel.Opn <- function(x, cols, borders, fac,
     }
   }
   if (!missing(fac)) {
-
+    f <- fac_dispatcher(Coo, fac)
     if (missing(cols)) {
-      cols <- palette(nlevels(Coo$fac[, fac]))[Coo$fac[,
-                                                       fac]]
+      cols <- palette(nlevels(f))[f]
     } else {
-      cols <- cols[Coo$fac[, fac]]
+      cols <- cols[f]
     }
   }
   if (missing(cols)) {
@@ -435,16 +426,15 @@ panel.Ldk <- function(x, cols, borders, fac,
   Coo <- x
   Coo <- coo_template(Coo, size = 0.95)
 
-  # patch, dirty, todo
   if (missing(cols) & !missing(borders))
     borders <- cols
 
   if (!missing(fac)) {
+    f <- fac_dispatcher(Coo, fac)
     if (missing(borders)) {
-      borders <- palette(nlevels(Coo$fac[, fac]))[Coo$fac[,
-                                                          fac]]
+      borders <- palette(nlevels(f))[f]
     } else {
-      borders <- borders[Coo$fac[, fac]]
+      borders <- borders[f]
     }
   }
   if (missing(borders)) {
@@ -461,7 +451,7 @@ panel.Ldk <- function(x, cols, borders, fac,
   ### quick and dirty patch for slidings, links, etc.
 
   # links
-  if (is.links(Coo)){
+  if (is_links(Coo)){
     links <- Coo$links
     ldk_all <- get_ldk(Coo)
     for (i in seq_along(Coo)){
@@ -475,7 +465,7 @@ panel.Ldk <- function(x, cols, borders, fac,
   }
 
   # slidings
-  if (is.slidings(Coo)){
+  if (is_slidings(Coo)){
     slidings_all <- get_slidings(Coo)
     for (i in seq_along(slidings_all))
       for (j in seq_along(slidings_all[[i]]))
@@ -505,22 +495,21 @@ panel.Ldk <- function(x, cols, borders, fac,
 }
 
 # panel2 -----
-#' Family picture of shapes (ggplot2)
-#'
-#' May replace panel one day.
-#' @param Coo a Coo object
-#' @return a ggplot2 object
-#' @examples
-#' data(shapes)
-#' panel2(shapes)
-#' @family Coo_graphics
-#' @export
-panel2 <- function(Coo){
-  df <- as_df(Coo)
-  gg <- ggplot(df, aes_string(x="x", y="y", group="id")) +
-    geom_path() +
-    coord_equal() + facet_wrap( ~ id)
-  gg
-}
+# #' Family picture of shapes (ggplot2)
+# #'
+# #' May replace panel one day.
+# #' @param Coo a Coo object
+# #' @return a ggplot2 object
+# #' @examples
+# #' panel2(shapes)
+# #' @family Coo_graphics
+# #' @export
+# panel2 <- function(Coo){
+#   df <- as_df(Coo)
+#   gg <- ggplot(df, aes_string(x="x", y="y", group="id")) +
+#     geom_path() +
+#     coord_equal() + facet_wrap( ~ id)
+#   gg
+# }
 
 ##### end graphics Coo

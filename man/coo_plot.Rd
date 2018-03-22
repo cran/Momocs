@@ -67,7 +67,6 @@ A simple wrapper around \link{plot} for plotting shapes. Widely used in Momocs
 in other graphical functions, in methods, etc.
 }
 \examples{
-data(bot)
 b <- bot[1]
 coo_plot(b)
 coo_plot(bot[2], plot.new=FALSE) # equivalent to coo_draw(bot[2])
@@ -78,11 +77,11 @@ coo_plot(b, points=TRUE, pch=20)
 coo_plot(b, xy.axis=FALSE, lwd=2, col='#F2F2F2')
 }
 \seealso{
-Other plotting functions: \code{\link{Ntable}},
-  \code{\link{conf_ell}}, \code{\link{coo_arrows}},
+Other plotting functions: \code{\link{coo_arrows}},
   \code{\link{coo_draw}}, \code{\link{coo_listpanel}},
   \code{\link{coo_lolli}}, \code{\link{coo_ruban}},
   \code{\link{ldk_chull}}, \code{\link{ldk_confell}},
   \code{\link{ldk_contour}}, \code{\link{ldk_labels}},
-  \code{\link{ldk_links}}, \code{\link{plot_devsegments}}
+  \code{\link{ldk_links}}, \code{\link{plot_devsegments}},
+  \code{\link{plot_table}}
 }

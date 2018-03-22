@@ -7,16 +7,17 @@
 coo_boundingbox(coo)
 }
 \arguments{
-\item{coo}{a \code{matrix} of (x; y) coordinates or a \code{list}, or any \link{Coo} object.}
+\item{coo}{\code{matrix} of \code{(x; y)} coordinates or any \link{Coo} object.}
 }
 \value{
-named \code{list} with coordinates of the bounding box
+\code{data.frame} with coordinates of the bounding box
 }
 \description{
 Calculates coordinates of the bounding box
 }
 \examples{
 bot[1] \%>\% coo_boundingbox()
+bot \%>\% coo_boundingbox()
 }
 \seealso{
 Other coo_ utilities: \code{\link{coo_aligncalliper}},
@@ -25,17 +26,18 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_baseline}}, \code{\link{coo_bookstein}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
   \code{\link{coo_center}}, \code{\link{coo_centpos}},
-  \code{\link{coo_chull_onion}}, \code{\link{coo_close}},
-  \code{\link{coo_down}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
-  \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
-  \code{\link{coo_left}}, \code{\link{coo_nb}},
-  \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
-  \code{\link{coo_perim}}, \code{\link{coo_rev}},
-  \code{\link{coo_right}}, \code{\link{coo_rotatecenter}},
-  \code{\link{coo_rotate}}, \code{\link{coo_samplerr}},
-  \code{\link{coo_sample}}, \code{\link{coo_scalex}},
+  \code{\link{coo_close}}, \code{\link{coo_down}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
+  \code{\link{coo_interpolate}},
+  \code{\link{coo_is_closed}}, \code{\link{coo_jitter}},
+  \code{\link{coo_left}},
+  \code{\link{coo_likely_clockwise}}, \code{\link{coo_nb}},
+  \code{\link{coo_perim}}, \code{\link{coo_range}},
+  \code{\link{coo_rev}}, \code{\link{coo_right}},
+  \code{\link{coo_rotatecenter}}, \code{\link{coo_rotate}},
+  \code{\link{coo_sample_prop}},
+  \code{\link{coo_samplerr}}, \code{\link{coo_sample}},
   \code{\link{coo_scale}}, \code{\link{coo_shearx}},
   \code{\link{coo_slice}},
   \code{\link{coo_slidedirection}},
@@ -44,21 +46,16 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_template}}, \code{\link{coo_trans}},
   \code{\link{coo_trimbottom}}, \code{\link{coo_trimtop}},
   \code{\link{coo_trim}}, \code{\link{coo_up}},
-  \code{\link{is_clockwise}}, \code{\link{is_closed}},
   \code{\link{is_equallyspacedradii}}
 
-Other coo_ descriptors: \code{\link{coo_area}},
-  \code{\link{coo_chull}},
-  \code{\link{coo_circularityharalick}},
-  \code{\link{coo_circularitynorm}},
-  \code{\link{coo_circularity}},
+Other coo_ descriptors: \code{\link{coo_angle_edge1}},
+  \code{\link{coo_angle_edges}},
+  \code{\link{coo_angle_tangent}}, \code{\link{coo_area}},
+  \code{\link{coo_chull}}, \code{\link{coo_circularity}},
   \code{\link{coo_convexity}},
-  \code{\link{coo_eccentricityboundingbox}},
-  \code{\link{coo_eccentricityeigen}},
+  \code{\link{coo_eccentricity}},
   \code{\link{coo_elongation}}, \code{\link{coo_length}},
   \code{\link{coo_lw}}, \code{\link{coo_rectangularity}},
   \code{\link{coo_rectilinearity}},
-  \code{\link{coo_solidity}}, \code{\link{coo_tangle}},
-  \code{\link{coo_theta3}}, \code{\link{coo_thetapts}},
-  \code{\link{coo_width}}
+  \code{\link{coo_solidity}}, \code{\link{coo_width}}
 }

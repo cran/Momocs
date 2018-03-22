@@ -9,8 +9,8 @@
 #' There is also a generic method (eg for traditional morphometrics) that centers and scales data.
 #' @aliases PCA
 #' @rdname PCA
-#' @param x a \link{Coe} object or an appropriate object (eg \link{prcomp}) for \code{as.PCA}
-#' @param fac any factor or data.frame to be passed to \code{as.PCA} and for use with \link{plot.PCA}
+#' @param x a \link{Coe} object or an appropriate object (eg \link{prcomp}) for \code{as_PCA}
+#' @param fac any factor or data.frame to be passed to \code{as_PCA} and for use with \link{plot.PCA}
 #' @param scale. logical whether to scale the input data
 #' @param center logical whether to center the input data
 #' @return a 'PCA' object on which to apply \link{plot.PCA}, among others. This list has several
@@ -32,20 +32,17 @@
 #' }
 #' @family multivariate
 #' @examples
-#' data(bot)
 #' bot.f <- efourier(bot, 12)
 #' bot.p <- PCA(bot.f)
 #' bot.p
 #' plot(bot.p, morpho=FALSE)
 #' plot(bot.p, 'type')
 #'
-#' data(olea)
 #' op <- npoly(olea, 5)
 #' op.p <- PCA(op)
 #' op.p
 #' plot(op.p, 1, morpho=TRUE)
 #'
-#' data(wings)
 #' wp <- fgProcrustes(wings, tol=1e-4)
 #' wpp <- PCA(wp)
 #' wpp
@@ -54,7 +51,7 @@
 #' # "foreign prcomp"
 #' head(iris)
 #' iris.p <- prcomp(iris[, 1:4])
-#' iris.p <- as.PCA(iris.p, iris[, 5])
+#' iris.p <- as_PCA(iris.p, iris[, 5])
 #' class(iris.p)
 #' plot(iris.p, 1)
 #' @export
@@ -135,11 +132,11 @@ PCA.TraCoe <- function(x, scale. = TRUE, center = TRUE, fac) {
 
 #' @rdname PCA
 #' @export
-PCA.default <- function(x, scale. = TRUE, center = TRUE, fac=data.frame()) {
+PCA.default <- function(x, scale. = TRUE, center = TRUE, fac=dplyr::data_frame()) {
   PCA <- prcomp(x, scale. = scale., center = center)
   eig <- (PCA$sdev^2)
   PCA$eig <- eig/sum(eig)
-  if (!is.null(fac)) fac <- as.data.frame(fac)
+  if (!is.null(fac)) fac <- dplyr::as_data_frame(fac)
   PCA$fac <- fac
   PCA$method <- NULL
   # PCA$baseline2 <- OpnCoe$baseline2
@@ -150,13 +147,15 @@ PCA.default <- function(x, scale. = TRUE, center = TRUE, fac=data.frame()) {
 # 2. PCA Bridges ------------------------------------------
 #' @rdname PCA
 #' @export
-as.PCA <- function(x, fac){UseMethod("as.PCA")}
+as_PCA <- function(x, fac){
+  UseMethod("as_PCA")
+}
 
 #' @export
-as.PCA.default <- function(x, fac){
+as_PCA.default <- function(x, fac){
   if (class(x)[1] != "PCA"){
     class(x) <- c("PCA", class(x))
-    if (!missing(fac)) x$fac <- as.data.frame(fac)
+    if (!missing(fac)) x$fac <- dplyr::as_data_frame(fac)
     return(x)}}
 
 #' @export
@@ -170,7 +169,7 @@ print.PCA <- function(x, ...){
   } else {
     cat(" - $method: [", x$method, "analysis ]\n")}
   # we print the fac
-  .print.fac(x$fac)
+  .print_fac(x$fac)
   cat(" - All components: ",  paste(names(x), collapse=", "), ".\n", sep="")
 }
 
@@ -178,7 +177,7 @@ print.PCA <- function(x, ...){
 #' Get paired individual on a Coe, PCA or LDA objects
 #'
 #' If you have paired individuals, i.e. before and after a treatment or for repeated measures,
-#' and if you have coded coded it into \code{$fac}, this methods allows you to retrieve the cooresponding PC/LD scores,
+#' and if you have coded coded it into \code{$fac}, this methods allows you to retrieve the corresponding PC/LD scores,
 #' or coefficients for \link{Coe} objects.
 #' @param x any \link{Coe}, \link{PCA} of \link{LDA} object.
 #' @param fac factor or column name or id corresponding to the pairing factor.
@@ -187,7 +186,6 @@ print.PCA <- function(x, ...){
 #' first level of the \code{fac} provided; \code{x2} same thing for the second level;
 #' \code{fac} the corresponding \code{fac}.
 #' @examples
-#' data(bot)
 #' bot2 <- bot1 <- coo_scale(coo_center(coo_sample(bot, 60)))
 #' bot1$fac$session <- factor(rep("session1", 40))
 #' # we simulate an measurement error
@@ -211,8 +209,7 @@ get_pairs <- function(x, fac, range){UseMethod("get_pairs")}
 #' @export
 get_pairs.Coe <- function(x, fac, range){
   # we check and prepare
-  if (missing(fac)) stop("'fac' must be provided")
-  fac <- x$fac[, fac]
+  fac <- fac_dispatcher(x, fac)
   if (nlevels(fac) != 2) stop("more than two levels for the 'fac' provided")
   tab <- table(fac)
   if (length(unique(tab))!=1) stop("some mismatches between pairs")
@@ -228,8 +225,7 @@ get_pairs.Coe <- function(x, fac, range){
 #' @export
 get_pairs.PCA <- function(x, fac, range){
   # we check and prepare
-  if (missing(fac)) stop("'fac' mus be provided")
-  fac <- x$fac[, fac]
+  fac <- fac_dispatcher(x, fac)
   if (nlevels(fac) != 2) stop("more than two levels for the 'fac' provided")
   tab <- table(fac)
   if (length(unique(tab))!=1) stop("some mismatches between pairs")
@@ -256,7 +252,6 @@ get_pairs.LDA <- get_pairs.PCA
 #' @param Coe a \link{Coe} object
 #' @note Quite experimental. Dimensions of the matrices and methods must match.
 #' @examples
-#' data(bot)
 #' b <- filter(bot, type=="beer")
 #' w <- filter(bot, type=="whisky")
 #'
@@ -327,7 +322,6 @@ rePCA.PCA <- function(PCA, Coe){
 #'  get_chull_volume is calculated using geometry::convexhulln
 #'
 #' @examples
-#' data(bot)
 #' bp <- PCA(efourier(bot, 12))
 #' get_chull_area(bp)
 #' get_chull_area(bp, 1)
@@ -336,14 +330,14 @@ rePCA.PCA <- function(PCA, Coe){
 #' get_chull_volume(bp, 1)
 #' @export
 get_chull_area <- function (x, fac, xax = 1, yax = 2) {
-  if (!is.PCA(x)) stop("'x' must be a PCA object")
+  if (!is_PCA(x)) stop("'x' must be a PCA object")
   # no fac provided
   if (missing(fac)){
     xy <- x$x[, c(xax, yax)]
     return(coo_area(coo_chull(xy)))
   }
   # else... if a fac is provided
-  fac <- x$fac[, fac]
+  fac <- fac_dispatcher(x, fac)
   x <- x$x[, c(xax, yax)]
   # we prepare the list
   res <- list()
@@ -370,7 +364,7 @@ get_chull_area <- function (x, fac, xax = 1, yax = 2) {
 #' @rdname get_chull_area
 #' @export
 get_chull_volume <- function (x, fac, xax = 1, yax = 2, zax = 3) {
-  if (!is.PCA(x)) stop("'x' must be a PCA object")
+  if (!is_PCA(x)) stop("'x' must be a PCA object")
 
   # no fac provided
   if (missing(fac)){
@@ -379,7 +373,7 @@ get_chull_volume <- function (x, fac, xax = 1, yax = 2, zax = 3) {
     return(res)
   }
   # else...fac provided
-  fac <- x$fac[, fac]
+  fac <- fac_dispatcher(x, fac)
   # we prepare the list
   x <- x$x[, c(xax, yax, zax)]
   res <- list()

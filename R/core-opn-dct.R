@@ -4,7 +4,6 @@
 #' a shape (mainly open outlines).
 #' @param coo a matrix (or a list) of (x; y) coordinates
 #' @param nb.h numeric the number of harmonics to calculate
-#' @param verbose whether to print messages and progress bar.
 #' @return a list with the following components:
 #' \itemize{
 #' \item an the A harmonic coefficients
@@ -15,8 +14,10 @@
 #' @note This method has been only poorly tested in Momocs and should be considered as
 #' experimental. Yet improved by a factor 10, this method is still long to execute.
 #' It will be improved in further releases but it should not be so painful right now.
-#' It also explains that a progress bar is printed when 'verbose' is TRUE. Shapes should be aligned
+#' It also explains the progress bar. Shapes should be aligned
 #' before performing the dct transform.
+#'
+#' Silent message and progress bars (if any) with `options("verbose"=FALSE)`.
 #'
 #' @references
 #' \itemize{
@@ -28,7 +29,6 @@
 #'
 #' @family dfourier
 #' @examples
-#' data(olea)
 #' \dontrun{ # because it's long
 #' od <- dfourier(olea)
 #' od
@@ -56,18 +56,18 @@
 #' title('Discrete Cosine Transforms')
 #' @rdname dfourier
 #' @export
-dfourier <- function(coo, nb.h, verbose = TRUE) {
+dfourier <- function(coo, nb.h) {
   UseMethod("dfourier")
 }
 #' @rdname dfourier
 #' @export
 
-dfourier.default <- function(coo, nb.h, verbose = TRUE) {
+dfourier.default <- function(coo, nb.h) {
   # we check a bit
   coo <- coo_check(coo)
   if (missing(nb.h)) {
     nb.h <- 12
-    if (verbose) message("'nb.h' not provided and set to " , nb.h)}
+    if (.is_verbose()) message("'nb.h' not provided and set to " , nb.h)}
   # preliminaries
   N <- nrow(coo)
   pol <- coo[, 1] + (0+1i) * coo[, 2]
@@ -86,22 +86,22 @@ dfourier.default <- function(coo, nb.h, verbose = TRUE) {
 
 #' @rdname dfourier
 #' @export
-dfourier.Opn <- function(coo, nb.h, verbose=TRUE) {
+dfourier.Opn <- function(coo, nb.h) {
   Opn <- coo
   # validates
   Opn %<>% validate()
   # we set nb.h if missing
   if (missing(nb.h)) {
     nb.h <- 12
-    if (verbose) message("'nb.h' not provided and set to ", nb.h)}
+    if (.is_verbose()) message("'nb.h' not provided and set to ", nb.h)}
   col.n <- paste0(rep(LETTERS[1:2], each = nb.h), rep(1:nb.h, times = 2))
   coo <- Opn$coo
   nr <- length(coo)
   # we prepare the matrix
   coe <- matrix(ncol = 2 * nb.h, nrow = nr,
                 dimnames = list(names(coo), col.n))
-  if (verbose) {
-    pb <- txtProgressBar(1, nr)
+  if (.is_verbose()){
+    pb <- progress::progress_bar$new(total = nr)
     t <- TRUE
   } else {
     t <- FALSE
@@ -112,7 +112,7 @@ dfourier.Opn <- function(coo, nb.h, verbose=TRUE) {
     coe[i, ] <- c(dfourier_i$an, dfourier_i$bn)
     # progress bar
     if (t)
-      setTxtProgressBar(pb, i)
+      pb$tick()
   }
   # still progress bar: skips a line
   if (t) cat("\n")
@@ -128,7 +128,7 @@ dfourier.Opn <- function(coo, nb.h, verbose=TRUE) {
 
 #' @rdname dfourier
 #' @export
-dfourier.Coo <- function(coo, nb.h, verbose=TRUE) {
+dfourier.Coo <- function(coo, nb.h) {
   stop("dfourier can only be applied on Opn objects")
 }
 
@@ -153,7 +153,6 @@ dfourier.Coo <- function(coo, nb.h, verbose=TRUE) {
 #' @family dfourier
 #' @examples
 #' # dfourier and inverse dfourier
-#' data(olea)
 #' o <- olea[1]
 #' o <- coo_bookstein(o)
 #' coo_plot(o)
@@ -209,7 +208,7 @@ dfourier_i <- function(df, nb.h, nb.pts = 60) {
 #' the number of harmonics to generate
 #' @param nb.pts if \code{A} and/or \code{B} are not provided,
 #' the number of points to use to reconstruct the shapes
-#' @param alpha tThe power coefficient associated with the (usually decreasing)
+#' @param alpha The power coefficient associated with the (usually decreasing)
 #' amplitude of the harmonic coefficients (see \link{efourier_shape})
 #' @param plot logical whether to plot the shape
 #' @family dfourier

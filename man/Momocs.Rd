@@ -6,15 +6,15 @@
 \alias{Momocs-package}
 \title{Momocs}
 \description{
-A complete toolkit for morphometrics, from data extraction to multivariate analyses.
-Most common 2D morphometrics approaches are included:
-outlines, open outlines, configurations of landmarks, traditional morphometrics,
-and facilities for data preparation, manipulation and visualization
-with a consistent grammar throughout.
-Momocs allows reproducible, complex morphometric analyses,
-paves the way for a pure open-source workflow in R,
-and other morphometrics approaches should be easy to plug in,
-or develop from, on top of this canvas.
+The goal of Momocs is to provide a complete, convenient,
+reproducible and open-source toolkit for 2D morphometrics.
+It includes most common 2D morphometrics approaches on outlines,
+open outlines, configurations of landmarks, traditional
+morphometrics, and facilities for data preparation,
+manipulation and visualization with a consistent grammar throughout.
+It allows reproducible, complex morphometric analyses
+and other morphometrics approaches should be easy to
+plug in, or develop from, on top of this canvas.
 }
 \details{
 To cite Momocs in publications: \code{citation("Momocs")}.
@@ -22,8 +22,9 @@ To cite Momocs in publications: \code{citation("Momocs")}.
 \section{Cheers}{
 
 We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Matt Bulbert, Simon Crameri, Julia Cooke, April Dinwiddie,
-Carl Lipo, Cedric Gaucherel, Catherine Girard, Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
-Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
+Carl Lipo, Cedric Gaucherel, Catherine Girard, QGouil (GitHub), Christian Steven Hoggard,
+Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
+Matthias Mace, Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
 Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
 Asher Wishkerman, John Wood for their helpful ideas and bug reports.
 }
@@ -37,9 +38,10 @@ Asher Wishkerman, John Wood for their helpful ideas and bug reports.
 }
 \seealso{
 \itemize{
- \item \bold{Homepage}: \url{https://github.com/vbonhomme/Momocs}
- \item \bold{Issues}: \url{https://github.com/vbonhomme/Momocs/issues}
- \item \bold{Tutorial}: \code{browseVignettes("Momocs")}
- \item \bold{Email}: \code{bonhomme.vincent@gmail.com} to contribute to dev, ask for something, share your data, etc.
+\item \bold{Homepage}: \url{https://github.com/MomX/Momocs}
+\item \bold{Issues}: \url{https://github.com/MomX/Momocs/issues}
+\item \bold{Tutorial}: \code{browseVignettes("Momocs")} or \url{http://momx.github.io/Momocs/}
+\item \bold{Email}: \code{bonhomme.vincent@gmail.com} to contribute to dev,
+ask for something, propose collaboration, share your data, etc.
 }
 }

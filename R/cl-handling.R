@@ -1,7 +1,164 @@
 ##### Combining or subsetting Momocs' classes
 
+# fac_dispatcher
+#' Brew and serve fac from Momocs object
+#'
+#' Ease various specifications for fac specification
+#' when passed to Momocs objects. Intensively used (internally).
+#'
+#' `fac` can be:
+#'  * a factor, passed on the fly
+#'  * a column id from `$fac`
+#'  * a column name from `fac`
+#'  * a formula (preferred) in the form: `~column_name` (from `$fac`, no quotes)
+#'
+#'
+#' @param x a Momocs object (any `Coo`, `Coe`, `PCA`, etc.)
+#' @param fac a specification to extract from `fac`
+#'
+#' @return a prepared `factor` (or a `numeric`). See examples
+#' @family handling functions
+#' @examples
+#'
+#' bot <- mutate(bot, s=rnorm(40), fake=factor(rep(letters[1:4], 10)))
+#'
+#' # factor, on the fly
+#' fac_dispatcher(bot, factor(rep(letters[1:4], 10)))
+#'
+#' # column id
+#' fac_dispatcher(bot, 1)
+#'
+#' # column name
+#' fac_dispatcher(bot, "type")
+#' # same, numeric case
+#' fac_dispatcher(bot, "s")
+#'
+#' # formula interface
+#' fac_dispatcher(bot, ~type)
+#'
+#' # formula interface + interaction on the fly
+#' fac_dispatcher(bot, ~type+fake)
+#' @export
+fac_dispatcher <- function(x, fac){
+  # factor case
+  if (is.factor(fac))
+    return(fac)
+  # formula case
+  if (class(fac) == "formula") {
+    column_name <- attr(terms(fac), "term.labels")
+    if (any(is.na(match(column_name, colnames(x$fac)))))
+      stop("formula provided must match with $fac column names")
+    fac <- x$fac[, column_name]
+    if (is.data.frame(fac))
+      fac <- factor(apply(fac, 1, paste, collapse = "_"))
+    return(fac)
+  }
+  # column case as character
+  if (is.character(fac) && length(fac)==1) {
+    if (!(fac %in% colnames(x$fac)))
+      stop("invalid column name")
+    fac <- x$fac[, fac]
+    if (is.data.frame(fac)) #dplyr data_frame do not drop
+      fac <- unlist(fac)
+    return(fac)
+  }
+  # column case as numeric for column id
+  if (is.numeric(fac) && length(fac)==1){
+    if (fac > ncol(x$fac))
+      stop("invalid column id")
+    return(x$fac[, fac] %>% unlist)
+  }
+}
+
+
+# subsetize -------------------------------
+# #' Subsetize various Momocs objects
+# #'
+# #'
+# #' Subsetize is a wrapper around dplyr's verbs and should NOT be used directly.
+# #'
+# #' @rdname subset
+# #' @param x a \code{Coo} or a \link{Coe} object.
+# #' @param subset logical taken from the \code{$fac} slot, or indices. See examples.
+# #' @param ... useless here but maintains consistence with the generic subset.
+# #' @family handling functions
+# #' @examples
+# #' # Do not use subset directly
+# #' @rdname subset
+# #' @export
+subsetize <- function(x, subset, ...){
+  UseMethod("subsetize")
+}
+
+# #' @rdname subset
+# #' @export
+subsetize.Coo <- function(x, subset, ...) {
+  Coo <- x
+  e <- substitute(subset)
+  retain <- eval(e, Coo$fac, parent.frame())
+  Coo2 <- Coo
+  Coo2$coo <- Coo$coo[retain]
+  if (is_ldk(Coo))
+    Coo2$ldk <- Coo$ldk[retain]
+  if (is_fac(Coo)) {
+    #     if (is.logical(retain))
+    #       retain <- which(retain)
+    Coo2$fac <- Coo$fac[retain, ]
+    # bloody dirty case where a factor is returned
+    if (ncol(Coo$fac)==1 & is.factor(Coo2$fac)) {
+      Coo2$fac <- dplyr::as_data_frame(Coo2$fac)
+    }
+    names(Coo2$fac) <- names(Coo$fac)
+    Coo2$fac %<>% dplyr::as_data_frame()
+    # Coo2$fac %<>% .refactor()
+  }
+  return(Coo2)
+}
+
+# #' @rdname subset
+# #' @export
+subsetize.Coe <- function(x, subset, ...) {
+  Coe <- x
+  e <- substitute(subset)
+  retain <- eval(e, Coe$fac, parent.frame())
+  Coe2 <- Coe
+  Coe2$coe <- Coe$coe[retain, ]
+  #   if (is.numeric(Coe2$coe)) Coe2$coe <- t(as.matrix(Coe2$coe)) # single shp case
+  if (ncol(Coe$fac) > 0) {
+    Coe2$fac <- Coe$fac[retain, ]
+    # bloody dirty case where a factor is returned
+    if (ncol(Coe$fac)==1 & is.factor(Coe2$fac)) {
+      Coe2$fac <- dplyr::as_data_frame(Coe2$fac)
+    }
+    names(Coe2$fac) <- names(Coe$fac)
+    Coe2$fac %<>% dplyr::as_data_frame()
+    # Coe2$fac %<>% .refactor()
+  }
+  return(Coe2)
+}
+
+# #' @rdname subset
+# #' @export
+subsetize.PCA <- function(x, subset, ...){
+  PCA <- x
+  e <- substitute(subset)
+  retain <- eval(e, PCA$fac, parent.frame())
+  PCA2 <- PCA
+  PCA2$x <- PCA$x[retain, ]
+  if (ncol(PCA$fac) > 0) {
+    PCA2$fac <- PCA$fac
+    PCA2$fac <- as.data.frame(PCA2$fac[retain, ])
+    names(PCA2$fac) <- names(PCA$fac)
+    PCA2$fac %<>% dplyr::as_data_frame
+    # PCA2$fac %<>% .refactor()
+  }
+  return(PCA2)
+}
+
+
+
 # select -------------------------------
-#' Selects (ala dplyr) on Momocs objects
+#' Select and rename columns by name
 #'
 #' Select variables by name, from the \code{$fac}. See examples and \code{?dplyr::select}.
 #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
@@ -10,7 +167,6 @@
 #' @return a Momocs object of the same class.
 #' @family handling functions
 #' @examples
-#' data(olea)
 #' olea
 #' select(olea, var, view) # drops domes and ind
 #' select(olea, variety=var, domesticated_status=domes, view)
@@ -24,7 +180,6 @@
 #' # remove some columns
 #' select(olea, -ind)
 #' # rename on the fly and select some columns
-#' # you can use rename instead
 #' select(olea, foo=domes)
 #'
 #' @export
@@ -51,45 +206,8 @@ select.Coe <- select.Coo
 #' @export
 select.PCA <- select.Coo
 
-# rename -------------------------------
-#' Renames (ala dplyr) on Momocs objects
-#'
-#' Rename variables by name, from the \code{$fac}. See examples and \code{?dplyr::rename}.
-#' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
-#' @param ... comma separated list of unquoted expressions
-#' @details dplyr verbs are maintained.
-#' @return a Momocs object of the same class.
-#' @family handling functions
-#' @examples
-#' olea
-#' rename(olea, Ind=ind, View=view)
-#' @export
-rename <- function(.data, ...){
-  UseMethod("rename")
-}
-
-#' @export
-rename.default <- function(.data, ...){
-  dplyr::rename(.data, ...)
-}
-
-#' @export
-rename.Coo <- function(.data, ...){
-  #.data %<>% validate()
-  .data$fac <- rename(.data$fac, ...)
-  .data$fac %<>% data.frame()
-  .data
-}
-
-#' @export
-rename.Coe <- rename.Coo
-
-#' @export
-rename.PCA <- rename.Coo
-
-
 # mutate -------------------------------
-#' Mutates (ala dplyr) on Momocs objects
+#' Add new variables
 #'
 #' Add new variables to the \code{$fac}. See examples and \code{?dplyr::mutate}.
 #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
@@ -114,7 +232,7 @@ mutate.default <- function(.data, ...){
 mutate.Coo <- function(.data, ...){
   #.data %<>% validate()
   .data$fac <- mutate(.data$fac, ...)
-  .data$fac %<>% data.frame()
+  .data$fac %<>% dplyr::as_data_frame()
   .data
 }
 
@@ -125,45 +243,9 @@ mutate.Coe <- mutate.Coo
 #' @export
 mutate.PCA <- mutate.Coo
 
-# # transmute -------------------------------
-# #' Transmutes (ala dplyr) on Momocs objects
-# #'
-# #' Add new variables to the \code{$fac} and drop existing ones. See examples and \code{?dplyr::transmute}.
-# #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
-# #' @param ... comma separated list of unquoted expressions
-# #' @details dplyr verbs are maintained.
-# #' @return a Momocs object of the same class.
-# #' @family handling functions
-# #' @examples
-# #' olea
-# #' transmute(olea, id=factor(1:length(olea)))
-# #' @export
-# transmute <- function(.data, ...){
-#   UseMethod("transmute")
-# }
-#
-# #' @export
-# transmute.default <- function(.data, ...){
-#   dplyr::transmute(.data, ...)
-# }
-#
-# #' @export
-# transmute.Coo <- function(.data, ...){
-#   #.data %<>% validate()
-#   .data$fac <- transmute(.data$fac, ...)
-#   .data$fac %<>% data.frame()
-#   .data
-# }
-#
-# #' @export
-# transmute.Coe <- transmute.Coo
-#
-#
-# #' @export
-# transmute.PCA <- transmute.Coo
 
 # filter -------------------------------
-#' Filters (ala dplyr) on Momocs objects
+#' Subset based on conditions
 #'
 #' Return shapes with matching conditions, from the \code{$fac}. See examples and \code{?dplyr::filter}.
 #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
@@ -195,9 +277,9 @@ filter.Coo <- function(.data, ...){
   df <- .data$fac
   df <- mutate(df, .id=1:nrow(df))
   df <- filter(df, ...)
-  .data <- subset(.data, df$.id)
-  .data$fac %<>% data.frame()
-  .data$fac %<>% .refactor()
+  .data <- subsetize(.data, df$.id)
+  .data$fac %<>% dplyr::as_data_frame()
+  # .data$fac %<>% .refactor()
   .data
 }
 
@@ -209,9 +291,9 @@ filter.Coe <- filter.Coo
 filter.PCA <- filter.Coo
 
 # arrange -------------------------------
-#' Arranges (ala dplyr) on Momocs objects
+#' Arrange rows by variables
 #'
-#' Arange shapes by variables, from the \code{$fac}. See examples and \code{?dplyr::arrange}.
+#' Arrange shapes by variables, from the \code{$fac}. See examples and \code{?dplyr::arrange}.
 #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
 #' @param ... logical conditions
 #' @details dplyr verbs are maintained.
@@ -239,8 +321,8 @@ arrange.Coo <- function(.data, ...){
   df <- .data$fac
   df <- mutate(df, .id=1:nrow(df))
   df <- arrange(df, ...)
-  .data <- subset(.data, df$.id)
-  .data$fac %<>% data.frame()
+  .data <- subsetize(.data, df$.id)
+  .data$fac %<>% dplyr::as_data_frame()
   .data
 }
 
@@ -254,7 +336,7 @@ arrange.PCA <- arrange.Coo
 
 # slice ---------------------
 
-#' Slices (ala dplyr) on Momocs objects
+#' Subset based on positions
 #'
 #' Select rows by position, based on \code{$fac}. See examples and \code{?dplyr::slice}.
 #' @param .data a \code{Coo}, \code{Coe}, \code{PCA} object
@@ -280,28 +362,28 @@ slice.default <- function(.data, ...){
 #' @export
 slice.Coo <- function(.data, ...){
   #.data %<>% validate()
-  .data %<>% subset(...)
-  .data$fac %<>% .refactor()
+  .data %<>% subsetize(...)
+  # .data$fac %<>% .refactor()
   .data
   }
 
 #' @export
 slice.Coe <- function(.data, ...){
-  .data %<>% subset(...)
-  .data$fac %<>% .refactor()
+  .data %<>% subsetize(...)
+  # .data$fac %<>% .refactor()
   .data
   }
 
 #' @export
 slice.PCA <- function(.data, ...){
-  .data %<>% subset(...)
-  .data$fac %<>% .refactor()
+  .data %<>% subsetize(...)
+  # .data$fac %<>% .refactor()
   .data
   }
 
 # sample_n ---------------
 
-#' Samples n shapes on Momocs objects
+#' Sample n shapes
 #'
 #' Sample n shapes from a Momocs object. See examples and \code{?dplyr::sample_n}.
 #'
@@ -313,12 +395,10 @@ slice.PCA <- function(.data, ...){
 #' @family handling functions
 #' @examples
 #'
-#' data(bot)
-#' bot
 #' # samples 5 bottles no matter their type
 #' sample_n(bot, 5)
 #' # 5 bottles of beer and of whisky
-#' table(sample_n(bot, 5, fac="type"))
+#' table(sample_n(bot, 5, fac="type")$type)
 #' # many repetitions
 #' table(names(sample_n(bot, 400, replace=TRUE)))
 #'
@@ -343,7 +423,7 @@ sample_n.Coo <- function(tbl, size, replace = FALSE, fac=NULL, ...){
     if (!replace & any(N)>size)
       stop("for one level at least, 'size' is too large for sampling without replacement")
   } else {
-    fac <- Coo$fac[, fac]
+    fac <- fac_dispatcher(Coo, fac)
     N <- table(fac)
     if (!replace & any(N)>size)
       stop("for one level at least, 'size' is too large for sampling without replacement")
@@ -360,7 +440,7 @@ sample_n.Coo <- function(tbl, size, replace = FALSE, fac=NULL, ...){
     }
   }
   #   return(retain)
-  return(subset(Coo, retain))
+  return(subsetize(Coo, retain))
 }
 
 #' @export
@@ -368,7 +448,7 @@ sample_n.Coe <- sample_n.Coo
 
 # sample_frac ---------------
 
-#' Samples a fraction of shapes in Momocs objects
+#' Sample a fraction of shapes
 #'
 #' Sample a fraction of shapes from a Momocs object. See examples and \code{?dplyr::sample_n}.
 #'
@@ -381,12 +461,10 @@ sample_n.Coe <- sample_n.Coo
 #' @family handling functions
 #' @examples
 #'
-#' data(bot)
-#' bot
 #' # samples 50% of the bottles no matter their type
 #' sample_frac(bot, 0.5)
 #' # 80% bottles of beer and of whisky
-#' table(sample_frac(bot, 0.8, fac="type"))
+#' table(sample_frac(bot, 0.8, fac="type")$fac)
 #' # bootstrap the same number of bootles of each type but with replacement
 #' table(names(sample_frac(bot, 1, replace=TRUE)))
 #'
@@ -411,7 +489,7 @@ sample_frac.Coo <- function(tbl, size=1, replace = FALSE, fac=NULL, ...){
     fac <- NULL
     N <- length(Coo)
   } else {
-    fac <- Coo$fac[, fac]
+    fac <- fac_dispatcher(Coo, fac)
     N <- table(fac)
   }
   size <- ceiling(N * size)
@@ -426,7 +504,7 @@ sample_frac.Coo <- function(tbl, size=1, replace = FALSE, fac=NULL, ...){
     }
   }
   #   return(retain)
-  return(subset(Coo, retain))
+  return(subsetize(Coo, retain))
 }
 
 #' @export
@@ -436,7 +514,7 @@ sample_frac.Coe <- sample_frac.Coo
 
 # chop ----------------------
 
-#' Chops (rough slicing) Momocs objects
+#' Split to several objects based on a factor
 #'
 #' Rougher slicing that accepts a classifier
 #' ie a column name from the \code{$fac} on Momocs classes.
@@ -447,7 +525,13 @@ sample_frac.Coe <- sample_frac.Coo
 #' @return a named list of \code{Coo} or \code{Coe} objects
 #' @family handling functions
 #' @examples
-#' data(bot)
+#'  olea %>%
+#'       filter(var == "Aglan") %>% # to have a balanced nb of 'view'
+#'       chop(~view) %>%    # split into a list of 2
+#'       lapply(npoly) %>% # separately apply npoly
+#'       combine %>%       # recombine
+#'       PCA %>% plot      # an illustration of the 2 views
+#'       # treated separately
 #' @export
 chop <- function(.data, fac){
   UseMethod("chop")
@@ -463,8 +547,12 @@ chop.Coo <- function(.data, fac){
   Coo <- .data
   #Coo %<>% validate()
   # hideous but works
-  e <- substitute(fac)
-  f <- eval(e, Coo$fac, parent.frame())
+  # e <- substitute(fac)
+  # f <- eval(e, Coo$fac, parent.frame())
+  if (!is.factor(fac))
+    f <- fac_dispatcher(.data, fac)
+  else
+    f <- fac
   fl <- levels(f)
   res <- list()
   for (i in fl) {
@@ -475,7 +563,7 @@ chop.Coo <- function(.data, fac){
       Coo2$ldk <- Coo$ldk[retain]
     if (ncol(Coo$fac) > 0) {
       Coo2$fac <- Coo$fac
-      Coo2$fac <- as.data.frame(Coo2$fac[retain, ])
+      Coo2$fac <- dplyr::as_data_frame(Coo2$fac[retain, ])
       names(Coo2$fac) <- names(Coo$fac)
     }
     res[[i]] <- Coo2
@@ -497,7 +585,7 @@ chop.Coe <- function(.data, fac){
     Coe2$coe <- Coe$coe[retain, ]
     if (ncol(Coe$fac) > 0) {
       Coe2$fac <- Coe$fac
-      Coe2$fac <- as.data.frame(Coe2$fac[retain, ])
+      Coe2$fac <- dplyr::as_data_frame(Coe2$fac[retain, ])
       names(Coe2$fac) <- names(Coe$fac)
     }
     res[[i]] <- Coe2
@@ -506,7 +594,7 @@ chop.Coe <- function(.data, fac){
 
 
 # combine --------------------------------------
-#' Combines Momocs objects
+#' Combine several objects
 #'
 #' Combine \code{Coo} objects after a slicing, either manual or using \link{slice} or \link{chop}. Note that on Coo object,
 #' it combines row-wise (ie, merges shapes as a \code{c} would do) ; but on Coe it combines column-wise
@@ -519,12 +607,11 @@ chop.Coe <- function(.data, fac){
 #' is not checked, so anything with the same number of rows will be merged.
 #' @family handling functions
 #' @examples
-#' data(bot)
 #' w <- filter(bot, type=="whisky")
 #' b <- filter(bot, type=="beer")
 #' combine(w, b)
 #' # or, if you have many levels
-#' bot_s <- chop(bot, type)
+#' bot_s <- chop(bot, ~type)
 #' bot_s$whisky
 #' # note that you can apply something (single function or a more
 #' # complex pipe) then combine everyone, since combine also works on lists
@@ -556,7 +643,7 @@ combine.Out <- function(...) {
   #     stop("objects to combine must have the same number of items")
   Out <- Out(do.call(c, lapply(args, function(x) c(x$coo))))
   Out$fac <- do.call("rbind", lapply(args, function(x) x$fac))
-  Out$fac %<>% data.frame()
+  Out$fac %<>% dplyr::as_data_frame()
   if (any(lapply(args, function(x) length(x$ldk)) != 0)) {
     Out$ldk <- do.call("c", lapply(args, function(x) x$ldk))
   }
@@ -565,7 +652,20 @@ combine.Out <- function(...) {
 }
 
 #' @export
-combine.Opn <- combine.Out
+combine.Opn <- function(...) {
+  args <- list(...)
+  #   # we check
+  #   if (length(unique(sapply(args, length))) != 1)
+  #     stop("objects to combine must have the same number of items")
+  Opn <- Opn(do.call(c, lapply(args, function(x) c(x$coo))))
+  Opn$fac <- do.call("rbind", lapply(args, function(x) x$fac))
+  Opn$fac %<>% dplyr::as_data_frame()
+  if (any(lapply(args, function(x) length(x$ldk)) != 0)) {
+    Opn$ldk <- do.call("c", lapply(args, function(x) x$ldk))
+  }
+  #Opn %<>% validate()
+  return(Opn)
+}
 
 #' @export
 combine.Ldk <- function(...) {
@@ -658,7 +758,7 @@ combine.OpnCoe <- function(...) {
 }
 
 # dissolve --------------------
-#' Dissolves Coe objects
+#' Dissolve Coe objects
 #'
 #' the opposite of combine, typically used after it. Note that the \code{$fac} slot may be wrong since
 #' combine...well combines... this \code{$fac}. See examples.
@@ -678,7 +778,7 @@ combine.OpnCoe <- function(...) {
 #' dissolve(wbf, 2)
 #'
 #' # or using chop (yet combine here makes no sense)
-#' bw <- bot %>% chop(type) %>% lapply(efourier, 10) %>% combine
+#' bw <- bot %>% chop(~type) %>% lapply(efourier, 10) %>% combine
 #' bw %>% dissolve(1)
 #' bw %>% dissolve(2)
 #' @export
@@ -711,122 +811,98 @@ dissolve.Coe <- function(x, retain){
   return(x2)
 }
 
-# subset -------------------------------
-#' Subsets on Momocs objects
-#'
-#'
-#' Subset is a wrapper around dplyr's verbs and should NOT be used directly.
-#'
-#' @rdname subset
-#' @param x a \code{Coo} or a \link{Coe} object.
-#' @param subset logical taken from the \code{$fac} slot, or indices. See examples.
-#' @param ... useless here but maintains consistence with the generic subset.
-#' @family handling functions
-#' @examples
-#' # Do not use subset directly
-#' @export
-subset.Coo <- function(x, subset, ...) {
-  Coo <- x
-  e <- substitute(subset)
-  retain <- eval(e, Coo$fac, parent.frame())
-  Coo2 <- Coo
-  Coo2$coo <- Coo$coo[retain]
-  if (is.ldk(Coo))
-    Coo2$ldk <- Coo$ldk[retain]
-  if (is.fac(Coo)) {
-    #     if (is.logical(retain))
-    #       retain <- which(retain)
-    Coo2$fac <- Coo$fac[retain, ]
-    # bloody dirty case where a factor is returned
-    if (ncol(Coo$fac)==1 & is.factor(Coo2$fac)) {
-      Coo2$fac <- data.frame(Coo2$fac)
-    }
-    names(Coo2$fac) <- names(Coo$fac)
-    Coo2$fac %<>% data.frame()
-    Coo2$fac %<>% .refactor()
-  }
-  return(Coo2)
-}
-
-#' @rdname subset
-#' @export
-subset.Coe <- function(x, subset, ...) {
-  Coe <- x
-  e <- substitute(subset)
-  retain <- eval(e, Coe$fac, parent.frame())
-  Coe2 <- Coe
-  Coe2$coe <- Coe$coe[retain, ]
-  #   if (is.numeric(Coe2$coe)) Coe2$coe <- t(as.matrix(Coe2$coe)) # single shp case
-  if (ncol(Coe$fac) > 0) {
-    Coe2$fac <- Coe$fac[retain, ]
-    # bloody dirty case where a factor is returned
-    if (ncol(Coe$fac)==1 & is.factor(Coe2$fac)) {
-      Coe2$fac <- data.frame(Coe2$fac)
-    }
-    names(Coe2$fac) <- names(Coe$fac)
-    Coe2$fac %<>% data.frame()
-    Coe2$fac %<>% .refactor()
-  }
-  return(Coe2)
-}
-
-#' @rdname subset
-#' @export
-subset.PCA <- function(x, subset, ...){
-  PCA <- x
-  e <- substitute(subset)
-  retain <- eval(e, PCA$fac, parent.frame())
-  PCA2 <- PCA
-  PCA2$x <- PCA$x[retain, ]
-  if (ncol(PCA$fac) > 0) {
-    PCA2$fac <- PCA$fac
-    PCA2$fac <- as.data.frame(PCA2$fac[retain, ])
-    names(PCA2$fac) <- names(PCA$fac)
-    PCA2$fac %<>% data.frame()
-    PCA2$fac %<>% .refactor()
-  }
-  return(PCA2)
-}
+# # #' # table --------------------------
+# # #' # #' Cross tables
+# #' # #'
+# #' # #' Simply extends base \link{table} for a more convenient use on $fac slot.
+# #' # #'
+# #' # #' @param ... a list of, first, a Momocs object (Coo, Coe, PCA, etc.), then, column names in the $fac slot. If not specified,
+# #' # #' returns a table on the entire $fac data.frame
+# #' # #'
+# #' # #' @family handling functions
+# #' # #' @examples
+# #' # #' table(olea, "var", "domes")
+# #' # #' table(olea)
+# #' # #' @rdname table
+# #' # #' @export
+# #' table <- function(...){
+# #'   UseMethod("table")
+# #' }
+# #'
+# #' # #' @rdname table
+# #' # #' @export
+# #' table.default <- function(...){
+# #'   base::table(...)
+# #' }
+# #'
+# #' # #' @rdname table
+# #' # #' @export
+# #' table.Coo <- function(...){
+# #'   args <- list(...)
+# #'   #    return(args)
+# #'   x <- args[[1]]
+# #'   if (!is_fac(x)) stop("no $fac defined")
+# #'   if (length(args)>1) {
+# #'     # a little helper for mismatched colnames
+# #'     cn <- unlist(args[-1])
+# #'     matches <- match(cn, colnames(x$fac))
+# #'     if (any(is.na(matches))) {
+# #'       mispelled <- which(is.na(matches))
+# #'       stop(cn[mispelled], "' mispelled or not defined in $fac")
+# #'     }
+# #'     matches <- match(cn, names(x$fac))
+# #'     # single line avoids a title to be printed for the table
+# #'     base::table(x$fac[, unlist(args[-1])])
+# #'   } else {
+# #'     base::table(x$fac)
+# #'   }
+# #' }
+# #'
+# #' # #' @rdname table
+# #' # #' @export
+# #' table.Coe <- table.Coo
+# #'
+# #' # #' @rdname table
+# #' # #' @export
+# #' table.PCA <- table.Coo
+# #'
+# #' # #' @rdname table
+# #' # #' @export
+# #' table.LDA <- table.Coo
 
 
 # rw_fac ---------------------
+# TODO replace with forcats
 #' Renames levels on Momocs objects
 #'
 #' rw_fac stands for 'rewriting rule'. Typically useful to correct typos
 #' at the import, or merge some levels within covariates. Drops levels silently.
 #'
 #' @param x any Momocs object
-#' @param fac the id of the name of the $fac column to look for
+#' @param fac the id of the name of the $fac column to look for ([fac_dispatcher] not yet supported)
 #' @param from which level(s) should be renamed; passed as a single or several characters
 #' @param to which name should be used to rename this/these levels
 #' @return a Momocs object of the same type
 #' @family handling functions
 #' @examples
-#' data(bot)
 #' # single renaming
-#' rw_fac(bot, "type", "whisky", "agua_de_fuego") # 1 instead of "type" is fine too
+#' rw_fac(bot, "type", "whisky", "agua_de_fuego")$type # 1 instead of "type" is fine too
 #' # several renaming
 #' bot2 <- mutate(bot, fake=factor(rep(letters[1:4], 10)))
 #' rw_fac(bot2, "fake", c("a", "e"), "ae")$fake
 #' @export
 rw_fac <- function(x, fac, from, to){
-  new_levels <- unique(c(levels(x$fac[, fac]), to))
-  fac2 <- factor(x$fac[, fac], levels = new_levels)
+  fac2 <- fac_dispatcher(x, fac)
+  levels(fac2) <- c(to, levels(fac2))
   for (i in seq_along(from)) {
     fac2[which(fac2==from[i])] <- to
   }
   x$fac[, fac] <- droplevels(fac2)
   x
 }
-#' @rdname rw_fac
-#' @export
-rw_rule <- function(x, fac, from, to){
-  message("will be deprecated soon, use `rw_fac` instead")
-  rw_fac(x, fac, from, to)
-}
 
 # at_least ------------------------
-#' Retains group with at least a certain number of individuals
+#' Retain groups with at least n shapes
 #'
 #' Examples are self-speaking.
 #'
@@ -836,28 +912,24 @@ rw_rule <- function(x, fac, from, to){
 #' @note if N is too ambitious the original object is returned with a message
 #' @family handling functions
 #' @examples
-#' data(trilo)
-#' table(trilo, "onto")
+#' table(trilo$onto)
 #' at_least(trilo, "onto", 9)
 #' at_least(trilo, "onto", 16)
 #' at_least(trilo, "onto", 2000) # too ambitious !
 #' @export
 at_least <- function(x, fac, N){
-  retain <- x$fac[, fac] %in% names(which(table(x$fac[, fac]) >= N))
+  n <- fac_dispatcher(x, fac)
+  retain <- n %in% names(which(table(n) >= N))
   if (!any(retain)) {
     message("no group with at least ", N, " indidivuals")
     return(slice(x, 0))
   } else {
-    subset(x, retain)
+    subsetize(x, retain)
   }
 }
 
-# x=charring
-# fac="taxa"
-# N=40
-
 # rm ------------
-#' Removes shapes with incomplete slices
+#' Remove shapes with incomplete slices
 #'
 #' Imagine you take three views of every object you study. Then, you can \link{slice},
 #' \link{filter} or \link{chop} your entire dataset, do morphometrics on it,
@@ -874,17 +946,17 @@ at_least <- function(x, fac, N){
 #' # we select the var Aglan since it is the only one complete
 #' ol <- filter(olea, var == "Aglan")
 #' # everything seems fine
-#' table(ol, "view", "ind")
+#' table(ol$view, ol$ind)
 #' # indeed
 #' rm_uncomplete(ol, id="ind", by="view")
 #'
 #' # we mess the ol object by removing a single shape
 #' ol.pb <- slice(ol, -1)
-#' table(ol.pb, "view", "ind")
+#' table(ol.pb$view, ol.pb$ind)
 #' # the counterpart has been removed with a notice
 #' ol.ok <- rm_uncomplete(ol.pb, "ind", "view")
 #' # now you can combine them
-#' table(ol.ok, "view", "ind")
+#' table(ol.ok$view, ol.ok$ind)
 #' @export
 rm_uncomplete <- function(x, id, by){
   tab <- table(x$fac[, c(id, by)])
@@ -892,7 +964,7 @@ rm_uncomplete <- function(x, id, by){
   nb.u <- unique(nb)
   nb.tab <- table(nb)
   if (length(nb.u) == 1) {
-    message("* all ids have ", nb.u, " slices")
+    message("all ids have ", nb.u, " slices")
     return(x)
   } else {
     most_frequent <- as.numeric(names(nb.tab[which.max(nb.tab)]))
@@ -901,7 +973,7 @@ rm_uncomplete <- function(x, id, by){
     message("those shapes did not have ", most_frequent,
             " slices and has been removed: ",
             paste(ugly_ducklings, collapse=", "))
-    return(subset(x, -remove_rows))
+    return(subsetize(x, -remove_rows))
   }
 }
 
@@ -912,6 +984,7 @@ rm_uncomplete <- function(x, id, by){
 #'
 #' @param x Coe object
 #' @param drop numeric number of harmonics to drop
+#' @family handling functions
 #' @examples
 #' data(bot)
 #' bf <- efourier(bot)
@@ -938,9 +1011,9 @@ rm_harm <- function(x, drop=1){
 #' @param scaling_factor numeric an homogeneous scaling factor. If all you (x, y) coordinates
 #' have the same scale
 #' @param scale_mapping either a data.frame or a path to read such a data.frame. It MUST contain
-#' three columns in that order: magnification found in $fac[, "magnification_col"], pixels, real length unit.
+#' three columns in that order: magnification found in `$fac`, column `"magnification_col"`, pixels, real length unit.
 #' Column names do not matter but must be specified, as read.table reads with \code{header=TRUE} Every
-#' different magnification level found in $fac[, "magnification_col"] must have its row.
+#' different magnification level found in `$fac`, column `"magnification_col"` must have its row.
 #' @param magnification_col the name or id of the $fac column to look for magnification levels for every image
 #' @param ... additional arguments (besides header=TRUE) to pass to read.table if 'scale_mapping' is a path
 #' @details The i) case above is straightforward, if 1cm is 500pix long on all your pictures,
@@ -966,6 +1039,7 @@ rm_harm <- function(x, drop=1){
 #'
 #' @note This function is simple but quite complex to detail. Feel free to contact me should you have any
 #' problem with it. You can just access its code (type \code{rescale}) and reply it yourself.
+#' @family handling functions
 #' @export
 rescale <- function(x, scaling_factor, scale_mapping, magnification_col, ...){
   # homogeneous case
@@ -977,7 +1051,7 @@ rescale <- function(x, scaling_factor, scale_mapping, magnification_col, ...){
   # multiple magnification case
   # if a path is provided we read it
   if (is.character(scale_mapping))
-    scale_mapping <- read.table(scale_mapping, header=TRUE, ...)
+    scale_mapping <- utils::read.table(scale_mapping, header=TRUE, ...)
   # we prepare the two cols and match
   mag_orig <- x$fac[, magnification_col] %>% as.numeric()
   mag_rule <- scale_mapping[, 1] %>% as.character %>% as.numeric()

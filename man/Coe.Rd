@@ -11,12 +11,11 @@ Coe(...)
 }
 \description{
 \code{Coe} class is the 'parent' or 'super' class of
-\code{\link{OutCoe}}, \code{\link{OpnCoe}} and \code{LdkCoe} classes.
+\code{\link{OutCoe}}, \code{\link{OpnCoe}}, \code{LdkCoe} and \code{TraCoe} classes.
 }
 \details{
 Useful shortcuts are described below. See \code{browseVignettes("Momocs")} for
 a detail of the design behind Momocs' classes.
-
 
 \code{Coe} class is the 'parent' class of the following 'child' classes \itemize{
 \item \code{\link{OutCoe}} for coefficients from closed \bold{out}lines morphometrics
@@ -32,10 +31,11 @@ You can access all the methods available for \code{Coe} objects
 with \code{methods(class=Coe)}.
 }
 \examples{
-# to see all methods for Coo objects.
+# to see all methods for Coe objects.
 methods(class='Coe')
+# to see all methods for OutCoe objects.
+methods(class='OutCoe') # same for OpnCoe, LdkCoe, TraCoe
 
-data(bot)
 bot.f<- efourier(bot, 12)
 bot.f
 class(bot.f)
@@ -56,13 +56,11 @@ bot.f[1:5] <- matrix(1:48, nrow=5, ncol=48, byrow=TRUE)
 bot.f[1:5]
 
 # An illustration of Momocs desing. See also browseVignettes("Momocs")
-data(olea)
 op <- opoly(olea, 5)
 op
 class(op)
 op$coe # same thing
 
-data(wings)
 wp <- fgProcrustes(wings, tol=1e-4)
 wp
 class(wp) # for Ldk methods, LdkCoe objects can also be considered as Coo objects
@@ -71,6 +69,7 @@ wp$coe # Procrustes aligned coordinates
 
 }
 \seealso{
-Other Coe objects: \code{\link{OpnCoe}},
-  \code{\link{OutCoe}}
+Other classes: \code{\link{Coo}}, \code{\link{OpnCoe}},
+  \code{\link{Opn}}, \code{\link{OutCoe}},
+  \code{\link{Out}}, \code{\link{TraCoe}}
 }

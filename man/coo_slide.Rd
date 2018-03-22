@@ -4,32 +4,32 @@
 \alias{coo_slide}
 \title{Slides coordinates}
 \usage{
-coo_slide(coo, id1, ldk)
+coo_slide(coo, id, ldk)
 }
 \arguments{
-\item{coo}{a \code{matrix} of (x; y) coordinates or a \code{list}, or any \link{Coo} object.}
+\item{coo}{\code{matrix} of \code{(x; y)} coordinates or any \link{Coo} object.}
 
-\item{id1}{\code{numeric} the id(s) of the point that will become the new first point. See details below
+\item{id}{\code{numeric} the id of the point that will become the new first point. See details below
 for the method on Coo objects.}
 
-\item{ldk}{\code{numeric} the id of the ldk to use as id1, only on \code{Out}}
+\item{ldk}{\code{numeric} the id of the ldk to use as id, only on \code{Out}}
 }
 \value{
 a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 }
 \description{
-Slides the coordinates so that the id1-th point become the first one.
+Slides the coordinates so that the id-th point become the first one.
 }
 \details{
 For Coo objects, and in particular for Out and Opn three different ways of coo_sliding
 are available:
 \itemize{
-\item \strong{no ldk passed and a single id1 is passed}: all id1-th points
+\item \strong{no ldk passed and a single id is passed}: all id-th points
 within the shapes will become the first points. $ldk will be slided accordingly.
 \item \strong{no ldk passed and a vector of ids matching the length of the Coo}: for every shape,
-the id1-th point will be used as the id1-th point. $ldk will be slided accordingly.
+the id-th point will be used as the id-th point. $ldk will be slided accordingly.
 \item \strong{a single ldk is passed}: the ldk-th ldk will be used to slide every shape. If an ldk is passed,
-id1 is ignored with a message.
+id is ignored with a message.
 }
 See examples.
 }
@@ -38,14 +38,16 @@ stack(hearts)
 # set the first landmark as the starting point
 stack(coo_slide(hearts, ldk=1))
 # set the 50th point as the starting point (everywhere)
-stack(coo_slide(hearts, id1=50))
-# set the id1-random-th point as the starting point (everywhere)
+stack(coo_slide(hearts, id=50))
+# set the id-random-th point as the starting point (everywhere)
 set.seed(123) # just for the reproducibility
-id1_random <- sample(x=min(sapply(hearts$coo, nrow)), size=length(hearts),
+id_random <- sample(x=min(sapply(hearts$coo, nrow)), size=length(hearts),
 replace=TRUE)
-stack(coo_slide(hearts, id1=id1_random))
+stack(coo_slide(hearts, id=id_random))
 }
 \seealso{
+\link{coo_slice} and friends.
+
 Other sliding functions: \code{\link{coo_slidedirection}},
   \code{\link{coo_slidegap}}
 
@@ -56,17 +58,18 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_boundingbox}},
   \code{\link{coo_calliper}}, \code{\link{coo_centdist}},
   \code{\link{coo_center}}, \code{\link{coo_centpos}},
-  \code{\link{coo_chull_onion}}, \code{\link{coo_close}},
-  \code{\link{coo_down}}, \code{\link{coo_dxy}},
-  \code{\link{coo_extract}}, \code{\link{coo_flipx}},
-  \code{\link{coo_force2close}},
-  \code{\link{coo_interpolate}}, \code{\link{coo_jitter}},
-  \code{\link{coo_left}}, \code{\link{coo_nb}},
-  \code{\link{coo_perimcum}}, \code{\link{coo_perimpts}},
-  \code{\link{coo_perim}}, \code{\link{coo_rev}},
-  \code{\link{coo_right}}, \code{\link{coo_rotatecenter}},
-  \code{\link{coo_rotate}}, \code{\link{coo_samplerr}},
-  \code{\link{coo_sample}}, \code{\link{coo_scalex}},
+  \code{\link{coo_close}}, \code{\link{coo_down}},
+  \code{\link{coo_dxy}}, \code{\link{coo_extract}},
+  \code{\link{coo_flipx}}, \code{\link{coo_force2close}},
+  \code{\link{coo_interpolate}},
+  \code{\link{coo_is_closed}}, \code{\link{coo_jitter}},
+  \code{\link{coo_left}},
+  \code{\link{coo_likely_clockwise}}, \code{\link{coo_nb}},
+  \code{\link{coo_perim}}, \code{\link{coo_range}},
+  \code{\link{coo_rev}}, \code{\link{coo_right}},
+  \code{\link{coo_rotatecenter}}, \code{\link{coo_rotate}},
+  \code{\link{coo_sample_prop}},
+  \code{\link{coo_samplerr}}, \code{\link{coo_sample}},
   \code{\link{coo_scale}}, \code{\link{coo_shearx}},
   \code{\link{coo_slice}},
   \code{\link{coo_slidedirection}},
@@ -75,6 +78,5 @@ Other coo_ utilities: \code{\link{coo_aligncalliper}},
   \code{\link{coo_template}}, \code{\link{coo_trans}},
   \code{\link{coo_trimbottom}}, \code{\link{coo_trimtop}},
   \code{\link{coo_trim}}, \code{\link{coo_up}},
-  \code{\link{is_clockwise}}, \code{\link{is_closed}},
   \code{\link{is_equallyspacedradii}}
 }

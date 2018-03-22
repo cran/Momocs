@@ -17,13 +17,15 @@
 #' @param palette a \link{palette}
 #' @param center.origin logical whether to center the plot onto the origin
 #' @param zoom to keep your distances
+#' @param xlim numeric of length two ; if provided along with ylim, the x and y lims to use
+#' @param ylim numeric of length two ; if provided along with xlim, the x and y lims to use
 #' @param bg color for the background
 #' @param grid logical whether to draw a grid
 #' @param nb.grids and how many of them
 #' @param morphospace logical whether to add the morphological space
-#' @param pos.shp passed to \link{pos.shapes}, one of
+#' @param pos.shp passed to \link{morphospace_positions}, one of
 #' \code{"range", "full", "circle", "xy", "range_axes", "full_axes"}. Or directly
-#' a matrix of positions. See \link{pos.shapes}
+#' a matrix of positions. See \link{morphospace_positions}
 #' @param amp.shp amplification factor for shape deformation
 #' @param size.shp the size of the shapes
 #' @param nb.shp (pos.shp="circle") the number of shapes on the compass
@@ -79,7 +81,6 @@
 #' See https://github.com/vbonhomme/Momocs/issues/121
 #' @seealso \link{LDA}, \link{plot_CV}, \link{plot_CV2}, \link{plot.PCA}.
 #' @examples
-#' data(bot)
 #' bot.f <- efourier(bot, 24)
 #' bot.l <- LDA(PCA(bot.f), "type")
 #' plot(bot.l)
@@ -93,7 +94,7 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
                      #points arguments
                      points=TRUE, col="#000000", pch=20, cex=0.5, palette=col_solarized,
                      #.frame
-                     center.origin=FALSE, zoom=1, bg=par("bg"),
+                     center.origin=FALSE, zoom=1, xlim=NULL, ylim=NULL, bg=par("bg"),
                      #.grid
                      grid=TRUE, nb.grids=3,
                      #shapes
@@ -151,24 +152,7 @@ plot.LDA <- function(x, fac=x$fac, xax=1, yax=2,
   morphospace=FALSE
   fac <- x$fac
 
-  # most of it copied from plot.PCA
-    # fac provided ------------------------
-    # fac provided, as formula ============
-    if (class(fac) == "formula") {
-      column_name <- attr(terms(fac), "term.labels")
-      # we check for wrong formula
-      if (any(is.na(match(column_name, colnames(x$fac)))))
-        stop("formula provided must match with $fac column names")
-      # otherwise we retrive the column(s)
-      fac <- x$fac[, column_name]
-      # multicolumn/fac case
-      if (is.data.frame(fac))
-        fac <- factor(apply(fac, 1, paste, collapse="_"))
-    }
-    # fac provided, as column name or id
-    if (length(fac)==1){
-      fac <- x$fac[, fac]
-    }
+  fac <- fac_dispatcher(x, fac)
 
   if (nlevels(fac) <= 2) { # case of 2 levels and a single LD
     xy <- x$mod.pred$x[, 1, drop=FALSE]
@@ -242,7 +226,7 @@ if (nlevels(fac) <= 2){
   if (old.par) on.exit(par(opar))
   par(mar = rep(0.1, 4)) #0.1
   # we initate it
-  .frame(xy, center.origin, zoom=zoom, bg=bg)
+  .frame(xy, xlim=xlim, ylim=ylim, center.origin, zoom=zoom, bg=bg)
   if (grid)     .grid(nb.grids)
 
   # if numeric fac, we add the (cheap) legend
@@ -301,9 +285,9 @@ if (nlevels(fac) <= 2){
   if (box) box()
   # we return a df
   if (is.null(fac))
-    invisible(data.frame(x=xy[, 1], y=xy[, 2]))
+    invisible(dplyr::data_frame(x=xy[, 1], y=xy[, 2]))
   else
-    invisible(data.frame(x=xy[, 1], y=xy[, 2], fac=fac))
+    invisible(dplyr::data_frame(x=xy[, 1], y=xy[, 2], fac=fac))
 }
 
 
@@ -322,9 +306,8 @@ if (nlevels(fac) <= 2){
 #' @param labels logical whether to display freq or counts as text labels
 #' @param ... only used for the generic
 #' @return a ggplot object
-#' @seealso \link{LDA}, \link{plot.LDA}, and (pretty much the same) \link{Ntable}.
+#' @seealso \link{LDA}, \link{plot.LDA}, and (pretty much the same) \link{plot_table}.
 #' @examples
-#' data(olea)
 #' ol <- LDA(PCA(opoly(olea, 5)), "domes")
 #' # freq=FALSE inspired by Chitwood et al. New Phytol fig. 4
 #' gg <- plot_CV(ol, freq=FALSE)
@@ -346,8 +329,8 @@ plot_CV.default <- function(x, freq=FALSE, rm0 = TRUE, cex=5, round=2, labels=TR
   df <- as.data.frame(tab)
   #colnames(df) <- c("actual", "classified", "count")
   if (freq) {
-    df <- df %>% group_by_(colnames(df)[1]) %>%
-      mutate(Freq=round(Freq/sum(Freq), round))
+    df <- df %>% dplyr::group_by_(colnames(df)[1]) %>%
+      dplyr::mutate(Freq=round(Freq/sum(Freq), round))
   gg <- ggplot(df, aes_string(x=colnames(df)[1], y=colnames(df)[2], fill="Freq")) +
     geom_tile()  +
     scale_fill_gradient(low="white", high="red", na.value="white") +
@@ -445,14 +428,12 @@ plot_CV.LDA <- function(x, freq=FALSE, rm0 = TRUE, cex=5, round=2, labels=TRUE,.
 #' plot_CV2(tab, gap.dots=1) # or not
 #'
 #' #trilo examples
-#' data(trilo)
 #' trilo.f <- efourier(trilo, 8)
 #' trilo.l <- LDA(PCA(trilo.f), 'onto')
 #' trilo.l
 #' plot_CV2(trilo.l)
 #'
 #' # olea example
-#' data(olea)
 #' op <- opoly(olea, 5)
 #' opl <- LDA(PCA(op), 'var')
 #' plot_CV2(opl)

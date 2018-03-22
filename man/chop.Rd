@@ -2,7 +2,7 @@
 % Please edit documentation in R/cl-handling.R
 \name{chop}
 \alias{chop}
-\title{Chops (rough slicing) Momocs objects}
+\title{Split to several objects based on a factor}
 \usage{
 chop(.data, fac)
 }
@@ -20,15 +20,21 @@ ie a column name from the \code{$fac} on Momocs classes.
 Returns a named (after every level) list that can be lapply-ed and combined. See examples.
 }
 \examples{
-data(bot)
+ olea \%>\%
+      filter(var == "Aglan") \%>\% # to have a balanced nb of 'view'
+      chop(~view) \%>\%    # split into a list of 2
+      lapply(npoly) \%>\% # separately apply npoly
+      combine \%>\%       # recombine
+      PCA \%>\% plot      # an illustration of the 2 views
+      # treated separately
 }
 \seealso{
 Other handling functions: \code{\link{arrange}},
   \code{\link{at_least}}, \code{\link{combine}},
-  \code{\link{dissolve}}, \code{\link{filter}},
-  \code{\link{mutate}}, \code{\link{rename}},
+  \code{\link{dissolve}}, \code{\link{fac_dispatcher}},
+  \code{\link{filter}}, \code{\link{mutate}},
+  \code{\link{rescale}}, \code{\link{rm_harm}},
   \code{\link{rm_uncomplete}}, \code{\link{rw_fac}},
   \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}},
-  \code{\link{subset.Coo}}
+  \code{\link{select}}, \code{\link{slice}}
 }

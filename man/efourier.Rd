@@ -4,14 +4,17 @@
 \alias{efourier}
 \alias{efourier.default}
 \alias{efourier.Out}
-\title{Elliptical Fourier transform}
+\alias{efourier_norm}
+\title{Elliptical Fourier transform (and its normalization)}
 \usage{
 efourier(x, ...)
 
-\method{efourier}{default}(x, nb.h, smooth.it = 0, verbose = TRUE, ...)
+\method{efourier}{default}(x, nb.h, smooth.it = 0, ...)
 
 \method{efourier}{Out}(x, nb.h, smooth.it = 0, norm = TRUE, start = FALSE,
-  verbose = TRUE, ...)
+  ...)
+
+efourier_norm(ef, start = FALSE)
 }
 \arguments{
 \item{x}{A \code{list} or a \code{matrix} of coordinates or a \code{Out} object}
@@ -24,30 +27,36 @@ efourier(x, ...)
 \item{smooth.it}{\code{integer}. The number of smoothing iterations to
 perform.}
 
-\item{verbose}{\code{logical}. Whether to print or not diagnosis messages.}
-
 \item{norm}{whether to normalize the coefficients using \link{efourier_norm}}
 
-\item{start}{logical whether to consider the first point as homologous}
+\item{start}{\code{logical}. For \code{efourier} whether to consider the first point as homologous;
+for \code{efourier_norm} whether to conserve the position of the first
+point of the outline.}
+
+\item{ef}{\code{list} with \code{a_n}, \code{b_n}, \code{c_n} and
+\code{d_n} Fourier coefficients, typically returned by \link{efourier}}
 }
 \value{
-A list with these components: \item{an }{\code{vector} of
-\eqn{a_{1->n}} harmonic coefficients.} \item{bn }{\code{vector} of
-\eqn{b_{1->n}} harmonic coefficients.} \item{cn }{\code{vector} of
-\eqn{c_{1->n}} harmonic coefficients.} \item{dn }{\code{vector} of
-\eqn{d_{1->n}} harmonic coefficients.} \item{ao }{\code{ao} Harmonic
-coefficient.} \item{co }{\code{co} Harmonic coefficient.}
+For \code{efourier}, a list with components: \code{an}, \code{bn}, \code{cn}, \code{dn} harmonic coefficients, plus \code{ao} and \code{co}.
+The latter should have been named \code{a0} and \code{c0} in Claude (2008) but I (intentionnaly) propagated the error.
+
+For \code{efourier_norm}, a list with components: \code{A}, \code{B}, \code{C}, \code{D}
+for harmonic coefficients, plus \code{size}, the magnitude of the semi-major axis of the first
+fitting ellipse, \code{theta} angle, in radians, between the starting and the semi-major axis
+of the first fitting ellipse, \code{psi} orientation of the first fitting ellipse, \code{ao} and \code{do}, same as above,
+and \code{lnef} that is the concatenation of coefficients.
 }
 \description{
 \code{efourier} computes Elliptical Fourier Analysis (or Transforms or EFT)
-from a matrix (or a list) of (x; y) coordinates.
+from a matrix (or a list) of (x; y) coordinates. \code{efourier_norm} normalizes Fourier coefficients.
+Read Details carefully.
 }
 \details{
 For the maths behind see the paper in JSS.
 
 Normalization of coefficients has long been a matter of trouble,
 and not only for newcomers. There are two ways of normalizing outlines: the first,
-and by far the msot used, is to use a "numerical" alignment, directly on the
+and by far the most used, is to use a "numerical" alignment, directly on the
 matrix of coefficients. The coefficients of the first harmonic are consumed
 by this process but harmonics of higher rank are normalized in terms of size
 and rotation. This is sometimes referred as using the "first ellipse", as the
@@ -58,18 +67,21 @@ It is the default option of \code{efourier}.
 
 But here is the pitfall: if your shapes are prone to bad aligments among all
 the first ellipses, this will result in poorly (or even not at all) "homologous" coefficients.
-The shapes prone to this are either (at least roughly) circular and/or with a strong
+The shapes particularly prone to this are either (at least roughly) circular and/or with a strong
 bilateral symmetry. You can try to use \code{\link{stack}} on the \code{\link{Coe}} object
- returned by \code{efourier}. Also, when plotting PCA using Momocs,
-this will be strikingly clear though. This phenomenon will result in two clusters,
-and more strikingly into upside-down (or 180 degrees rotated)
-shapes on the morphospace. If this happen, you should seriously consider
-aligning your shapes \emph{before} the \code{efourier} step,
-and performing the latter with no normalization (\code{norm = FALSE}), since
-it has been done before.
+returned by \code{efourier}. Also, and perhaps more explicitely, morphospace usually show a mirroring symmetry,
+typically visible when calculated in some couple of components (usually the first two).
+
+If you see these  upside-down (or 180 degrees rotated) shapes on the morphospace,
+you should seriously consider aligning your shapes \strong{before} the \link{efourier} step,
+and performing the latter with \code{norm = FALSE}.
+
+Such a pitfall explains the (quite annoying) message when passing \code{efourier} with just the \code{Out}.
 
 You have several options to align your shapes, using control points (or landmarks),
-of Procrustes alignment (see \code{\link{fgProcrustes}}) through their calliper
+by far the most time consuming (and less reproducible) but possibly the best one too
+when alignment is too tricky to automate.
+You can also try Procrustes alignment (see \code{\link{fgProcrustes}}) through their calliper
 length (see \code{\link{coo_aligncalliper}}), etc. You should also make the first
 point homologous either with \code{\link{coo_slide}} or \code{\link{coo_slidedirection}}
 to minimize any subsequent problems.
@@ -77,16 +89,21 @@ to minimize any subsequent problems.
 I will dedicate (some day) a vignette or a paper to this problem.
 }
 \note{
-Directly borrowed for Claude (2008), and also called \code{efourier} there.
+Directly borrowed for Claude (2008).
+
+Silent message and progress bars (if any) with \code{options("verbose"=FALSE)}.
 }
 \examples{
-data(bot)
+# single shape
 coo <- bot[1]
 coo_plot(coo)
 ef <- efourier(coo, 12)
 ef
 efi <- efourier_i(ef)
 coo_draw(efi, border='red', col=NA)
+
+# on Out
+bot \%>\% slice(1:5) \%>\% efourier
 }
 \references{
 Claude, J. (2008) \emph{Morphometrics with R}, Use R! series,
@@ -96,5 +113,5 @@ two-dimensional outlines. \emph{Systematic Biology} \bold{34}: 59-68.
 }
 \seealso{
 Other efourier: \code{\link{efourier_i}},
-  \code{\link{efourier_norm}}, \code{\link{efourier_shape}}
+  \code{\link{efourier_shape}}
 }

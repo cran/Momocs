@@ -11,30 +11,30 @@ Handbook of Pattern Recognition and Computer Vision. 177-196.
 coo_rectangularity(coo)
 }
 \arguments{
-\item{coo}{a \code{matrix} of (x; y) coordinates.}
+\item{coo}{a \code{matrix} of (x; y) coordinates or any \code{Coo}}
 }
 \value{
-numeric, the rectangularity.
+\code{numeric} for a single shape, \code{list} for \code{Coo}
 }
 \description{
 Calculates the rectangularity of a shape
 }
 \examples{
-data(bot)
 coo_rectangularity(bot[1])
+
+bot \%>\%
+    slice(1:3) \%>\% # for speed sake only
+    coo_rectangularity
 }
 \seealso{
-Other coo_ descriptors: \code{\link{coo_area}},
+Other coo_ descriptors: \code{\link{coo_angle_edge1}},
+  \code{\link{coo_angle_edges}},
+  \code{\link{coo_angle_tangent}}, \code{\link{coo_area}},
   \code{\link{coo_boundingbox}}, \code{\link{coo_chull}},
-  \code{\link{coo_circularityharalick}},
-  \code{\link{coo_circularitynorm}},
   \code{\link{coo_circularity}},
   \code{\link{coo_convexity}},
-  \code{\link{coo_eccentricityboundingbox}},
-  \code{\link{coo_eccentricityeigen}},
+  \code{\link{coo_eccentricity}},
   \code{\link{coo_elongation}}, \code{\link{coo_length}},
   \code{\link{coo_lw}}, \code{\link{coo_rectilinearity}},
-  \code{\link{coo_solidity}}, \code{\link{coo_tangle}},
-  \code{\link{coo_theta3}}, \code{\link{coo_thetapts}},
-  \code{\link{coo_width}}
+  \code{\link{coo_solidity}}, \code{\link{coo_width}}
 }
