@@ -76,7 +76,7 @@ draw_polygon <- function(coo, f, col=par("fg"), fill=NA,  lwd=1, lty=1, transp=0
 
   # dispatch drawer argument
   if (missing(fill))
-    fills <- this_dispatcher(f, pal_alpha(par("bg"), 1))
+    fills <- this_dispatcher(f, par("bg")) %>% pal_alpha(1)
   else
     fills <- this_dispatcher(f, fill) %>% pal_alpha(transp)
 
@@ -320,8 +320,17 @@ draw_firstpoint <- function(coo, f, label="^", col=par("fg"), cex=3/4, transp=0,
 
 #' @export
 #' @rdname drawers
+draw_axes <- function(coo, col="#999999", lwd=1/2, ...){
+  # add x=0 and y=0 lines for axes
+  abline(h=0, v=0, col=col, lwd=lwd, ...)
+  # propagate
+  invisible(coo)
+}
+
+#' @export
+#' @rdname drawers
 # cosmetics
-draw_axes <- function(coo, col="#333333", cex=3/4, lwd=3/4, ...){
+draw_ticks <- function(coo, col="#333333", cex=3/4, lwd=3/4, ...){
   at <- function(x) signif(c(min(x), mean(x), max(x)), 3)
   # we dont need this here but it preserves
   # parallelism between functions
@@ -359,11 +368,16 @@ draw_axes <- function(coo, col="#333333", cex=3/4, lwd=3/4, ...){
 #' @export
 #' @rdname drawers
 draw_labels <- function(coo, labels=1:nrow(coo), cex=1/2, d=1/20, ...){
+    # neater par
+  # here ensure that even centrifugated labels got plotted
+  old <- par(mar=rep(1/8, 4))
+  on.exit(par(old))
+
   # this one does not support f and,
   # if a Coo is provided turn it into the mean shape
   # Coo case
   if (is_Coo(coo))
-    coo <- mshapes(coo)
+    coo <- MSHAPES(coo)
 
   # centrifugate labels positions of d*median(distance centroid)
   # away from centroid
@@ -429,7 +443,7 @@ draw_links <- function(coo, f, links, col="#99999955", lwd=1/2, lty=1, transp=0,
   # propagate
   invisible(coo)
 }
-# wings %>% mshapes %>% paper %>% draw_links(links=wings$links) %>% draw_landmarks %>% draw_labels(d=1/5)
+# wings %>% MSHAPES %>% paper %>% draw_links(links=wings$links) %>% draw_landmarks %>% draw_labels(d=1/5)
 
 #' @export
 #' @rdname drawers

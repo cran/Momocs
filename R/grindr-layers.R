@@ -2,6 +2,57 @@
 # .grey90   <- "#e5e5e5"
 # .grey60   <- "#999999"
 
+.layerize_df <- function(x, f, axes=c(1, 2), palette=pal_qual){
+  # grab the selected columns
+  # not optimal - to check
+  # if (!is.null(x$x))
+  xy <- x$x[, axes]
+  # else
+  # xy <- x[, axes]
+  # prepare a factor
+  if (missing(f) | is.null(f)){ # no factor or NULL provided
+    f <- factor(rep(1, nrow(x$x)))
+    colors_groups <- rep(par("fg"), nlevels(f))
+    colors_rows   <- colors_groups[f]
+  } else {         # something provided, handle with fac_dispatcher
+    f <- x %>% fac_dispatcher(f)
+
+    # handle palettes
+    if (missing(palette) | is.null(palette)){
+      if (is.numeric(f))
+        palette <- pal_seq
+      else
+        palette <- pal_qual
+    }
+
+    if (is.numeric(f)){
+      colors_groups <- NA
+      colors_rows <- f %>% .normalize()  %>%
+        cut(breaks = 1e3)  %>% as.numeric() %>% `[`(palette(1e3), .)
+    }
+    if (is.factor(f)){
+      colors_groups <- palette(nlevels(f))
+      colors_rows   <- colors_groups[f]
+    }
+  }
+
+  # NA handling
+  nas <- which(is.na(f))
+  if (length(nas)>0){
+    xy <- xy[-nas, ]
+    f  <- f[-nas]
+    colors_groups <- colors_groups[-nas]
+    colors_rows   <- colors_rows[-nas]
+  }
+  # return as a list and
+  # add potentially useful other components
+  list(xy=xy, f=f,
+       colors_groups=colors_groups,
+       colors_rows=colors_rows,
+       palette=palette)
+}
+
+
 .layerize_PCA <- function(x, f, axes=c(1, 2), palette=pal_qual){
   # grab the selected columns
   xy <- x$x[, axes]
@@ -12,6 +63,23 @@
     colors_rows   <- colors_groups[f]
   } else {         # something provided, handle with fac_dispatcher
     f <- x %>% fac_dispatcher(f)
+
+    # handle palettes
+    if (missing(palette) | is.null(palette)){
+      if (is.numeric(f))
+        palette <- pal_seq
+      else
+        palette <- pal_qual
+    }
+
+    # NA handling
+    nas <- which(is.na(f))
+    if (length(nas)>0){
+      xy <- xy[-nas, ]
+      f  <- f[-nas]
+      message("some NAs were dropped")
+    }
+
     if (is.numeric(f)){
       colors_groups <- NA
       colors_rows <- f %>% .normalize()  %>%
@@ -38,30 +106,94 @@
        object="PCA", axes=axes, palette=palette,
        method=x$method, mshape=x$mshape, cuts=x$cuts,
        eig=x$eig, sdev=x$sdev, rotation=x$rotation[, axes],
-       baseline1=x$baseline1, baseline2=x$baseline2)
+       baseline1=x$baseline1, baseline2=x$baseline2,
+       links=x$links)
 }
 
-### ____plot____ -------------------------------------------
-#' Multivariate plots using grindr layers
+
+.layerize_LDA <- function(x, f=x$f, axes=c(1, 2), palette=pal_qual){
+  # restore LDs if some were dropped because constant or collinear
+  x$LDs <- .restore_LDs(x)
+
+  if (ncol(x$LDs) < 2){
+    message("* Only two levels, so a single LD and preparing for an histogram")
+    xy <- x$mod.pred$x[, 1, drop=FALSE]
+    axes <- 1
+  } else {
+    xy <- x$mod.pred$x[, axes]
+  }
+
+  # prepare a factor
+  # if (missing(f)){ # no factor provided
+  #   f <- factor(rep(1, nrow(x$x)))
+  #   colors_groups <- rep(par("fg"), nlevels(f))
+  #   colors_rows   <- colors_groups[f]
+  # } else {         # something provided, handle with fac_dispatcher
+  colors_groups <- palette(nlevels(f))
+  colors_rows   <- colors_groups[f]
+
+  # NA handling
+  nas <- which(is.na(f))
+  if (length(nas)>0){
+    xy <- xy[-nas, ]
+    f  <- f[-nas]
+    colors_groups <- colors_groups[-nas]
+    colors_rows   <- colors_rows[-nas]
+  }
+  # return as a list and
+  # add potentially useful other components
+  list(xy=xy, f=f,
+       colors_groups=colors_groups, colors_rows=colors_rows,
+       object="PCA", axes=axes, palette=palette,
+       method=x$method, mshape=x$mshape, cuts=x$cuts,
+       eig=x$eig, sdev=x$mod$svd,
+       rotation=x$LDs[, axes, drop=FALSE],
+       LDs=x$LDs,
+       baseline1=x$baseline1, baseline2=x$baseline2,
+       links=x$links)
+}
+
+.layerize_NMDS <- function(x, f=NULL, axes=c(1, 2), palette=pal_qual){
+  x0 <- list(x=x$points, fac=x$fac)
+  res <- .layerize_df(x0, f=f, axes=axes, palette=palette)
+  res$axes <- axes
+  res
+}
+
+.layerize_MDS <- function(x, f=NULL, axes=c(1, 2), palette=pal_qual){
+  x0 <- list(x=x$x, fac=x$fac)
+  res <- .layerize_df(x0, f=f, axes=axes, palette=palette)
+  res$axes <- axes
+  res
+}
+
+# LDA(bp, ~type) %>% .layerize_LDA() -> x
+
+
+### __plot_PCA__ -------------------------------------------
+#' PCA plot using grindr layers
 #'
-#' Quickly vizualise [PCA] objects and friends ([LDA]) and build customs plots
+#' Quickly vizualise [PCA] objects and friends and build customs plots
 #' using the [layers]. See examples.
 #'
 #' @note This approach will replace \link{plot.PCA} (and `plot.lda` in further versions.
 #' This is part of `grindr` approach that may be packaged at some point. All comments are welcome.
 #'
-#' @param x \code{PCA} object
-#' @param f \code{factor}. A column name or number from \code{$fac},
-#' or a factor can directly be passed. Accept \code{numeric} as well.
+#' @param x a [PCA] object
+#' @param f factor specification to feed [fac_dispatcher]
 #' @param axes \code{numeric} of length two to select PCs to use
 #' (\code{c(1, 2)} by default)
 #' @param palette \code{color palette} to use \code{col_summer} by default
 #' @param points `logical` whether to draw this with [layer_points]
 #' @param points_transp `numeric` to feed [layer_points] (default:0.25)
-#' @param morphospace `logical` whether to draw this using [layer_morphospace]
-#' @param morphospace_position to feed [layer_morphospace] (default: "range")
+#' @param morphospace `logical` whether to draw this using [layer_morphospace_PCA]
+#' @param morphospace_position to feed [layer_morphospace_PCA] (default: "range")
 #' @param chull `logical` whether to draw this with [layer_chull]
 #' @param chullfilled `logical` whether to draw this with [layer_chullfilled]
+#' @param labelpoints `logical` whether to draw this with [layer_labelpoints]
+#' @param labelgroups `logical` whether to draw this with [layer_labelgroups]
+#' @param legend `logical` whether to draw this with [layer_legend]
+#' @param title `character` if specified, fee [layer_title] (default to `""`)
 #' @param center_origin `logical` whether to center origin
 #' @param zoom `numeric` zoom level for the frame (default: 0.9)
 #' @param eigen `logical` whether to draw this using [layer_eigen]
@@ -84,11 +216,11 @@
 #' op <- olea %>%
 #' mutate(s=coo_area(.)) %>%
 #' filter(var != "Cypre") %>%
-#' chop(~view) %>% lapply(opoly, 5, nb.pts=90) %>%
+#' chop(~view) %>% opoly(5, nb.pts=90) %>%
 #' combine %>% PCA
 #' op$fac$s %<>% as.character() %>% as.numeric()
 #'
-#' op %>% plot_PCA
+#' op %>% plot_PCA(title="hi there!")
 #'
 #' ### Now we can play with layers
 #' # and for instance build a custom plot
@@ -105,30 +237,58 @@
 #'
 #' # and even continue after this function
 #' op %>% my_plot(~var, axes=c(1, 3)) %>%
-#'     layer_title("hi there!") %>%
-#'     layer_stars()
+#'     layer_title("hi there!")
+#'
+#' # grindr allows (almost nice) tricks like highlighting:
+#'
+#' # bp %>% .layerize_PCA(~fake) %>%
+#' #   layer_frame %>% layer_axes() %>%
+#' #   layer_morphospace_PCA() -> x
+#'
+#' # highlight <- function(x, ..., col_F="#CCCCCC", col_T="#FC8D62FF"){
+#' #  args <- list(...)
+#' #  x$colors_groups <- c(col_F, col_T)
+#' #  x$colors_rows <- c(col_F, col_T)[(x$f %in% args)+1]
+#' #  x
+#' #  }
+#' # x %>% highlight("a", "b") %>% layer_points()
 #'
 #' # You get the idea.
 #' @export
-plot_PCA <- function(x, f, axes=c(1, 2),
-         palette=pal_qual,
-         points=TRUE,
-         points_transp=1/4,
-         # morphospace
-         morphospace=TRUE,
-         morphospace_position="range",
-         chull=TRUE,
-         chullfilled=FALSE,
-         center_origin=TRUE, zoom=0.9,
-         eigen=TRUE,
-         box=TRUE,
-         axesnames=TRUE, axesvar=TRUE){
+plot_PCA <- function(x,
+                     f=NULL,
+                     axes=c(1, 2),
+                     palette=NULL,
+                     points=TRUE,
+                     points_transp=1/4,
+                     # morphospace
+                     morphospace=TRUE,
+                     morphospace_position="range",
+                     # chulls
+                     chull=TRUE,
+                     chullfilled=FALSE,
+                     # legends
+                     labelpoints=FALSE,
+                     labelgroups=FALSE,
+                     legend=TRUE,
+                     # cosmetics (mainly)
+                     title="",
+                     center_origin=TRUE,
+                     zoom=0.9,
+                     eigen=TRUE,
+                     box=TRUE,
+                     axesnames=TRUE, axesvar=TRUE){
+  # check ------
+  .check(any(class(x)=="PCA"),
+         "only supported on LDA objects")
 
   # prepare ---------------------------
-  if (missing(f))
+  if (missing(f) | is.null(f)){
     x %<>% .layerize_PCA(axes=axes, palette=palette)
-  else
+    labelgroups <- legend <- FALSE
+  } else {
     x %<>% .layerize_PCA(f, axes=axes, palette=palette)
+  }
 
   # frame
   x %<>%
@@ -137,7 +297,184 @@ plot_PCA <- function(x, f, axes=c(1, 2),
 
   # cosmetics
   if (axesnames)
-    x %<>% layer_axesnames()
+    x %<>% layer_axesnames(name = "PC")
+
+  if (axesvar)
+    x %<>% layer_axesvar()
+
+  if (eigen)
+    x %<>% layer_eigen()
+
+  if (box)
+    x %<>% layer_box()
+
+  # morphospace -----------------------
+  if (morphospace & !is.null(x$method))
+    x %<>% layer_morphospace_PCA(position = morphospace_position)
+
+  # data ------------------------------
+  if (points)
+    x %<>% layer_points(transp=points_transp)
+
+  # groups dispersion -----------------
+  if (chull & nlevels(x$f)>1)
+    x %<>% layer_chull()
+
+  if (chullfilled & nlevels(x$f)>1)
+    x %<>% layer_chullfilled()
+
+  # legends
+  if (legend){
+    if (missing(legend) && is.factor(x$f) && nlevels(x$f)>18){
+      message("Many levels! Pass with legend=TRUE if you really want it.")
+    } else {
+      x %<>% layer_legend()
+    }
+  }
+
+  if (labelpoints)
+    x %<>% layer_labelpoints()
+
+  if (labelgroups)
+    x %<>% layer_labelgroups()
+
+  if (title != "")
+    x %<>% layer_title(title)
+
+  # propagate
+  invisible(x)
+}
+
+### __plot_LDA__ -------------------------------------------
+#' LDA plot using grindr layers
+#'
+#' Quickly vizualise [LDA] objects and build customs plots
+#' using the [layers]. See examples.
+#'
+#' @note This approach will replace \link{plot.LDA}.
+#' This is part of `grindr` approach that may be packaged at some point. All comments are welcome.
+#'
+#' @param x [LDA] object
+#' @param axes \code{numeric} of length two to select PCs to use
+#' (\code{c(1, 2)} by default)
+#' @param palette \code{color palette} to use \code{col_summer} by default
+#' @param points `logical` whether to draw this with [layer_points]
+#' @param points_transp `numeric` to feed [layer_points] (default:0.25)
+#' @param morphospace `logical` whether to draw this using [layer_morphospace_PCA]
+#' @param morphospace_position to feed [layer_morphospace_PCA] (default: "range")
+#' @param chull `logical` whether to draw this with [layer_chull]
+#' @param chullfilled `logical` whether to draw this with [layer_chullfilled]
+#' @param labelgroups `logical` whether to draw this with [layer_labelgroups]
+#' @param legend `logical` whether to draw this with [layer_legend]
+#' @param title `character` if specified, fee [layer_title] (default to `""`)
+#' @param center_origin `logical` whether to center origin
+#' @param zoom `numeric` zoom level for the frame (default: 0.9)
+#' @param eigen `logical` whether to draw this using [layer_eigen]
+#' @param box `logical` whether to draw this using [layer_box]
+#' @param iftwo_layer  function (no quotes) for drawing LD1 when there are two levels.
+#' So far, one of [layer_histogram_2] (default) or [layer_density_2]
+#' @param iftwo_split to feed `split` argument in [layer_histogram_2] or [layer_density_2]
+#' @param axesnames `logical` whether to draw this using [layer_axesnames]
+#' @param axesvar `logical` whether to draw this using [layer_axesvar]
+#' @family grindr
+#'
+#' @examples
+#' ### First prepare an LDA object
+#'
+#' # Some outlines with bot
+#' bl <- bot %>%
+#'       # cheap alignement before efourier
+#'       coo_align() %>% coo_center %>% coo_slidedirection("left") %>%
+#'       # add a fake column
+#'       mutate(fake=sample(letters[1:5], 40, replace=TRUE)) %>%
+#'       # EFT
+#'       efourier(6, norm=FALSE) %>%
+#'       # LDA
+#'       LDA(~fake)
+#'
+#' bl %>% plot_LDA %>% layer_morphospace_LDA
+#'
+#' # Below inherited from plot_PCA and to adapt here.
+#' #plot_PCA(bp)
+#' #plot_PCA(bp, ~type)
+#' #plot_PCA(bp, ~fake)
+#'
+#' # Some curves with olea
+#' #op <- olea %>%
+#' #mutate(s=coo_area(.)) %>%
+#' #filter(var != "Cypre") %>%
+#' #chop(~view) %>% lapply(opoly, 5, nb.pts=90) %>%
+#' #combine %>% PCA
+#' #op$fac$s %<>% as.character() %>% as.numeric()
+#'
+#' #op %>% plot_PCA(title="hi there!")
+#'
+#' ### Now we can play with layers
+#' # and for instance build a custom plot
+#' # it should start with plot_PCA()
+#'
+#' #my_plot <- function(x, ...){
+#'
+#' #x %>%
+#' #     plot_PCA(...) %>%
+#' #    layer_points %>%
+#' #     layer_ellipsesaxes %>%
+#' #    layer_rug
+#' # }
+#'
+#' # and even continue after this function
+#' # op %>% my_plot(~var, axes=c(1, 3)) %>%
+#' #     layer_title("hi there!") %>%
+#' #    layer_stars()
+#'
+#' # You get the idea.
+#' @export
+plot_LDA <- function(x,
+                     axes=c(1, 2),
+                     palette=pal_qual,
+                     points=TRUE,
+                     points_transp=1/4,
+                     # morphospace
+                     morphospace=FALSE,
+                     morphospace_position="range",
+                     # chulls
+                     chull=TRUE,
+                     chullfilled=FALSE,
+                     # legends
+                     labelgroups=FALSE,
+                     legend=TRUE,
+                     # cosmetics (mainly)
+                     title="",
+                     center_origin=TRUE, zoom=0.9,
+                     eigen=TRUE,
+                     box=TRUE,
+                     iftwo_layer=layer_histogram_2,
+                     iftwo_split=FALSE,
+                     axesnames=TRUE, axesvar=TRUE){
+
+  # check ------
+  .check(any(class(x)=="LDA"),
+         "only supported on LDA objects")
+
+  # prepare ---------------------------
+  x %<>% .layerize_LDA(axes=axes, palette=palette)
+
+  if (length(x$axes) < 2){
+    x %>% iftwo_layer(split=iftwo_split)
+    return(x)
+  }
+
+  .check(all(axes <= ncol(x$LDs)),
+         "axes must all be <= number of LDs")
+
+  # frame
+  x %<>%
+    layer_frame(center_origin=center_origin, zoom = zoom) %>%
+    layer_axes()
+
+  # cosmetics
+  if (axesnames)
+    x %<>% layer_axesnames(name = "LD")
 
   if (axesvar)
     x %<>% layer_axesvar()
@@ -150,7 +487,7 @@ plot_PCA <- function(x, f, axes=c(1, 2),
 
   # morphospace -----------------------
   if (morphospace)
-    x %<>% layer_morphospace()
+    x %<>% layer_morphospace_LDA(position = morphospace_position)
 
   # data ------------------------------
   if (points)
@@ -163,9 +500,25 @@ plot_PCA <- function(x, f, axes=c(1, 2),
   if (chullfilled)
     x %<>% layer_chullfilled()
 
+  # legends
+  if (legend){
+    if (missing(legend) && is.factor(x$f) && nlevels(x$f)>18){
+      message("Many levels! Pass with legend=TRUE if you really want it.")
+    } else {
+      x %<>% layer_legend()
+    }
+  }
+
+  if (labelgroups)
+    x %<>% layer_labelgroups()
+
+  if (title != "")
+    x %<>% layer_title(title)
+
   # propagate
   invisible(x)
 }
+
 
 # bot %>% efourier(6) %>% PCA %>% plot_PCA
 ### _____Layers_____ ---------------------------------------
@@ -221,6 +574,34 @@ layer_axes <- function(x, col="#999999", lwd=1/2, ...){
 
 #' @export
 #' @rdname layers
+# cosmetics
+layer_ticks <- function(x, col="#333333", cex=3/4, lwd=3/4, ...){
+  # neater par
+  old <- par(mar=rep(1/8, 4))
+  on.exit(par(old))
+
+  # calculate positions
+  at_x <- pretty(seq(par("usr")[1], par("usr")[2], length.out=5))
+  at_y <- pretty(seq(par("usr")[3], par("usr")[4], length.out=5))
+
+  # calculate gaps
+  hx <- .wdw()[1]/200
+  hy <- .wdw()[2]/200
+
+  # draw ticjs
+  segments(at_x, -hy, at_x, hy, col=col)
+  segments(-hx, at_y, hx, at_y, col=col)
+
+  # add positions text
+  text(at_x, -strheight(at_x) - hy, labels=at_x, adj=c(0.5, 1), cex=cex)
+  text(-strwidth(at_y) - hx, at_y, labels=at_y, adj=c(1, 0.5), cex=cex)
+
+  # propagate
+  invisible(x)
+}
+
+#' @export
+#' @rdname layers
 #' @param lty linetype for drawing components
 #' @param grid \code{numeric} number of grid to draw
 layer_grid <- function(x, col="#999999", lty=3, grid = 3, ...) {
@@ -261,6 +642,15 @@ layer_fullframe <- function(x, ...){
     layer_axesnames()
 }
 
+
+layer_semiframe <- function(x, ...){
+  x %>%
+    layer_frame(...) %>%
+    layer_grid() %>%
+    layer_axes() %>%
+    layer_box()
+}
+
 # shapes ---------------------------------------------------
 #' @export
 #' @rdname layers
@@ -273,181 +663,6 @@ layer_points <- function(x, pch=20, cex=4/log1p(nrow(x$xy)), transp=0, ...){
   invisible(x)
 }
 
-# morphospace ----------------------------------------------
-#' @export
-#' @rdname layers
-#' @param position one of \code{range, full, circle,
-#' xy, range_axes, full_axes)} to feed \link{morphospace_positions} (default \code{range})
-#' @param nb \code{numeric} total number of shapes when \code{position="circle"} (default \code{12})
-#' @param nr \code{numeric} number of rows to position shapes (default \code{6})
-#' @param nc \code{numeric} number of columns to position shapes (default \code{5})
-#' @param rotate \code{numeric} angle (in radians) to rotate shapes
-#' when displayed on the morphospace (default \code{0})
-#' @param size \code{numeric} size to use to feed \link{coo_template} (default \code{0.9})
-#' @param flipx \code{logical} whether to flip shapes against the x-axis (default \code{FALSE})
-#' @param flipy \code{logical} whether to flip shapes against the y-axis (default \code{FALSE})
-#' @param draw \code{logical} whether to draw shapes (default \code{TRUE})
-layer_morphospace <-
-  function(x,
-           position=c("range", "full", "circle",
-                      "xy", "range_axes", "full_axes")[1],
-           nb=12, nr=6, nc=5,
-           rotate=0, size=0.9,
-           col="#999999",
-           flipx=FALSE, flipy=FALSE, draw=TRUE, ...){
-    # shortcut for useful components
-    xy <- x$xy
-    rot <- x$rotation
-    mshape <- x$mshape
-    method <- x$method
-
-    # number of methods must be <=4
-    # message and propagate anyway
-    if (is.null(method) || length(method)>4) {
-      message("layer_morphospace needs a $method of length <= 4")
-      invisible(x)
-    }
-
-    # position of shapes to reconstruct
-    pos <- morphospace_positions(xy=xy, pos.shp = position,
-                      nb.shp = nb, nr.shp = nr, nc.shp = nc)
-
-    # according to the type of morphometric method,
-    # switch the inverse method and the way we draw shapes
-    # (ie draw_outline, draw_curve, draw_landmarks for Out, Opn, Ldk, respectively).
-    #
-    # when the object combines different morphometric approaches (up to 4)
-    # their size is divided by 2 and the shapes and translated (of d)
-    # from the (x; y) coordinates from pos.shp,
-    # of a distance d below and towards the appropriate direction
-
-    # deduce the number of methods and
-    # and recycle shorter arguments
-    ml <- length(method)
-    if (length(rotate) != ml)
-      rotate <- rep(rotate[1], ml)
-    if (length(flipx) != ml)
-      flipx <- rep(flipx[1], ml)
-    if (length(flipy) != ml)
-      flipy <- rep(flipy[1], ml)
-    if (length(size) != ml)
-      size <- rep(size[1], ml)
-
-    # calculate the final templated size for shapes
-    # divide by two if arranged, eg if more than one shape
-    wdw <- .wdw() %>% max()
-    size <- (size*wdw/14) / ifelse(ml==1, 1, 2)
-
-    # defines the x and y translation distances
-    # for every sub-morphoshape
-    d <- mean(size) / 2 # gap distance
-    if (ml==1){
-      dx <- 0
-      dy <- 0
-    }
-    if (ml==2){ #met1 on top of met2 - h center
-      dx <- c(0, 0)
-      dy <- c(d, -d)
-    }
-    if (ml==3){ #podium arrangement
-      dx <- c(0, -d, d)
-      dy <- c(d, -d, -d)
-    }
-    if (ml==4){ #form top left, clockwise
-      dx <- c(-d, d, -d, d)
-      dy <- c(d, d, -d, -d)
-    }
-
-    # indices of coe partition to successively use
-    if (ml==1){
-      col.start <- 1
-      col.end   <- length(mshape)
-    } else {
-      col.start <- cumsum(x$cuts) - x$cuts + 1
-      col.end   <- cumsum(x$cuts)
-    }
-
-    # to store the shapes
-    SHP <- vector("list", length(method)) %>% `names<-`(method)
-
-    ### loop over method and calculate reconstructed shapes
-    for (i in seq_along(method)){
-      # to store local results
-      shp <- vector("list", nrow(pos))
-      ids <- col.start[i]:col.end[i]
-      mi <- method[i]
-
-      # deduce the plotting method
-      if (grepl("(e|r|s|t)fourier", mi))
-        draw_method <- draw_outline
-      if (grepl("(dfourier)|(poly)", mi))
-        draw_method <- draw_curve
-      if (grepl("procrustes", mi))
-        draw_method <- draw_landmarks
-
-      # method dispatch
-      # efourier
-      if (mi == "efourier")
-        shp <- PCA2shp_efourier(pos = pos, rot = rot[ids, ], mshape = mshape[ids]) %>% lapply(coo_close)
-      # rfourier
-      if (mi == "rfourier")
-        shp <- PCA2shp_rfourier(pos = pos, rot = rot[ids, ], mshape = mshape[ids]) %>% lapply(coo_close)
-      # sfourier
-      if (mi == "sfourier")
-        shp <- PCA2shp_sfourier(pos = pos, rot = rot[ids, ], mshape = mshape[ids]) %>% lapply(coo_close)
-      # tfourier
-      if (mi == "tfourier")
-        shp <- PCA2shp_tfourier(pos = pos, rot = rot[ids, ], mshape = mshape[ids]) %>% lapply(coo_close)
-      # dfourier
-      if (mi == "dfourier")
-        shp <- PCA2shp_dfourier(pos = pos, rot = rot[ids, ], mshape = mshape[ids])
-      # opoly
-      if (mi == "opoly")
-        shp <- PCA2shp_polynomials(pos = pos, rot = rot[ids, ], mshape = mshape[ids],
-                                   ortho = TRUE,
-                                   baseline1 = x$baseline1[1:2 + (i-1)*2],
-                                   baseline2 = x$baseline2[1:2 + (i-1)*2])
-      # npoly
-      if (mi == "npoly")
-        shp <- PCA2shp_polynomials(pos = pos, rot = rot[ids, ], mshape = mshape[ids],
-                                   ortho = FALSE,
-                                   baseline1 = x$baseline1[1:2 + (i-1)*2],
-                                   baseline2 = x$baseline2[1:2 + (i-1)*2])
-      # landmarks
-      if (mi == "procrustes")
-        shp <- PCA2shp_procrustes(pos = pos, rot = rot[ids, ])
-
-      # reconstructed shapes are now waiting in shp
-      # for templating, translating and friends
-      shp %<>%
-        # template to the final size
-        lapply(coo_template, size = size[i]) %>%
-        # coo_template does not center shapes but the bounding box
-        lapply(coo_center) %>%
-        # rotate shapes
-        lapply(coo_rotate, rotate[i])
-      # flip (if required)
-      if (flipx[i]) shp %<>% lapply(coo_flipx)
-      if (flipy[i]) shp %<>% lapply(coo_flipy)
-      # finally translate shapes
-      if (draw) { # to translate only for morphospace PCA, not PCcontrib, etc.
-        shp %<>%
-          seq_along() %>%
-          lapply(function(.) coo_trans(shp[[.]], pos[., 1] + dx[i], pos[., 2] + dy[i]))
-      }
-      SHP[[i]] <- shp
-
-      # finally draw the morphospace
-      if (draw)
-        lapply(shp, draw_method, col=col)
-      # if (!is.null(PCA$links)) lapply(shp, function(x) ldk_links(x, PCA$links, col="grey90"))
-    }
-    # propagate
-    if (draw)
-      invisible(x)
-    else
-      return(SHP)
-  }
 
 # ellipses layers ------------------------------------------
 #' @export
@@ -590,7 +805,7 @@ layer_chullfilled <- function(x, alpha=0.8, ...){
       # with less than 3 points in a group,
       # coo_chull would fail
       coo %>% coo_chull() %>% coo_close %>%
-        draw_polygon(fill=NA, col=pal_alpha(x$colors_groups[i], alpha), ...)
+        draw_polygon(fill=x$colors_groups[i], col=x$colors_groups[i], transp = alpha, ...)
     }
   }
   # propagate
@@ -613,6 +828,9 @@ layer_stars <- function(x, alpha=0.5, ...) {
   # loop along levels and draw
   for (i in seq_along(levels(f))) {
     xy_i <- x$xy[f == levels(f)[i],, drop=FALSE]
+    # to prevent levels with 0
+    if (nrow(xy_i) < 1)
+      next()
     c_i <- coo_centpos(xy_i)
     for (j in 1:nrow(xy_i)) {
       segments(c_i[1], c_i[2],
@@ -757,6 +975,7 @@ layer_labelgroups <- function(x, col=par("fg"), cex=3/4, font=2,
 }
 
 # meta layers ----------------------------------------------
+#' @param size `numeric` as a fraction of graphical window (default: `1/200`)
 #' @export
 #' @rdname layers
 layer_rug <- function(x, size=1/200, ...){
@@ -783,6 +1002,132 @@ layer_rug <- function(x, size=1/200, ...){
   invisible(x)
 }
 
+# layers 2 groups ------------------------------------------
+#' @param freq `logical`to feed` [hist] (default: `FALSE`)
+#' @param breaks to feed [hist] (default: calculated on the pooled values)
+#' @param split `logical` whether to split the two distributions into two plots
+#' @rdname layers
+#' @export
+layer_histogram_2 <- function(x, freq=FALSE, breaks, split=FALSE, transp=0){
+  # handles par for split or non-split
+  if (split){
+    op <- par(mfrow=c(2, 1), oma=rep(0, 4), mar=c(4, 4, 3, 1 ))
+  } else {
+    op <- par(oma=rep(0, 4), mar=c(4, 4, 3, 1 ))
+    if (missing(transp))
+      transp <- 0.5 # to see overlaps (if any)
+  }
+  on.exit(op)
+
+  # shortcuts
+  xy <- x$xy
+  f <- x$f
+  xl <- range(xy)*1.2
+  cols <- x$colors_groups %>% pal_alpha(transp)
+
+  # homegeneize breaks number
+  if (missing(breaks))
+    breaks <- graphics::hist(xy, plot=FALSE)$breaks
+
+  # handle ylim for both cases
+  hs <- split(xy, f) %>% lapply(graphics::hist, breaks=breaks, plot=FALSE)
+  if (freq)
+    yl <- c(0, sapply(hs, `[`, "counts") %>% do.call("c", .) %>% max())
+  else
+    yl <- c(0, sapply(hs, `[`, "density") %>% do.call("c", .) %>% max())
+
+  # draw the two hists
+  graphics::hist(xy[f==levels(f)[1], ], freq=freq, breaks=breaks,
+                 xlim=xl, ylim=yl, xlab="LD1", ylab=NA,
+                 main="",
+                 col=cols[1], axes=TRUE)
+
+  if (split)
+    title(levels(f)[1])
+  else
+    layer_legend(x)
+
+  graphics::hist(xy[f==levels(f)[2], ], freq=freq, breaks=breaks,
+                 xlim=xl, ylim=yl, xlab="LD1", ylab=NA,
+                 main="",
+                 col=cols[2], axes=TRUE, add=!split)
+
+  if (split)
+    title(levels(f)[2])
+
+  # restore layout (incompatible with on.exit - do not know why)
+  graphics::layout(1)
+  # propagate
+  invisible(x)
+}
+
+#' @param bw to feed [density] (default: [stats::bw.nrd0])
+#' @param rug `logical` whether to add [rug] (default: `TRUE`)
+#' @rdname layers
+#' @export
+layer_density_2 <- function(x, bw, split=FALSE, rug=TRUE, transp=0){
+  # handles par for split or non-split
+  if (split){
+    op <- par(mfrow=c(2, 1), oma=rep(0, 4), mar=c(4, 4, 3, 1 ))
+    ticksize <- 1/20
+  } else {
+    op <- par(oma=rep(0, 4), mar=c(4, 4, 3, 1 ))
+    if (missing(transp))
+      transp <- 0.5
+    ticksize <- 1/50
+  }
+  on.exit(op)
+
+  # shortcuts
+  xy <- x$xy
+  f <- x$f
+  cols0 <- x$colors_groups
+  cols <- x$colors_groups %>% pal_alpha(transp)
+
+  # define a bandwidth, if missing
+  if (missing(bw))
+    bw <- stats::bw.nrd(xy)
+
+  # handles xl and yl for both cases
+  ds <- split(xy, f) %>% lapply(stats::density, bw=bw)
+  xl <- sapply(ds, `[`, "x") %>% do.call("c", .) %>% range()
+  yl <- sapply(ds, `[`, "y") %>% do.call("c", .) %>% range()
+
+  # plots the first density
+  d1 <- stats::density(xy[f==levels(f)[1], ], bw=bw)
+  plot(d1, xlim=xl, ylim=yl, yaxs="i",
+       type = "n", xlab="LD1", bty="n", main="")
+  polygon(d1, col = cols[1])
+  # and the first rug if required
+  if (rug)
+    graphics::rug(xy[f==levels(f)[1], ], ticksize = ticksize, col=cols0[1], line=1/2)
+  # add the 1st title if splitted, legend otherwise
+  if (split)
+    title(levels(f)[1])
+  else
+    layer_legend(x)
+
+
+  # same for second density
+  d2 <- stats::density(xy[f==levels(f)[2], ], bw=bw)
+  #
+  if (split){
+    plot(d2,
+         xlim=xl, ylim=yl, yaxs="i",
+         type = "n", xlab="LD1", bty="n", main="")
+    title(levels(f)[2])
+  }
+  graphics::polygon(d2, col = cols[2])
+  # rug if any
+  if(rug)
+    graphics::rug(xy[f==levels(f)[2], ], ticksize = ticksize, col=cols0[2], line=1/2)
+
+  # restore layout (not working with on.exit)
+  graphics::layout(1)
+
+  # propagate
+  invisible(x)
+}
 
 # cosmetics layers -----------------------------------------
 #' @export
@@ -898,7 +1243,7 @@ layer_legend <- function(x, probs=seq(0, 1, 0.25), cex=3/4,  ...){
   old <- par(mar=rep(0, 4), xpd=NA)
   on.exit(par(old))
   # default dimensions
-  range_padding = 1/60
+  range_padding = 1/30
   range_width   = 1/60
   range_height  = 1/8
   # window dimensions
@@ -921,7 +1266,7 @@ layer_legend <- function(x, probs=seq(0, 1, 0.25), cex=3/4,  ...){
     # scale position
     s_y0 <- u[4] - w[2]*(range_padding+range_height)
     s_y1 <- u[4] - w[2]*range_padding
-    s_x0 <- u[2] - w[1]*(range_padding+range_width) - wid_leg
+    s_x0 <- u[2] - w[1]*(range_padding+range_width) - wid_leg*1.5
     s_x1 <- u[2] - w[1]*range_padding - wid_leg
     # scale_bars positions
     s_ys <- seq(s_y0, s_y1, length.out = 100)
@@ -954,3 +1299,5 @@ layer_legend <- function(x, probs=seq(0, 1, 0.25), cex=3/4,  ...){
 #'   text(loadings.lab[, 1], loadings.lab[, 2], labels = rownames(loadings.lab),
 #'        cex = 0.8, col = col)
 #' }
+
+

@@ -4,6 +4,7 @@
 \alias{efourier}
 \alias{efourier.default}
 \alias{efourier.Out}
+\alias{efourier.list}
 \alias{efourier_norm}
 \title{Elliptical Fourier transform (and its normalization)}
 \usage{
@@ -11,8 +12,9 @@ efourier(x, ...)
 
 \method{efourier}{default}(x, nb.h, smooth.it = 0, ...)
 
-\method{efourier}{Out}(x, nb.h, smooth.it = 0, norm = TRUE, start = FALSE,
-  ...)
+\method{efourier}{Out}(x, nb.h, smooth.it = 0, norm = TRUE, start = FALSE, ...)
+
+\method{efourier}{list}(x, ...)
 
 efourier_norm(ef, start = FALSE)
 }
@@ -98,7 +100,9 @@ Silent message and progress bars (if any) with \code{options("verbose"=FALSE)}.
 coo <- bot[1]
 coo_plot(coo)
 ef <- efourier(coo, 12)
-ef
+# same but silent
+efourier(coo, 12, norm=TRUE)
+# inverse EFT
 efi <- efourier_i(ef)
 coo_draw(efi, border='red', col=NA)
 
@@ -112,6 +116,8 @@ Ferson S, Rohlf FJ, Koehn RK. 1985. Measuring shape variation of
 two-dimensional outlines. \emph{Systematic Biology} \bold{34}: 59-68.
 }
 \seealso{
-Other efourier: \code{\link{efourier_i}},
-  \code{\link{efourier_shape}}
+Other efourier: 
+\code{\link{efourier_i}()},
+\code{\link{efourier_shape}()}
 }
+\concept{efourier}

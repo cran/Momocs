@@ -30,7 +30,7 @@ returns position of sampled points on it.
 }
 \examples{
 \dontrun{
-ms <- mshapes(efourier(bot, 10), "type")
+ms <- MSHAPES(efourier(bot, 10), "type")
 b <- ms$shp$beer
 w <- ms$shp$whisky
 g <- tps_raw(b, w)
@@ -43,7 +43,10 @@ for (i in 1:g$dim[2]) lines(g$grid[cols_ids + (i-1)*g$dim[1], ])
 }
 }
 \seealso{
-Other thin plate splines: \code{\link{tps2d}},
-  \code{\link{tps_arr}}, \code{\link{tps_grid}},
-  \code{\link{tps_iso}}
+Other thin plate splines: 
+\code{\link{tps2d}()},
+\code{\link{tps_arr}()},
+\code{\link{tps_grid}()},
+\code{\link{tps_iso}()}
 }
+\concept{thin plate splines}

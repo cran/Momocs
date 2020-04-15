@@ -4,6 +4,7 @@
 \alias{dfourier}
 \alias{dfourier.default}
 \alias{dfourier.Opn}
+\alias{dfourier.list}
 \alias{dfourier.Coo}
 \title{Discrete cosinus transform}
 \usage{
@@ -12,6 +13,8 @@ dfourier(coo, nb.h)
 \method{dfourier}{default}(coo, nb.h)
 
 \method{dfourier}{Opn}(coo, nb.h)
+
+\method{dfourier}{list}(coo, nb.h)
 
 \method{dfourier}{Coo}(coo, nb.h)
 }
@@ -78,6 +81,8 @@ The Discrete Cosine Transform, a Fourier-related Method for Morphometric Analysi
 }
 }
 \seealso{
-Other dfourier: \code{\link{dfourier_i}},
-  \code{\link{dfourier_shape}}
+Other dfourier: 
+\code{\link{dfourier_i}()},
+\code{\link{dfourier_shape}()}
 }
+\concept{dfourier}

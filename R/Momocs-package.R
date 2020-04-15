@@ -34,25 +34,13 @@
 #' We are very grateful to (in alphabetical order): Sean Asselin, Laurent Bouby, Matt Bulbert, Simon Crameri, Julia Cooke, April Dinwiddie,
 #' Carl Lipo, Cedric Gaucherel, Catherine Girard, QGouil (GitHub), Christian Steven Hoggard,
 #' Sarah Ivorra, Glynis Jones, Nathalie Keller, Ricardo Kriebel, Remi Laffont, Fabien Lafuma,
-#' Matthias Mace, Stas Malavin, Neus Martinez, Sabrina Renaud, Marcelo Reginato, Evan Saitta, David Siddons, Eleanor Stillman,
-#' Theodore Stammer, Norbert Telmon, Jean-Frederic Terral, Bill Venables, Daniele Ventura, Michael Wallace,
+#' Matthias Mace, Stas Malavin, Neus Martinez, Ben Marwick, Sabrina Renaud, Marcelo Reginato,
+#' Evan Saitta, David Siddons, Eleanor Stillman,
+#' Theodore Stammer, Tom Stubbs, Norbert Telmon, Jean-Frederic Terral,
+#' Bill Venables, Daniele Ventura, Michael Wallace,
 #' Asher Wishkerman, John Wood for their helpful ideas and bug reports.
-# #' @import ape
-# #' @import dplyr
-# #' @importFrom dplyr arrange arrange_ data_frame as_data_frame count select select_ slice filter filter_ bind_rows bind_cols group_by group_by_ mutate transmute
-# #' @import sp
 #' @import ggplot2
-# #' @importFrom geometry delaunayn convhulln
-# #' @importFrom geomorph gpagen
-# #' @importFrom grDevices colorRamp
-# #' @importFrom jpeg readJPEG
-# #' @importFrom MASS lda ginv kde2d cov.trob
-# only stack should remain todo when stack.Coo will be removed definitely
-# #' @importFrom utils stack browseURL combn ls.str modifyList methods
-# #' packageVersion read.table
-# #' txtProgressBar write.table
 #' @importFrom utils stack
-# #' @importFrom grDevices chull colors rgb colorRampPalette
 #' @importFrom graphics abline arrows axis barplot box boxplot
 #' contour hist image layout legend lines locator
 #' par plot points polygon rasterImage rect rug
@@ -63,7 +51,6 @@
 #' hclust kmeans lm manova median na.omit
 #' poly prcomp predict qf qnorm rnorm
 #' runif sd symnum terms var
-
 #' @docType package
 #' @name Momocs
 NULL
@@ -92,13 +79,20 @@ magrittr::`%T>%`
 globalVariables(c("x", "y", "f", "xend", "yend", "shp1", "ddply",
                   "x_c", "x_d", "y_c", "y_d", ".id", "id", "count",
                   "node", "label", "angle", "hjust", "Freq",
-                  "locus", "name", ".", "actual", "classified"))
+                  "locus", "name", ".", "actual", "classified", "predicted", "coo", "actual2",
+                  "coeff", "key", "value", "ldk",
+                  # KMEDOIDS:
+                 "cluster", "desc", "n", "neighbor", "sil_width", "width"
+                  ))
 
 # welcome message
 .onAttach <- function(lib, pkg) {
-  packageStartupMessage('This is Momocs ',
-                        utils::packageDescription('Momocs', field='Version'),
-                        appendLF = TRUE)
+  packageStartupMessage("
+  Momocs is now retired and will no longer be maintained.
+  It is superseded by Momocs2 and more generally MomX ecosystem:
+
+             <   https://momx.github.io   >",
+  appendLF = TRUE)
 }
 
 #on load add Momocs' options
@@ -115,6 +109,5 @@ globalVariables(c("x", "y", "f", "xend", "yend", "shp1", "ddply",
   if(any(toset)) options(op.Momocs[toset])
 
   invisible()
-
 }
 # pal_qual_default <- options("Momocs_pal_qual_default")[[1]]

@@ -4,14 +4,16 @@
 \alias{rfourier}
 \alias{rfourier.default}
 \alias{rfourier.Out}
+\alias{rfourier.list}
 \title{Radii variation Fourier transform (equally spaced radii)}
 \usage{
 rfourier(x, ...)
 
 \method{rfourier}{default}(x, nb.h, smooth.it = 0, norm = FALSE, ...)
 
-\method{rfourier}{Out}(x, nb.h = 40, smooth.it = 0, norm = TRUE,
-  thres = pi/90, ...)
+\method{rfourier}{Out}(x, nb.h = 40, smooth.it = 0, norm = TRUE, thres = pi/90, ...)
+
+\method{rfourier}{list}(x, ...)
 }
 \arguments{
 \item{x}{A \code{list} or \code{matrix} of coordinates or an \code{Out} object}
@@ -69,6 +71,8 @@ Claude, J. (2008) \emph{Morphometrics with R}, Use R! series,
 Springer 316 pp.
 }
 \seealso{
-Other rfourier: \code{\link{rfourier_i}},
-  \code{\link{rfourier_shape}}
+Other rfourier: 
+\code{\link{rfourier_i}()},
+\code{\link{rfourier_shape}()}
 }
+\concept{rfourier}

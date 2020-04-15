@@ -76,7 +76,9 @@
 #' coo <- bot[1]
 #' coo_plot(coo)
 #' ef <- efourier(coo, 12)
-#' ef
+#' # same but silent
+#' efourier(coo, 12, norm=TRUE)
+#' # inverse EFT
 #' efi <- efourier_i(ef)
 #' coo_draw(efi, border='red', col=NA)
 #'
@@ -139,21 +141,23 @@ efourier.default <- function(x, nb.h, smooth.it = 0, ...) {
 #' @rdname efourier
 #' @export
 efourier.Out <- function(x, nb.h, smooth.it = 0, norm = TRUE, start = FALSE, ...) {
-  if (norm)
-    message("you selected `norm=TRUE`, which is not recommended. See ?efourier")
+  if (norm && missing(norm))
+    message("`norm=TRUE` is used and this may be troublesome. See ?efourier")
   Out <- x
-  # validates
-  Out %<>% validate()
-  q <- floor(min(sapply(Out$coo, nrow)/2))
+  # verify
+  Out %<>% verify()
+  q <- floor(min(coo_nb(Out)/2))-1
   if (missing(nb.h)) {
     #nb.h <- ifelse(q >= 32, 32, q)
     nb.h <- calibrate_harmonicpower_efourier(Out, thresh = 99, plot=FALSE)$minh
-    if (.is_verbose()) message("'nb.h' not provided and set to ", nb.h, " (99% harmonic power)")
+    if (.is_verbose())
+      message("'nb.h' set to ", nb.h,
+              " (99% harmonic power)")
   }
   if (nb.h > q) {
     nb.h <- q
-    message("at least one outline has no more than ", q * 2,
-            " coordinates. 'nb.h' has been set to ", q, " harmonics")
+    message("at least one outline has >", q * 2,
+            " coordinates. 'nb.h' set to ", q)
   }
   coo <- Out$coo
   col.n <- paste0(rep(LETTERS[1:4], each = nb.h), rep(1:nb.h,
@@ -183,6 +187,11 @@ efourier.Out <- function(x, nb.h, smooth.it = 0, norm = TRUE, start = FALSE, ...
   return(res)
 }
 
+#' @rdname efourier
+#' @export
+efourier.list <- function(x, ...){
+  lapply(x, efourier, ...)
+}
 
 #' @rdname efourier
 #' @export

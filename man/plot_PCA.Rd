@@ -2,18 +2,35 @@
 % Please edit documentation in R/grindr-layers.R
 \name{plot_PCA}
 \alias{plot_PCA}
-\title{Multivariate plots using grindr layers}
+\title{PCA plot using grindr layers}
 \usage{
-plot_PCA(x, f, axes = c(1, 2), palette = pal_qual, points = TRUE,
-  points_transp = 1/4, morphospace = TRUE, morphospace_position = "range",
-  chull = TRUE, chullfilled = FALSE, center_origin = TRUE, zoom = 0.9,
-  eigen = TRUE, box = TRUE, axesnames = TRUE, axesvar = TRUE)
+plot_PCA(
+  x,
+  f = NULL,
+  axes = c(1, 2),
+  palette = NULL,
+  points = TRUE,
+  points_transp = 1/4,
+  morphospace = TRUE,
+  morphospace_position = "range",
+  chull = TRUE,
+  chullfilled = FALSE,
+  labelpoints = FALSE,
+  labelgroups = FALSE,
+  legend = TRUE,
+  title = "",
+  center_origin = TRUE,
+  zoom = 0.9,
+  eigen = TRUE,
+  box = TRUE,
+  axesnames = TRUE,
+  axesvar = TRUE
+)
 }
 \arguments{
-\item{x}{\code{PCA} object}
+\item{x}{a \link{PCA} object}
 
-\item{f}{\code{factor}. A column name or number from \code{$fac},
-or a factor can directly be passed. Accept \code{numeric} as well.}
+\item{f}{factor specification to feed \link{fac_dispatcher}}
 
 \item{axes}{\code{numeric} of length two to select PCs to use
 (\code{c(1, 2)} by default)}
@@ -24,13 +41,21 @@ or a factor can directly be passed. Accept \code{numeric} as well.}
 
 \item{points_transp}{\code{numeric} to feed \link{layer_points} (default:0.25)}
 
-\item{morphospace}{\code{logical} whether to draw this using \link{layer_morphospace}}
+\item{morphospace}{\code{logical} whether to draw this using \link{layer_morphospace_PCA}}
 
-\item{morphospace_position}{to feed \link{layer_morphospace} (default: "range")}
+\item{morphospace_position}{to feed \link{layer_morphospace_PCA} (default: "range")}
 
 \item{chull}{\code{logical} whether to draw this with \link{layer_chull}}
 
 \item{chullfilled}{\code{logical} whether to draw this with \link{layer_chullfilled}}
+
+\item{labelpoints}{\code{logical} whether to draw this with \link{layer_labelpoints}}
+
+\item{labelgroups}{\code{logical} whether to draw this with \link{layer_labelgroups}}
+
+\item{legend}{\code{logical} whether to draw this with \link{layer_legend}}
+
+\item{title}{\code{character} if specified, fee \link{layer_title} (default to \code{""})}
 
 \item{center_origin}{\code{logical} whether to center origin}
 
@@ -45,7 +70,7 @@ or a factor can directly be passed. Accept \code{numeric} as well.}
 \item{axesvar}{\code{logical} whether to draw this using \link{layer_axesvar}}
 }
 \description{
-Quickly vizualise \link{PCA} objects and friends (\link{LDA}) and build customs plots
+Quickly vizualise \link{PCA} objects and friends and build customs plots
 using the \link{layers}. See examples.
 }
 \note{
@@ -66,11 +91,11 @@ plot_PCA(bp, ~fake)
 op <- olea \%>\%
 mutate(s=coo_area(.)) \%>\%
 filter(var != "Cypre") \%>\%
-chop(~view) \%>\% lapply(opoly, 5, nb.pts=90) \%>\%
+chop(~view) \%>\% opoly(5, nb.pts=90) \%>\%
 combine \%>\% PCA
 op$fac$s \%<>\% as.character() \%>\% as.numeric()
 
-op \%>\% plot_PCA
+op \%>\% plot_PCA(title="hi there!")
 
 ### Now we can play with layers
 # and for instance build a custom plot
@@ -87,13 +112,33 @@ x \%>\%
 
 # and even continue after this function
 op \%>\% my_plot(~var, axes=c(1, 3)) \%>\%
-    layer_title("hi there!") \%>\%
-    layer_stars()
+    layer_title("hi there!")
+
+# grindr allows (almost nice) tricks like highlighting:
+
+# bp \%>\% .layerize_PCA(~fake) \%>\%
+#   layer_frame \%>\% layer_axes() \%>\%
+#   layer_morphospace_PCA() -> x
+
+# highlight <- function(x, ..., col_F="#CCCCCC", col_T="#FC8D62FF"){
+#  args <- list(...)
+#  x$colors_groups <- c(col_F, col_T)
+#  x$colors_rows <- c(col_F, col_T)[(x$f \%in\% args)+1]
+#  x
+#  }
+# x \%>\% highlight("a", "b") \%>\% layer_points()
 
 # You get the idea.
 }
 \seealso{
-Other grindr: \code{\link{drawers}}, \code{\link{layers}},
-  \code{\link{mosaic_engine}}, \code{\link{papers}},
-  \code{\link{pile}}
+Other grindr: 
+\code{\link{drawers}},
+\code{\link{layers_morphospace}},
+\code{\link{layers}},
+\code{\link{mosaic_engine}()},
+\code{\link{papers}},
+\code{\link{pile}()},
+\code{\link{plot_LDA}()},
+\code{\link{plot_NMDS}()}
 }
+\concept{grindr}

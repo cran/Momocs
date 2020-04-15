@@ -10,10 +10,22 @@ plot_CV2(x, ...)
 
 \method{plot_CV2}{LDA}(x, ...)
 
-\method{plot_CV2}{table}(x, links.FUN = arrows, col = TRUE,
-  col0 = "black", col.breaks = 5, palette = col_heat, lwd = TRUE,
-  lwd0 = 5, gap.dots = 0.2, pch.dots = 20, gap.names = 0.25,
-  cex.names = 1, legend = TRUE, ...)
+\method{plot_CV2}{table}(
+  x,
+  links.FUN = arrows,
+  col = TRUE,
+  col0 = "black",
+  col.breaks = 5,
+  palette = col_heat,
+  lwd = TRUE,
+  lwd0 = 5,
+  gap.dots = 0.2,
+  pch.dots = 20,
+  gap.names = 0.25,
+  cex.names = 1,
+  legend = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{an \link{LDA} object, a table or a squared matrix}
@@ -47,6 +59,10 @@ plot_CV2(x, ...)
 \description{
 Or any contingency/confusion table. A simple graphic representation based on variable
 width and/or color for arrows or segments, based on the relative frequencies.
+}
+\note{
+When \code{freq=FALSE}, the fill colors are not weighted
+within actual classes and should not be displayed if classes sizes are not balanced.
 }
 \examples{
 # Below various table that you can try. We will use the last one for the examples.

@@ -7,7 +7,7 @@
 Opn(x, fac = dplyr::data_frame(), ldk = list())
 }
 \arguments{
-\item{x}{\code{list} of matrices of (x; y) coordinates}
+\item{x}{\code{list} of matrices of (x; y) coordinates, or an array, or a data.frame (and friends)}
 
 \item{fac}{(optionnal) a \code{data.frame} of factors and/or numerics
 specifying the grouping structure}
@@ -40,12 +40,18 @@ plot(op.p, 'domes')
 plot(op.p, 'var')
 # and now an LDA after a PCA
 olda <- LDA(PCA(op), 'var')
-# for CV table
+# for CV table and others
 olda
-plot(olda)
+plot_LDA(olda)
 }
 \seealso{
-Other classes: \code{\link{Coe}}, \code{\link{Coo}},
-  \code{\link{OpnCoe}}, \code{\link{OutCoe}},
-  \code{\link{Out}}, \code{\link{TraCoe}}
+Other classes: 
+\code{\link{Coe}()},
+\code{\link{Coo}()},
+\code{\link{Ldk}()},
+\code{\link{OpnCoe}()},
+\code{\link{OutCoe}()},
+\code{\link{Out}()},
+\code{\link{TraCoe}()}
 }
+\concept{classes}

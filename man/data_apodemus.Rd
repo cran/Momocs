@@ -4,7 +4,9 @@
 \name{apodemus}
 \alias{apodemus}
 \title{Data: Outline coordinates of Apodemus (wood mouse) mandibles}
-\format{A \link{Out} object 64 coordinates of 30 wood molar outlines.}
+\format{
+A \link{Out} object 64 coordinates of 30 wood molar outlines.
+}
 \source{
 Renaud S, Pale JRM, Michaux JR (2003): Adaptive latitudinal trends in
 the mandible shape of \emph{Apodemus} wood mice. \emph{Journal of Biogeography} 30:1617-1628.
@@ -14,11 +16,20 @@ the mandible shape of \emph{Apodemus} wood mice. \emph{Journal of Biogeography} 
 Data: Outline coordinates of Apodemus (wood mouse) mandibles
 }
 \seealso{
-Other datasets: \code{\link{bot}}, \code{\link{chaff}},
-  \code{\link{charring}}, \code{\link{flower}},
-  \code{\link{hearts}}, \code{\link{molars}},
-  \code{\link{mosquito}}, \code{\link{mouse}},
-  \code{\link{nsfishes}}, \code{\link{oak}},
-  \code{\link{olea}}, \code{\link{shapes}},
-  \code{\link{trilo}}, \code{\link{wings}}
+Other datasets: 
+\code{\link{bot}},
+\code{\link{chaff}},
+\code{\link{charring}},
+\code{\link{flower}},
+\code{\link{hearts}},
+\code{\link{molars}},
+\code{\link{mosquito}},
+\code{\link{mouse}},
+\code{\link{nsfishes}},
+\code{\link{oak}},
+\code{\link{olea}},
+\code{\link{shapes}},
+\code{\link{trilo}},
+\code{\link{wings}}
 }
+\concept{datasets}

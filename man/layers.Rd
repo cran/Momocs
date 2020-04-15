@@ -4,11 +4,11 @@
 \alias{layers}
 \alias{layer_frame}
 \alias{layer_axes}
+\alias{layer_ticks}
 \alias{layer_grid}
 \alias{layer_box}
 \alias{layer_fullframe}
 \alias{layer_points}
-\alias{layer_morphospace}
 \alias{layer_ellipses}
 \alias{layer_ellipsesfilled}
 \alias{layer_ellipsesaxes}
@@ -20,6 +20,8 @@
 \alias{layer_labelpoints}
 \alias{layer_labelgroups}
 \alias{layer_rug}
+\alias{layer_histogram_2}
+\alias{layer_density_2}
 \alias{layer_title}
 \alias{layer_axesnames}
 \alias{layer_eigen}
@@ -31,6 +33,8 @@ layer_frame(x, center_origin = TRUE, zoom = 0.9)
 
 layer_axes(x, col = "#999999", lwd = 1/2, ...)
 
+layer_ticks(x, col = "#333333", cex = 3/4, lwd = 3/4, ...)
+
 layer_grid(x, col = "#999999", lty = 3, grid = 3, ...)
 
 layer_box(x, border = "#e5e5e5", ...)
@@ -38,11 +42,6 @@ layer_box(x, border = "#e5e5e5", ...)
 layer_fullframe(x, ...)
 
 layer_points(x, pch = 20, cex = 4/log1p(nrow(x$xy)), transp = 0, ...)
-
-layer_morphospace(x, position = c("range", "full", "circle", "xy",
-  "range_axes", "full_axes")[1], nb = 12, nr = 6, nc = 5, rotate = 0,
-  size = 0.9, col = "#999999", flipx = FALSE, flipy = FALSE,
-  draw = TRUE, ...)
 
 layer_ellipses(x, conf = 0.5, lwd = 1, alpha = 0, ...)
 
@@ -58,16 +57,41 @@ layer_stars(x, alpha = 0.5, ...)
 
 layer_delaunay(x, ...)
 
-layer_density(x, levels_density = 20, levels_contour = 4, alpha = 1/3,
-  n = 200, density = TRUE, contour = TRUE)
+layer_density(
+  x,
+  levels_density = 20,
+  levels_contour = 4,
+  alpha = 1/3,
+  n = 200,
+  density = TRUE,
+  contour = TRUE
+)
 
-layer_labelpoints(x, col = par("fg"), cex = 2/3, font = 1,
-  abbreviate = FALSE, ...)
+layer_labelpoints(
+  x,
+  col = par("fg"),
+  cex = 2/3,
+  font = 1,
+  abbreviate = FALSE,
+  ...
+)
 
-layer_labelgroups(x, col = par("fg"), cex = 3/4, font = 2, rect = TRUE,
-  alpha = 1/4, abbreviate = FALSE, ...)
+layer_labelgroups(
+  x,
+  col = par("fg"),
+  cex = 3/4,
+  font = 2,
+  rect = TRUE,
+  alpha = 1/4,
+  abbreviate = FALSE,
+  ...
+)
 
 layer_rug(x, size = 1/200, ...)
+
+layer_histogram_2(x, freq = FALSE, breaks, split = FALSE, transp = 0)
+
+layer_density_2(x, bw, split = FALSE, rug = TRUE, transp = 0)
 
 layer_title(x, title = "", cex = 3/4, ...)
 
@@ -92,6 +116,8 @@ layer_legend(x, probs = seq(0, 1, 0.25), cex = 3/4, ...)
 
 \item{...}{additional options to feed core functions for each layer}
 
+\item{cex}{to use for drawing components}
+
 \item{lty}{linetype for drawing components}
 
 \item{grid}{\code{numeric} number of grid to draw}
@@ -100,29 +126,7 @@ layer_legend(x, probs = seq(0, 1, 0.25), cex = 3/4, ...)
 
 \item{pch}{to use for drawing components}
 
-\item{cex}{to use for drawing components}
-
 \item{transp}{transparency to use (min: 0 defaut:0 max:1)}
-
-\item{position}{one of \code{range, full, circle,
-xy, range_axes, full_axes)} to feed \link{morphospace_positions} (default \code{range})}
-
-\item{nb}{\code{numeric} total number of shapes when \code{position="circle"} (default \code{12})}
-
-\item{nr}{\code{numeric} number of rows to position shapes (default \code{6})}
-
-\item{nc}{\code{numeric} number of columns to position shapes (default \code{5})}
-
-\item{rotate}{\code{numeric} angle (in radians) to rotate shapes
-when displayed on the morphospace (default \code{0})}
-
-\item{size}{\code{numeric} size to use to feed \link{coo_template} (default \code{0.9})}
-
-\item{flipx}{\code{logical} whether to flip shapes against the x-axis (default \code{FALSE})}
-
-\item{flipy}{\code{logical} whether to flip shapes against the y-axis (default \code{FALSE})}
-
-\item{draw}{\code{logical} whether to draw shapes (default \code{TRUE})}
 
 \item{conf}{\code{numeric} between 0 and 1 for confidence ellipses}
 
@@ -144,6 +148,18 @@ when displayed on the morphospace (default \code{0})}
 
 \item{rect}{\code{logical} whether to draw a rectangle below names}
 
+\item{size}{\code{numeric} as a fraction of graphical window (default: \code{1/200})}
+
+\item{freq}{\code{logical}to feed\verb{[hist] (default:}FALSE`)}
+
+\item{breaks}{to feed \link{hist} (default: calculated on the pooled values)}
+
+\item{split}{\code{logical} whether to split the two distributions into two plots}
+
+\item{bw}{to feed \link{density} (default: \link[stats:bw.nrd0]{stats::bw.nrd0})}
+
+\item{rug}{\code{logical} whether to add \link{rug} (default: \code{TRUE})}
+
 \item{title}{to add to the plot (default \code{""})}
 
 \item{name}{to use on axes (default \code{"Axis"})}
@@ -160,7 +176,14 @@ mutivariate plots using the cheapbabi approach. See examples.
 \seealso{
 grindr_drawers
 
-Other grindr: \code{\link{drawers}},
-  \code{\link{mosaic_engine}}, \code{\link{papers}},
-  \code{\link{pile}}, \code{\link{plot_PCA}}
+Other grindr: 
+\code{\link{drawers}},
+\code{\link{layers_morphospace}},
+\code{\link{mosaic_engine}()},
+\code{\link{papers}},
+\code{\link{pile}()},
+\code{\link{plot_LDA}()},
+\code{\link{plot_NMDS}()},
+\code{\link{plot_PCA}()}
 }
+\concept{grindr}

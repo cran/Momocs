@@ -18,7 +18,9 @@ a Momocs object of the same class.
 Return shapes with matching conditions, from the \code{$fac}. See examples and \code{?dplyr::filter}.
 }
 \details{
-dplyr verbs are maintained.
+dplyr verbs are maintained. You should probbaly not filter on PCA objects.
+The latter are calculated using all individuals and filtering may lead to false conclusions.
+If you want to highlith some individuals, see examples in \link{plot_PCA}.
 }
 \examples{
 olea
@@ -30,12 +32,24 @@ filter(olea, view=="VD", var \%in\% c("Aglan", "PicMa"))
 olea \%>\% mutate(id=1:length(olea)) \%>\% filter(id > 120)
 }
 \seealso{
-Other handling functions: \code{\link{arrange}},
-  \code{\link{at_least}}, \code{\link{chop}},
-  \code{\link{combine}}, \code{\link{dissolve}},
-  \code{\link{fac_dispatcher}}, \code{\link{mutate}},
-  \code{\link{rescale}}, \code{\link{rm_harm}},
-  \code{\link{rm_uncomplete}}, \code{\link{rw_fac}},
-  \code{\link{sample_frac}}, \code{\link{sample_n}},
-  \code{\link{select}}, \code{\link{slice}}
+Other handling functions: 
+\code{\link{arrange}()},
+\code{\link{at_least}()},
+\code{\link{chop}()},
+\code{\link{combine}()},
+\code{\link{dissolve}()},
+\code{\link{fac_dispatcher}()},
+\code{\link{mutate}()},
+\code{\link{rename}()},
+\code{\link{rescale}()},
+\code{\link{rm_harm}()},
+\code{\link{rm_missing}()},
+\code{\link{rm_uncomplete}()},
+\code{\link{rw_fac}()},
+\code{\link{sample_frac}()},
+\code{\link{sample_n}()},
+\code{\link{select}()},
+\code{\link{slice}()},
+\code{\link{subsetize}()}
 }
+\concept{handling functions}

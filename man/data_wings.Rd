@@ -4,7 +4,9 @@
 \name{wings}
 \alias{wings}
 \title{Data: Landmarks coordinates of mosquito wings}
-\format{A \link{Ldk} object containing 18 (x; y) landmarks  from 127 mosquito wings, from}
+\format{
+A \link{Ldk} object containing 18 (x; y) landmarks  from 127 mosquito wings, from
+}
 \source{
 Rohlf and Slice 1990 and \url{http://life.bio.sunysb.edu/morph/data/RohlfSlice1990Mosq.nts}
 }
@@ -12,11 +14,20 @@ Rohlf and Slice 1990 and \url{http://life.bio.sunysb.edu/morph/data/RohlfSlice19
 Data: Landmarks coordinates of mosquito wings
 }
 \seealso{
-Other datasets: \code{\link{apodemus}}, \code{\link{bot}},
-  \code{\link{chaff}}, \code{\link{charring}},
-  \code{\link{flower}}, \code{\link{hearts}},
-  \code{\link{molars}}, \code{\link{mosquito}},
-  \code{\link{mouse}}, \code{\link{nsfishes}},
-  \code{\link{oak}}, \code{\link{olea}},
-  \code{\link{shapes}}, \code{\link{trilo}}
+Other datasets: 
+\code{\link{apodemus}},
+\code{\link{bot}},
+\code{\link{chaff}},
+\code{\link{charring}},
+\code{\link{flower}},
+\code{\link{hearts}},
+\code{\link{molars}},
+\code{\link{mosquito}},
+\code{\link{mouse}},
+\code{\link{nsfishes}},
+\code{\link{oak}},
+\code{\link{olea}},
+\code{\link{shapes}},
+\code{\link{trilo}}
 }
+\concept{datasets}

@@ -35,7 +35,7 @@ and with every individual including its belonging levels, e.g.:
 from it that can be passed to \link{Out}, {Opn}, {Ldk} objects.
 }
 \details{
-The number of groups must be consistent accross filenames.
+The number of groups must be consistent across filenames.
 }
 \note{
 This is, to my view, a good practice to 'store' the grouping structure
@@ -52,5 +52,7 @@ will be fully operationnal.
 \link{import_jpg1}, \link{import_Conte}, \link{import_txt}, \link{lf_structure}.
 See also Momocs' vignettes for data import.
 
-Other babel functions: \code{\link{tie_jpg_txt}}
+Other babel functions: 
+\code{\link{tie_jpg_txt}()}
 }
+\concept{babel functions}

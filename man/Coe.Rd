@@ -69,7 +69,13 @@ wp$coe # Procrustes aligned coordinates
 
 }
 \seealso{
-Other classes: \code{\link{Coo}}, \code{\link{OpnCoe}},
-  \code{\link{Opn}}, \code{\link{OutCoe}},
-  \code{\link{Out}}, \code{\link{TraCoe}}
+Other classes: 
+\code{\link{Coo}()},
+\code{\link{Ldk}()},
+\code{\link{OpnCoe}()},
+\code{\link{Opn}()},
+\code{\link{OutCoe}()},
+\code{\link{Out}()},
+\code{\link{TraCoe}()}
 }
+\concept{classes}

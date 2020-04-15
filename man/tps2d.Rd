@@ -12,15 +12,14 @@ tps_apply(fr, to, new)
 \arguments{
 \item{grid0}{a matrix of coordinates on which to calculate deformations}
 
-\item{fr}{the reference \eqn{(x; y)} coordinates}
+\item{fr}{the reference shape}
 
-\item{to}{the target \eqn{(x; y)} coordinates}
+\item{to}{the target shape}
 
-\item{new}{the target coordinates (again)}
+\item{new}{the shape on which to apply the \code{shp1->shp2} calibrated tps trasnformation}
 }
 \value{
-a matrix of \code{(x; y)} coordinates with TPS-interpolated
-deformations
+a shape.
 }
 \description{
 \code{tps2d} is the core function for Thin Plate Splines. It is used internally for
@@ -28,8 +27,28 @@ all TPS graphical functions.\code{tps_apply} is the very same function but with
 arguments properly named (I maintain tps2d as it is for historical reasons) when
 we want a apply a trasnformation grid.
 }
-\seealso{
-Other thin plate splines: \code{\link{tps_arr}},
-  \code{\link{tps_grid}}, \code{\link{tps_iso}},
-  \code{\link{tps_raw}}
+\examples{
+
+shapes <- shapes \%>\%
+ coo_scale() \%>\% coo_center() \%>\%
+ coo_slidedirection("up") \%>\%
+ coo_sample(64)
+
+leaf1 <- shapes[14]
+leaf2 <- shapes[15]
+
+# tps grid on the two leafs2
+tps_grid(leaf1, leaf2)
+# apply the (leaf1 -> leaf2) tps trasnformation  onto leaf1
+# (that thus get closer to leaf2)
+tps_apply(leaf1, leaf2, leaf1) \%>\% coo_draw(bor="purple")
+
 }
+\seealso{
+Other thin plate splines: 
+\code{\link{tps_arr}()},
+\code{\link{tps_grid}()},
+\code{\link{tps_iso}()},
+\code{\link{tps_raw}()}
+}
+\concept{thin plate splines}

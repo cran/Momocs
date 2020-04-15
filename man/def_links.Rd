@@ -13,16 +13,19 @@ def_links(x, nb.ldk)
 user click on the top of the graphical window.}
 }
 \description{
-Works on Ldk objects, on 2-cols matrices, 3-dim arrays (mshapes turns it into a matrix).
+Works on Ldk objects, on 2-cols matrices, 3-dim arrays (\link{MSHAPES} turns it into a matrix).
 }
 \examples{
 \dontrun{
-wm <- mshapes(wings)
+wm <- MSHAPES(wings)
 links <- def_links(wm, 3) # click to define pairs of landmarks
 ldk_links(wm, links)
 }
 }
 \seealso{
-Other ldk helpers: \code{\link{ldk_check}},
-  \code{\link{links_all}}, \code{\link{links_delaunay}}
+Other ldk helpers: 
+\code{\link{ldk_check}()},
+\code{\link{links_all}()},
+\code{\link{links_delaunay}()}
 }
+\concept{ldk helpers}

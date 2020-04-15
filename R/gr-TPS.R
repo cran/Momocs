@@ -9,13 +9,29 @@
 #' we want a apply a trasnformation grid.
 #'
 #' @param grid0 a matrix of coordinates on which to calculate deformations
-#' @param fr the reference \eqn{(x; y)} coordinates
-#' @param to the target \eqn{(x; y)} coordinates
-#' @param new the target coordinates (again)
-#' @return a matrix of \code{(x; y)} coordinates with TPS-interpolated
-#' deformations
+#' @param fr the reference shape
+#' @param to the target shape
+#' @param new the shape on which to apply the `shp1->shp2` calibrated tps trasnformation
+#' @return a shape.
 #' @rdname tps2d
 #' @family thin plate splines
+#' @examples
+# some toy data
+#'
+#'shapes <- shapes %>%
+#'  coo_scale() %>% coo_center() %>%
+#'  coo_slidedirection("up") %>%
+#'  coo_sample(64)
+#'
+#'leaf1 <- shapes[14]
+#'leaf2 <- shapes[15]
+#'
+#'# tps grid on the two leafs2
+#'tps_grid(leaf1, leaf2)
+#'# apply the (leaf1 -> leaf2) tps trasnformation  onto leaf1
+#'# (that thus get closer to leaf2)
+#'tps_apply(leaf1, leaf2, leaf1) %>% coo_draw(bor="purple")
+#'
 #' @export
 tps2d <- function(grid0, fr, to) {
   if (coo_is_closed(fr))
@@ -24,6 +40,8 @@ tps2d <- function(grid0, fr, to) {
     to <- coo_unclose(to)
   if (!is.matrix(grid0))
     grid0 <- as.matrix(grid0)
+  .check(nrow(fr)==nrow(to),
+         "shapes must have the same number of points")
   p <- nrow(fr)
   q <- nrow(grid0)
   P <- matrix(NA, p, p)
@@ -79,7 +97,7 @@ tps_apply <- function(fr, to, new){
 #' @family thin plate splines
 #' @examples
 #' \dontrun{
-#' ms <- mshapes(efourier(bot, 10), "type")
+#' ms <- MSHAPES(efourier(bot, 10), "type")
 #' b <- ms$shp$beer
 #' w <- ms$shp$whisky
 #' g <- tps_raw(b, w)
@@ -134,7 +152,7 @@ tps_raw <- function(fr, to, amp = 1,
 #' @family thin plate splines
 #' @examples
 #' botF <- efourier(bot)
-#' x <- mshapes(botF, 'type', nb.pts=80)$shp
+#' x <- MSHAPES(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
 #' to <- x$whisky
 #' tps_grid(fr, to, amp=3, grid.size=10)
@@ -217,7 +235,7 @@ tps_grid <- function(fr, to, amp = 1,
 #' @family thin plate splines
 #' @examples
 #' botF <- efourier(bot)
-#' x <- mshapes(botF, 'type', nb.pts=80)$shp
+#' x <- MSHAPES(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
 #' to <- x$whisky
 #' tps_arr(fr, to, arr.nb=200, palette=col_sari, amp=3)
@@ -308,7 +326,7 @@ tps_arr <- function(fr, to, amp = 1,
 #' @family thin plate splines
 #' @examples
 #' botF <- efourier(bot)
-#' x <- mshapes(botF, 'type', nb.pts=80)$shp
+#' x <- MSHAPES(botF, 'type', nb.pts=80)$shp
 #' fr <- x$beer
 #' to <- x$whisky
 #' tps_iso(fr, to, iso.nb=200, amp=3)

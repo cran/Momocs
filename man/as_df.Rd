@@ -4,45 +4,56 @@
 \alias{as_df}
 \alias{as_df.Coo}
 \alias{as_df.Coe}
-\alias{as_df.TraCoe}
 \alias{as_df.PCA}
 \alias{as_df.LDA}
-\title{Converts Momocs objects to data.frames}
+\title{Turn Momocs objects into tydy data_frames}
 \usage{
-as_df(x)
+as_df(x, ...)
 
-\method{as_df}{Coo}(x)
+\method{as_df}{Coo}(x, ...)
 
-\method{as_df}{Coe}(x)
+\method{as_df}{Coe}(x, ...)
 
-\method{as_df}{TraCoe}(x)
+\method{as_df}{PCA}(x, retain, ...)
 
-\method{as_df}{PCA}(x)
-
-\method{as_df}{LDA}(x)
+\method{as_df}{LDA}(x, retain, ...)
 }
 \arguments{
 \item{x}{an object, typically a Momocs object}
+
+\item{...}{useless here}
+
+\item{retain}{numeric for use with \link{scree} methods. Defaut to all. If \verb{<1},
+enough axes to retain this proportion of variance; if \verb{>1}, this number of axes.}
 }
 \value{
-a \code{data.frame}
+a \link[dplyr:data_frame]{dplyr::data_frame}
 }
 \description{
 Used in particular for compatibility with the \code{tidyverse}
 }
 \examples{
-# smaller Out
-lite_bot <- bot \%>\% slice(c(1, 2, 21, 22)) \%>\% coo_sample(12)
+# first, some (baby) objects
+b <- bot \%>\% coo_sample(12)
+bf <- b \%>\% efourier(5, norm=TRUE)
 # Coo object
-lite_bot \%>\% as_df \%>\% head
+b \%>\% as_df
 # Coe object
-lite_bot \%>\% efourier(2) \%>\% as_df \%>\% head
+bf \%>\% as_df
+
 # PCA object
-lite_bot \%>\% efourier(2) \%>\% PCA \%>\% as_df \%>\% head
+bf \%>\% PCA \%>\% as_df     # all PCs by default
+bf \%>\% PCA \%>\% as_df(2) # or 2
+bf \%>\% PCA \%>\% as_df(0.99) # or enough for 99\%
+
 # LDA object
-lite_bot \%>\% efourier(2) \%>\% PCA \%>\% LDA(~type) \%>\% as_df \%>\% head
+bf \%>\% LDA(~fake) \%>\% as_df
+# same options apply
 }
 \seealso{
-Other bridges functions: \code{\link{bridges}},
-  \code{\link{complex}}, \code{\link{export}}
+Other bridges functions: 
+\code{\link{bridges}},
+\code{\link{complex}},
+\code{\link{export}()}
 }
+\concept{bridges functions}

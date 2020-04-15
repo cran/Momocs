@@ -88,8 +88,8 @@ dfourier.default <- function(coo, nb.h) {
 #' @export
 dfourier.Opn <- function(coo, nb.h) {
   Opn <- coo
-  # validates
-  Opn %<>% validate()
+  # verify
+  Opn %<>% verify()
   # we set nb.h if missing
   if (missing(nb.h)) {
     nb.h <- 12
@@ -124,6 +124,12 @@ dfourier.Opn <- function(coo, nb.h) {
                 baseline2 = Opn$baseline2)
   res$cuts <- ncol(res$coe)
   return(res)
+}
+
+#' @rdname dfourier
+#' @export
+dfourier.list <- function(coo, nb.h){
+  lapply(coo, dfourier, nb.h)
 }
 
 #' @rdname dfourier
@@ -227,7 +233,7 @@ dfourier_shape <- function(A, B, nb.h, nb.pts = 60, alpha = 2, plot = TRUE) {
     A <- runif(nb.h, -pi, pi)/(1:nb.h)^alpha
   if (missing(B))
     B <- runif(nb.h, -pi, pi)/(1:nb.h)^alpha
-  df <- list(A = A, B = B)
+  df <- list(an = A, bn = B)
   shp <- dfourier_i(df, nb.pts = nb.pts)
   if (plot)
     coo_plot(shp)

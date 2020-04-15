@@ -15,6 +15,7 @@
 #' @param points \code{logical}. Whether to display points. If missing and
 #' number of points is < 100, then points are plotted.
 #' @param first.point \code{logical} whether to plot or not the first point.
+#' @param cex.first.point \code{numeric} size of this first point
 #' @param centroid \code{logical}. Whether to display centroid.
 #' @param xy.axis \code{logical}. Whether to draw the xy axis.
 #' @param pch The \code{pch} for points.
@@ -41,14 +42,9 @@
 #' @aliases coo_plot
 #' @rdname coo_plot
 #' @export
-coo_plot <- function(coo, ...) {
-  UseMethod("coo_plot")
-}
-
-#' @rdname coo_plot
-#' @export
-coo_plot.default <- function(coo, xlim, ylim, border = "#333333",
-                             col = NA, lwd = 1, lty = 1, points = FALSE, first.point = TRUE,
+coo_plot <- function(coo, xlim, ylim, border = "#333333",
+                             col = NA, lwd = 1, lty = 1, points = FALSE,
+                             first.point = TRUE, cex.first.point=0.5,
                              centroid = TRUE, xy.axis = TRUE, pch = 1, cex = 0.5, main = NA,
                              poly = TRUE, plot.new = TRUE, plot = TRUE, zoom = 1, ...) {
   # todo zoom
@@ -108,7 +104,7 @@ coo_plot.default <- function(coo, xlim, ylim, border = "#333333",
     }
     if (first.point) {
       angle <- atan2(coo[2, 2] - coo[1, 2], coo[2, 1] - coo[1, 1]) * (180 / pi) - 90
-      text(coo[1, 1], coo[1, 2], labels = "^", cex=0.5, srt=angle)
+      text(coo[1, 1], coo[1, 2], labels = "^", cex=cex.first.point, srt=angle)
     }
     if (centroid) {
       cent <- coo_centpos(coo)
@@ -220,11 +216,11 @@ coo_arrows <- function(coo1, coo2,
 #' @return nothing
 #' @family plotting functions
 #' @examples
-#' ms <- mshapes(efourier(bot , 10), "type")
+#' ms <- MSHAPES(efourier(bot , 10), "type")
 #' b <- ms$shp$beer
 #' w <- ms$shp$whisky
 #' # we obtain the mean shape, then euclidean distances between points
-#' m <- mshapes(list(b, w))
+#' m <- MSHAPES(list(b, w))
 #' d <- edm(b, w)
 #' # First plot
 #' coo_plot(m, plot=FALSE)
@@ -413,7 +409,7 @@ ldk_links <- function(ldk, links, ...) {
 #' @param ax logical whether to draw ellipses axes
 #' @param ax.lty an lty for ellipses axes
 #' @examples
-#' coo_plot(mshapes(wings))
+#' coo_plot(MSHAPES(wings))
 #' ldk_confell(wings$coo)
 #' @family plotting functions
 #' @family ldk plotters
@@ -448,7 +444,7 @@ ldk_confell <- function(ldk, conf = 0.5, col = "grey40", ell.lty = 1,
 #' @param col a color for drawing the contour lines
 #' @seealso \link{kde2d}, \link{ldk_confell}, \link{ldk_chull}
 #' @examples
-#' coo_plot(mshapes(wings))
+#' coo_plot(MSHAPES(wings))
 #' ldk_contour(wings$coo)
 #' @family plotting functions
 #' @family ldk plotters
@@ -474,7 +470,7 @@ ldk_contour <- function(ldk, nlevels = 5, grid.nb = 50, col = "grey60") {
 #' @param lty an lty for drawing the convex hulls
 #' @seealso \link{coo_chull}, \link{chull}, \link{ldk_confell}, \link{ldk_contour}
 #' @examples
-#' coo_plot(mshapes(wings))
+#' coo_plot(MSHAPES(wings))
 #' ldk_chull(wings$coo)
 #' @family plotting functions
 #' @family ldk plotters

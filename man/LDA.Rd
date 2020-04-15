@@ -13,7 +13,7 @@ LDA(x, fac, retain, ...)
 \method{LDA}{PCA}(x, fac, retain = 0.99, ...)
 }
 \arguments{
-\item{x}{a  PCA object}
+\item{x}{a  Coe or a PCA object}
 
 \item{fac}{the grouping factor (names of one of the $fac column or column id)}
 
@@ -53,17 +53,22 @@ bot.p <- PCA(bot.f)
 LDA(bot.p, 'type', retain=0.99) # retains 0.99 of the total variance
 LDA(bot.p, 'type', retain=5) # retain 5 axis
 bot.l <- LDA(bot.p, 'type', retain=0.99)
-bot.l
-plot(bot.l)
-bot.f$fac$plop <- factor(rep(letters[1:4], each=10))
+plot_LDA(bot.l)
+bot.f <- mutate(bot.f, plop=factor(rep(letters[1:4], each=10)))
 bot.l <- LDA(PCA(bot.f), 'plop')
-bot.l
-plot(bot.l)
+plot_LDA(bot.l) # will replace the former soon
 }
 \seealso{
-Other multivariate: \code{\link{CLUST}},
-  \code{\link{KMEANS}}, \code{\link{MANOVA_PW}},
-  \code{\link{MANOVA}}, \code{\link{PCA}},
-  \code{\link{classification_metrics}},
-  \code{\link{mshapes}}
+Other multivariate: 
+\code{\link{CLUST}()},
+\code{\link{KMEANS}()},
+\code{\link{KMEDOIDS}()},
+\code{\link{MANOVA_PW}()},
+\code{\link{MANOVA}()},
+\code{\link{MDS}()},
+\code{\link{MSHAPES}()},
+\code{\link{NMDS}()},
+\code{\link{PCA}()},
+\code{\link{classification_metrics}()}
 }
+\concept{multivariate}

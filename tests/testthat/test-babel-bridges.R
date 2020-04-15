@@ -4,7 +4,7 @@ test_that("unary bridges work fine", {
   expect_true(bot[1] %>% m2l %>% is.list())
   expect_true(bot[1] %>% m2l %>% l2m() %>% is.matrix())
   expect_equal(wings$coo %>% l2a %>%  dim %>% length, 3)
-  expect_true(wings$coo %>% l2a %>%  a2l %>% Ldk() %>% validate() %>% is_Ldk())
+  expect_true(wings$coo %>% l2a %>%  a2l %>% Ldk() %>% verify() %>% is_Ldk())
 })
 
 
@@ -69,5 +69,3 @@ test_that("as_df converts all classes to data.frames", {
   flower$fac <- data.frame()
   expect_true(is.data.frame(flower %>% as_df))
 })
-
-

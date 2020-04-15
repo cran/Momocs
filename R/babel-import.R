@@ -181,7 +181,7 @@ import_Conte <- function(img, x) {
 import_jpg1 <- function(jpg.path,
                         auto.notcentered = TRUE,
                         fun.notcentered = NULL,
-                        threshold = 0.5) {
+                        threshold = 0.5, ...) {
   img <- jpeg::readJPEG(jpg.path)
   # if a RVB is provided by the way, apply (img, 1:2, mean) is
   # much slower
@@ -868,9 +868,9 @@ chc2pix <- function(chc) {
 #'
 # #' @export
 # bind_db.Coo <- function(x, fac_col="id", db, db_col="id", ...){
-#   # checks a bit on x if its a Coo (waiting for validate.Coe todo)
+#   # checks a bit on x if its a Coo (waiting for verify.Coe todo)
 #   if (is_Coo(x))
-#     x <- validate(x)
+#     x <- verify(x)
 #   .check(!missing(db),
 #          "db must be provided")
 #   # if db is provided as a path
@@ -915,7 +915,7 @@ chc2pix <- function(chc) {
 #' \item \code{002_speciesI_siteA_ind2_lateralview} } etc., this function returns a \link{data.frame}
 #' from it that can be passed to \link{Out}, {Opn}, {Ldk} objects.
 #'
-#' The number of groups must be consistent accross filenames.
+#' The number of groups must be consistent across filenames.
 #' @param lf a list (its names are used, except if it is a list from \link{import_tps}
 #' in this case \code{names(lf$coo)} is used) of a list of filenames, as characters, typically such as
 #' those obtained with \link{list.files}. Alternatively, a path to a folder
@@ -995,15 +995,19 @@ lf_structure <- function(lf, names = character(), split = "_",
 #' Given a list of files (lf) that includes matching filenames with .jpg (black masks)
 #' and .txt (landmark positions on them as .txt), returns an Out with $ldk defined.
 #' Typically be useful if you use ImageJ to define landmarks on your outlines.
+#'
 #' @param lf a list of filenames
 #' @note Not optimized (images are read twice). Please do not hesitate to contact me
 #' should you have a particular case or need something.
 #' @family babel functions
 #' @export
 tie_jpg_txt <- function(lf){
-  tbl <- table(.trim.ext(.trim.path(lf)))
-  if ((length(unique(tbl)) != 1) | (unique(tbl) !=2))
-    stop("mismatches in filenames", which(tbl!=2))
+
+  # check pairs
+  mismatches <- lf %>% .trim.both() %>%
+    table %>% `!=`(2) %>% which
+  if (length(mismatches)>0)
+    stop("* mismatches found between .jpg and .txt filenames: ", names(mismatches))
 
   # we retrieve the list of .txt et.jpg
   out.lf <- lf[grep(".jpg", lf)]

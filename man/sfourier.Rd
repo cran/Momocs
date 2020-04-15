@@ -4,6 +4,7 @@
 \alias{sfourier}
 \alias{sfourier.default}
 \alias{sfourier.Out}
+\alias{sfourier.list}
 \title{Radii variation Fourier transform (equally spaced curvilinear abscissa)}
 \usage{
 sfourier(x, nb.h)
@@ -11,6 +12,8 @@ sfourier(x, nb.h)
 \method{sfourier}{default}(x, nb.h)
 
 \method{sfourier}{Out}(x, nb.h)
+
+\method{sfourier}{list}(x, nb.h)
 }
 \arguments{
 \item{x}{A \code{list} or \code{matrix} of coordinates or an \code{Out} object}
@@ -48,6 +51,8 @@ Renaud S, Michaux JR (2003): Adaptive latitudinal trends in the mandible shape
 of \emph{Apodemus} wood mice. \emph{J Biogeogr} 30:1617-1628.
 }
 \seealso{
-Other sfourier: \code{\link{sfourier_i}},
-  \code{\link{sfourier_shape}}
+Other sfourier: 
+\code{\link{sfourier_i}()},
+\code{\link{sfourier_shape}()}
 }
+\concept{sfourier}

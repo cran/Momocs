@@ -104,8 +104,8 @@ tfourier.default <- function(x, nb.h, smooth.it = 0, norm = FALSE, ...) {
 #' @export
 tfourier.Out <- function(x, nb.h = 40, smooth.it = 0, norm = TRUE, ...) {
   Out <- x
-  # validates
-  Out %<>% validate()
+  # verify
+  Out %<>% verify()
   q <- floor(min(sapply(Out$coo, nrow)/2))
   if (missing(nb.h)) {
     nb.h <- calibrate_harmonicpower_tfourier(Out,
@@ -131,6 +131,12 @@ tfourier.Out <- function(x, nb.h = 40, smooth.it = 0, norm = TRUE, ...) {
   res <- OutCoe(coe = coe, fac = Out$fac, method = "tfourier",norm = norm)
   res$cuts <- ncol(res$coe)
   return(res)
+}
+
+#' @rdname tfourier
+#' @export
+tfourier.list <- function(x, ...){
+  lapply(x, tfourier, ...)
 }
 
 #' Inverse tangent angle Fourier transform

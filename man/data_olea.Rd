@@ -4,7 +4,9 @@
 \name{olea}
 \alias{olea}
 \title{Data: Outline coordinates of olive seeds open outlines.}
-\format{An \link{Opn} object with the outline coordinates of olive seeds.}
+\format{
+An \link{Opn} object with the outline coordinates of olive seeds.
+}
 \source{
 We thank Jean-Frederic Terral and Sarah Ivorra (UMR CBAE, Montpellier, France)
 from allowing us to share the data.
@@ -20,11 +22,20 @@ archaeological material. \emph{Journal of Biogeography} \bold{31}: 63-77.
 Data: Outline coordinates of olive seeds open outlines.
 }
 \seealso{
-Other datasets: \code{\link{apodemus}}, \code{\link{bot}},
-  \code{\link{chaff}}, \code{\link{charring}},
-  \code{\link{flower}}, \code{\link{hearts}},
-  \code{\link{molars}}, \code{\link{mosquito}},
-  \code{\link{mouse}}, \code{\link{nsfishes}},
-  \code{\link{oak}}, \code{\link{shapes}},
-  \code{\link{trilo}}, \code{\link{wings}}
+Other datasets: 
+\code{\link{apodemus}},
+\code{\link{bot}},
+\code{\link{chaff}},
+\code{\link{charring}},
+\code{\link{flower}},
+\code{\link{hearts}},
+\code{\link{molars}},
+\code{\link{mosquito}},
+\code{\link{mouse}},
+\code{\link{nsfishes}},
+\code{\link{oak}},
+\code{\link{shapes}},
+\code{\link{trilo}},
+\code{\link{wings}}
 }
+\concept{datasets}

@@ -139,7 +139,7 @@ fgProcrustes.default <- function(x, tol = 1e-05,  coo=NULL) {
   for (i in 1:n) {
     temp1[, , i] <- fProcrustes(temp1[, , i], M)$coo1
   }
-  M <- mshapes(temp1)
+  M <- MSHAPES(temp1)
   Qm1 <- dist(t(matrix(temp1, k * p, n)))
   Qd <- Qi <- Q <- sum(Qm1)
   # we initialize the counter
@@ -160,14 +160,14 @@ fgProcrustes.default <- function(x, tol = 1e-05,  coo=NULL) {
       beta <- sum(Delt)
       temp1[, , i] <- X <- sc[i] * Z1 %*% phi
     }
-    M <- mshapes(temp1)
+    M <- MSHAPES(temp1)
     for (i in 1:n) {
       sf[i] <- sqrt(
         sum(diag(temp1[, , i] %*% t(M))) / (sum(diag(M %*% t(M))) *
                                               sum(diag(temp1[, , i] %*% t(temp1[, , i])))))
       temp2[, , i] <- sf[i] * temp1[, , i]
     }
-    M <- mshapes(temp2)
+    M <- MSHAPES(temp2)
     sc <- sf * sc
     Qm2 <- dist(t(matrix(temp2, k * p, n)))
     Qd[iter] <- Q <- sum(Qm1) - sum(Qm2)
@@ -175,7 +175,7 @@ fgProcrustes.default <- function(x, tol = 1e-05,  coo=NULL) {
     Qi[iter] <- sum(Qm2)
     iter <- iter + 1
     if (.is_verbose()) {
-      message("iteration: ", iter, "\tgain:", signif(abs(Q), 5))
+      cat("iteration: ", iter, "\tgain:", signif(abs(Q), 5), "\n")
     }
     temp1 <- temp2
   } # end of the big loop
@@ -183,13 +183,13 @@ fgProcrustes.default <- function(x, tol = 1e-05,  coo=NULL) {
        iterationnumber = iter, Q = Q, Qi = Qi,
        Qd = Qd,
        intereuclidean.dist = Qm2,
-       mshape = coo_centsize(mshapes(temp2)),
+       mshape = coo_centsize(MSHAPES(temp2)),
        cent.size = Siz)
 }
 
 #' @export
 fgProcrustes.Out <- function(x, tol = 1e-10, coo=FALSE) {
-  Coo <- validate(x)
+  Coo <- verify(x)
   # if no $ldk defined, we convert Out into a Ldk and then
   # perform the fgProcrustes and return back an Out object.
   if (coo | (length(Coo$ldk) == 0)) {
@@ -275,6 +275,11 @@ fgProcrustes.Ldk <- function(x, tol = 1e-10, coo=NULL) {
   return(Coo2)
 }
 
+#' @export
+fgProcrustes.list <- function(x, ...){
+  x %>% Ldk %>% fgProcrustes(...) %$% coo
+}
+
 # fgsProcrustes-----------------
 #' Full Generalized Procrustes alignment between shapes with sliding landmarks
 #'
@@ -302,7 +307,7 @@ fgsProcrustes.default <- function(x){
 
 #' @export
 fgsProcrustes.Ldk <- function(x){
-  x2 <- x <- validate(x)
+  x2 <- x <- verify(x)
   .check(is_slidings(x),
         "no slidings defined")
   g <- geomorph::gpagen(A=l2a(x$coo),
@@ -316,4 +321,8 @@ fgsProcrustes.Ldk <- function(x){
   return(x2)
 }
 
+#' @export
+fgsProcrustes.list <- function(x, ...){
+  lapply(x, fgsProcrustes, ...)
+}
 ##### end Procrustes

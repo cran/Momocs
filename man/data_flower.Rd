@@ -4,9 +4,11 @@
 \name{flower}
 \alias{flower}
 \title{Data: Measurement of iris flowers}
-\format{A \code{TraCoe} object with 150 measurements of 4 variables
+\format{
+A \code{TraCoe} object with 150 measurements of 4 variables
 (petal + sepal) x (length x width) on 3 species of iris. This dataset is
-the classical \link{iris} formatted for Momocs.}
+the classical \link{iris} formatted for Momocs.
+}
 \source{
 see link{iris}
 }
@@ -14,11 +16,20 @@ see link{iris}
 Data: Measurement of iris flowers
 }
 \seealso{
-Other datasets: \code{\link{apodemus}}, \code{\link{bot}},
-  \code{\link{chaff}}, \code{\link{charring}},
-  \code{\link{hearts}}, \code{\link{molars}},
-  \code{\link{mosquito}}, \code{\link{mouse}},
-  \code{\link{nsfishes}}, \code{\link{oak}},
-  \code{\link{olea}}, \code{\link{shapes}},
-  \code{\link{trilo}}, \code{\link{wings}}
+Other datasets: 
+\code{\link{apodemus}},
+\code{\link{bot}},
+\code{\link{chaff}},
+\code{\link{charring}},
+\code{\link{hearts}},
+\code{\link{molars}},
+\code{\link{mosquito}},
+\code{\link{mouse}},
+\code{\link{nsfishes}},
+\code{\link{oak}},
+\code{\link{olea}},
+\code{\link{shapes}},
+\code{\link{trilo}},
+\code{\link{wings}}
 }
+\concept{datasets}

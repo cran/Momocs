@@ -20,17 +20,18 @@ coo_check <- function(coo){
 
 #' @export
 coo_check.default <- function(coo) {
-  if (is.matrix(coo)) {
-    return(coo)
-  }
   if (is.data.frame(coo) && all(sapply(coo, class)=="numeric")){
-    return(as.matrix(coo))
+    coo <- as.matrix(coo)
   }
   if (is.list(coo)) {
     if (length(coo) == 1)
-      return(l2m(coo))
+      coo <- l2m(coo)
   }
-  stop("do not know how to turn into a coo")
+  # checks for ncol==2 and no NAs
+  if (is_shp(coo))
+    coo
+  else
+    stop("do not know how to turn into a coo")
 }
 
 #' @export
@@ -43,7 +44,7 @@ coo_check.Coo <- function(coo){
 
   res <- sapply(coo$coo, function(x) try(coo_check(x), silent=TRUE))
   if (.is.error(res)){
-    stop(paste(names(coo)[.which.is.error(res)], collapse=", "), " do not pass coo_check")
+    stop(paste(.which.is.error(res), collapse=", "), " do not pass coo_check")
   }
   return(coo)
 }
@@ -192,9 +193,11 @@ coo_nb.Coo <- function(coo){
 #' coo_plot(coo_centre(bot[1]))
 #' # this
 #' coo_plot(coo_center(bot[1]))
+#'
 #' # on Coo objects
-#' stack(bot)
-#' stack(coo_center(bot))
+#' b <- slice(bot, 1:5) # speed sake
+#' stack(slice(b, 1:5))
+#' stack(coo_center(b))
 #' @aliases coo_centre
 #' @export
 coo_center <- function(coo) {
@@ -240,12 +243,14 @@ coo_centre <- coo_center
 #' coo_plot(b, lwd=2)
 #' coo_draw(coo_scalex(b, 1.5), bor="blue")
 #' coo_draw(coo_scaley(b, 0.5), bor="red")
+#'
 #' # this also works on Coo objects:
-#' stack(bot)
-#' bot %>% coo_center %>% coo_scale %>% stack
-#' bot %>% coo_center %>% coo_scaley(0.5) %>% stack
+#' b <- slice(bot, 5) # for speed sake
+#' stack(b)
+#' b %>% coo_center %>% coo_scale %>% stack
+#' b %>% coo_center %>% coo_scaley(0.5) %>% stack
 #' #equivalent to:
-#' #bot %>% coo_center %>% coo_scalex(2) %>% stack
+#' #b %>% coo_center %>% coo_scalex(2) %>% stack
 #' @family scaling functions
 #' @rdname coo_scale
 #' @name coo_scale
@@ -435,9 +440,11 @@ coo_template_relatively.Coo <- function(coo, size = 1) {
 #' @examples
 #' coo_plot(bot[1])
 #' coo_plot(coo_rotate(bot[1], pi/2))
+#'
 #' # on Coo
-#' stack(bot)
-#' stack(coo_rotate(bot, pi/2))
+#' b <- bot %>% slice(1:5) # for speed sake
+#' stack(b)
+#' stack(coo_rotate(b, pi/2))
 #' @family rotation functions
 #' @export
 coo_rotate <- function(coo, theta = 0) {
@@ -496,6 +503,99 @@ coo_rotatecenter.Coo <- function(coo, theta, center = c(0, 0)) {
   return(Coo)
 }
 
+# coo_untiltx --------
+#' Removes rotation so that the centroid and a given point are parallel to the x-axis
+#'
+#' Rotationnal biases appear after [coo_slidedirection] (and friends).
+#' Typically useful for outline analysis where phasing matters. See examples.
+#'
+#' @aliases coo_untilt
+#' @inheritParams coo_check
+#' @param id \code{numeric} the id of the point that will become the new first point. See details below
+#' for the method on Coo objects.
+#' @param ldk \code{numeric} the id of the ldk to use as id, only on \code{Out}
+#' @details For Coo objects, and in particular for Out and Opn two different ways of coo_sliding
+#' are available:
+#' \itemize{
+#' \item \strong{no ldk passed and an id is passed}: all id-th points
+#' within the shapes will become the first points.
+#' \item \strong{a single ldk is passed}: the ldk-th ldk will be used to slide every shape.
+#' If an id is (also) passed, id is ignored with a message.
+#' }
+#' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
+#' @seealso \link{coo_slide} and friends.
+#' @family coo_ utilities
+#' @examples
+#' # on a single shape
+#' bot[1] %>% coo_center %>% coo_align %>%
+#'    coo_sample(12) %>% coo_slidedirection("right") %T>%
+#'    coo_plot() %>% # the first point is not on the x-axis
+#'    coo_untiltx() %>%
+#'    coo_draw(border="red") # this (red) one is
+#'
+#' # on an Out
+#' # prepare bot
+#' prebot <- bot %>% coo_center %>% coo_scale %>%
+#'    coo_align %>% coo_slidedirection("right")
+#' prebot %>% stack # some dephasing remains
+#' prebot %>% coo_slidedirection("right") %>% coo_untiltx() %>% stack # much better
+#' # _here_ there is no change but the second, untilted, is correct
+#' prebot %>% efourier(8, norm=FALSE) %>% PCA %>% plot_PCA(~type)
+#' prebot %>% coo_untiltx %>% efourier(8, norm=FALSE) %>% PCA %>% plot_PCA(~type)
+#'
+#' # an example using ldks:
+#' # the landmark #2 is on the x-axis
+#' hearts %>%
+#'   slice(1:5) %>% fgProcrustes(tol=1e-3) %>% # for speed sake
+#'   coo_center %>% coo_untiltx(ldk=2) %>% stack
+#' @export
+coo_untiltx <- function(coo, id, ldk){
+  UseMethod("coo_untiltx")
+}
+
+#' @export
+coo_untiltx.default <- function(coo, id=1, ldk){
+  if (!missing(ldk))
+    message("only 'id' is supported on single shapes")
+  # find the right triplet of points to calculate the angle to untilt
+  # this one is the concerned point
+  edge_xy <- coo[id,, drop=FALSE]
+  # then, the centroid
+  cent_xy <- coo_centpos(coo) %>% matrix(nrow=1)
+  # finally the target (the x of the edge and the y of the centroid since untiltX)
+  targ_xy <- c(edge_xy[, 1], cent_xy[, 2])
+  # build the triplet and take the right (signed) angle
+  theta <- rbind(edge_xy, cent_xy, targ_xy) %>%
+    coo_angle_edges() %>% `[`(2)
+  # remove this difference and return the untilted shape
+  coo %>%
+    coo_rotatecenter(theta=theta, center=cent_xy) %>%
+    return
+}
+
+#' @export
+coo_untiltx.Coo <- function(coo, id=1, ldk){
+  Coo <- coo
+  # when ldk is provided ---
+  # first we check a bit
+  if (!missing(ldk)) {
+    .check(is_ldk(Coo), "this object has no $ldk")
+    if (!missing(id))
+      warning("'id' provided will be ignored")
+    # here we loop and take the corresponding id
+    for (i in seq(along = Coo$coo)) {
+      Coo$coo[[i]] <- coo_untiltx(Coo$coo[[i]], id=Coo$ldk[[i]][ldk])
+    }
+    return(Coo)
+  } else {
+    # when id is provided ---
+    for (i in seq(along = Coo$coo)) {
+      Coo$coo[[i]] <- coo_untiltx(Coo$coo[[i]], id=id)
+    }
+  }
+  return(Coo)
+}
+
 # coo_align ----------
 #' Aligns coordinates
 #'
@@ -506,9 +606,10 @@ coo_rotatecenter.Coo <- function(coo, theta, center = c(0, 0)) {
 #' @examples
 #' coo_plot(bot[1])
 #' coo_plot(coo_align(bot[1]))
+#'
 #' # on a Coo
-#' stack(bot)
-#' stack(coo_align(bot))
+#' b <- bot %>% slice(1:5) # for speed sake
+#' stack(coo_align(b))
 #' @family aligning functions
 #' @family coo_ utilities
 #' @export
@@ -581,7 +682,9 @@ coo_alignxax.Coo <- function(coo) {
 #' b <- bot[1]
 #' coo_plot(b)
 #' coo_plot(coo_aligncalliper(b))
-#' bot.al <- coo_aligncalliper(bot)
+#'
+#' b <- bot %>% slice(1:5) # for speed sake
+#' bot.al <- coo_aligncalliper(b)
 #' stack(bot.al)
 #' }
 #' @family aligning functions
@@ -594,7 +697,7 @@ coo_aligncalliper <- function(coo) {
 #' @export
 coo_aligncalliper.default <- function(coo) {
   coo <- coo_check(coo)
-  cal.ind <- coo_calliper(coo, arr.ind = TRUE)$arr.ind
+  cal.ind <- coo_calliper(coo, arr.ind = TRUE)$arr_ind[[1]]
   coo <- coo_bookstein(coo, cal.ind[1], cal.ind[2])
   return(coo)
 }
@@ -615,9 +718,8 @@ coo_aligncalliper.Coo <- function(coo) {
 #' @inheritParams coo_check
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
-#' \dontrun{
-#' stack(coo_alignminradius(hearts))
-#' }
+#' b <- bot %>% slice(1:5) # for speed sake
+#' stack(coo_alignminradius(b))
 #' @family aligning functions
 #' @family coo_ utilities
 #' @export
@@ -630,7 +732,7 @@ coo_alignminradius.default <- function(coo){
   id_minrad <- which.min(coo_centdist(coo))
   coo <- coo_slide(coo, id_minrad)
   m <- matrix(c(coo[1, ],  0, 0, 1, 0), nrow=3, byrow=TRUE)
-  th <- .coo_angle_edge1(m)
+  th <- coo_angle_edges(m)[2]
   coo_rotate(coo, -th)
 }
 
@@ -654,9 +756,11 @@ coo_alignminradius.Coo <- function(coo){
 #' @examples
 #' coo_plot(bot[1])
 #' coo_plot(coo_trans(bot[1], 50, 100))
+#'
 #' # on Coo
-#' stack(bot)
-#' stack(coo_trans(bot, 50, 100))
+#' b <- bot %>% slice(1:5) # for speed sake
+#' stack(b)
+#' stack(coo_trans(b, 50, 100))
 #' @export
 coo_trans <- function(coo, x = 0, y = 0) {
   UseMethod("coo_trans")
@@ -685,6 +789,8 @@ coo_trans.Coo <- function(coo, x = 0, y = 0) {
 #' @param ids \code{numeric} of length >= 2, where to slice the shape(s)
 #' @param ldk \code{numeric} the id of the ldk to use as ids, only on \code{Out} and \code{Opn}.
 #' If provided, \code{ids} will be ignored.
+#' @seealso Have a look to [coo_slidegap] if you have problems with gaps
+#' after slicing around landmarks and/or starting points.
 #' @return a list of shapes or a list of \link{Opn}
 #' @examples
 #' h <- slice(hearts, 1:5)  # speed purpose only
@@ -817,23 +923,24 @@ coo_slice.Ldk <- function(coo, ids, ldk){
 #' within the shapes will become the first points. $ldk will be slided accordingly.
 #' \item \strong{no ldk passed and a vector of ids matching the length of the Coo}: for every shape,
 #' the id-th point will be used as the id-th point. $ldk will be slided accordingly.
-#' \item \strong{a single ldk is passed}: the ldk-th ldk will be used to slide every shape. If an ldk is passed,
-#' id is ignored with a message.
+#' \item \strong{a single ldk is passed}: the ldk-th ldk will be used to slide every shape.
+#' If an id is (also) passed, it is ignored with a message.
 #' }
 #' See examples.
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @seealso \link{coo_slice} and friends.
 #' @examples
-#' stack(hearts)
+#' h <- hearts %>% slice(1:5) # for speed sake
+#' stack(h)
 #' # set the first landmark as the starting point
-#' stack(coo_slide(hearts, ldk=1))
+#' stack(coo_slide(h, ldk=1))
 #' # set the 50th point as the starting point (everywhere)
-#' stack(coo_slide(hearts, id=50))
+#' stack(coo_slide(h, id=50))
 #' # set the id-random-th point as the starting point (everywhere)
 #' set.seed(123) # just for the reproducibility
-#' id_random <- sample(x=min(sapply(hearts$coo, nrow)), size=length(hearts),
+#' id_random <- sample(x=min(sapply(h$coo, nrow)), size=length(h),
 #' replace=TRUE)
-#' stack(coo_slide(hearts, id=id_random))
+#' stack(coo_slide(h, id=id_random))
 #' @family sliding functions
 #' @family coo_ utilities
 #' @export
@@ -1064,6 +1171,10 @@ coo_intersect_direction.Coo <-
 #'
 #' Shapes are centered and then, according to direction, the point northwards, southwards,
 #' eastwards or westwards the centroid, becomes the first point with \link{coo_slide}.
+#' 'right' is possibly the most sensible option (and is by default),
+#' since 0 radians points eastwards, relatively to the origin.
+#' This should be followed by a [coo_untiltx] is most cases to remove any rotationnal dephasing/bias.
+#'
 #' @inheritParams coo_check
 #' @param direction \code{character} one of \code{"down", "left", "up", "right"} ("right" by default)
 #' @param center \code{logical} whether to center or not before sliding
@@ -1078,8 +1189,12 @@ coo_intersect_direction.Coo <-
 #' coo_plot(coo_slidedirection(b, "down"))
 #'
 #' # on Coo objects
-#' stack(bot)
-#' stack(coo_slidedirection(bot, "left"))
+#' b <- bot %>% slice(1:5) # for speed sake
+#' stack(b)
+#' stack(coo_slidedirection(b, "right"))
+#'
+#' # This should be followed by a [coo_untiltx] in most (if not all) cases
+#' stack(coo_slidedirection(b, "right") %>% coo_untiltx)
 #'
 #' @family sliding functions
 #' @family coo_ utilities
@@ -1206,19 +1321,11 @@ coo_slidegap.Coo <- function(coo, force=FALSE){
 #' @param coo either a \code{matrix} of (x; y) coordinates or a \link{Coo} object.
 #' @param ids \code{integer}, the ids of points to sample.
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
-#' @examples
-#' b <- bot[1]
-#' stack(bot)
-#' stack(coo_sample(bot, 24))
-#' coo_plot(b)
-#' coo_plot(coo_sample(b, 24))
 #' @family sampling functions
 #' @family coo_ utilities
 #' @examples
 #' coo_extract(bot[1], c(3, 9, 12)) # or :
 #' bot[1] %>% coo_extract(c(3, 9, 12))
-#'
-#' coo_extract(bot, c(3, 5, 7))
 #' @export
 coo_extract <- function(coo, ids){
   UseMethod("coo_extract")
@@ -1432,13 +1539,11 @@ coo_samplerr.Coo <- function(coo, n) {
 #' @param n  code{integer}, the number fo points to interpolate.
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
-#' b <- bot[1]
-#' stack(bot)
-#' stack(coo_scale(bot))
-#' coo_plot(b)
-#' coo_plot(coo_scale(b))
-#' stack(bot)
-#' stack(coo_interpolate(coo_sample(bot, 12), 120))
+#' b5 <- bot %>% slice(1:5) # for speed sake
+#' stack(b5)
+#' stack(coo_scale(b5))
+#' stack(b5)
+#' stack(coo_interpolate(coo_sample(b5, 12), 120))
 #' coo_plot(bot[1])
 #' coo_plot(coo_interpolate(coo_sample(bot[1], 12), 120))
 #' @family sampling functions
@@ -1483,11 +1588,11 @@ coo_interpolate.Coo <- function(coo, n) {
 #' @param n \code{integer} the number of smoothing iterations
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
-#' b <- bot[1]
-#' stack(bot)
-#' stack(coo_smooth(bot, 10))
-#' coo_plot(bot[1])
-#' coo_plot(coo_smooth(bot[1], 30))
+#' b5 <- slice(bot, 1:5) # for speed sake
+#' stack(b5)
+#' stack(coo_smooth(b5, 10))
+#' coo_plot(b5[1])
+#' coo_plot(coo_smooth(b5[1], 30))
 #' @family smoothing functions
 #' @family coo_ utilities
 #' @export
@@ -1627,7 +1732,7 @@ is_equallyspacedradii.default <- function(coo, thres=pi/90){
   res <- vector("numeric", nrow(coo))
   for (i in 1:nrow(coo)){
     res[i] <- rbind(coo[i, ], cent, coo1[i, ]) %>%
-      .coo_angle_edge1("acos")
+      .coo_angle_edge1("acos") %>% `[`(2)
   }
   sd(res) < thres
 }
@@ -1995,7 +2100,7 @@ coo_up.Coo <- function(coo, slidegap=FALSE){
   coo
 }
 
-# coo_donw --------
+# coo_down --------
 #' coo_down
 #' Retains coordinates with negative y-coordinates
 #'
@@ -2210,8 +2315,9 @@ coo_jitter.Coo <- function(coo, ...){
 #' @param ldk2 \code{numeric} the id of the second point of the new baseline (the last, by default)
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
-#' stack(hearts)
-#' stack(coo_bookstein(hearts, 2, 4))
+#' h <- hearts %>% slice(1:5) # for the sake of speed
+#' stack(h)
+#' stack(coo_bookstein(h, 2, 4))
 #' h <- hearts[1]
 #' coo_plot(h)
 #' coo_plot(coo_bookstein(h, 20, 57), border='red')
@@ -2279,8 +2385,9 @@ coo_bookstein.Ldk <- function(coo, ldk1, ldk2) {
 #' @param t2 \code{numeric} the (x; y) coordinates of the 2nd point of the new baseline
 #' @return a \code{matrix} of (x; y) coordinates or a \link{Coo} object.
 #' @examples
-#' stack(hearts)
-#' stack(coo_baseline(hearts, 2, 4, c(-1, 0), c(1, 1)))
+#' h <- hearts %>% slice(1:5) # for speed sake
+#' stack(h)
+#' stack(coo_baseline(h, 2, 4, c(-1, 0), c(1, 1)))
 #' @family baselining functions
 #' @family coo_ utilities
 #' @export
@@ -2397,7 +2504,7 @@ coo_centsize <- function(coo){
 coo_centsize.default <- function(coo) {
   coo <- coo_check(coo)
   cp <- coo_centpos(coo)
-  mean(sqrt((coo[, 1] - cp[1])^2 + (coo[, 2] - cp[2])^2))
+  sqrt(mean((coo[, 1] - cp[1])^2 + (coo[, 2] - cp[2])^2))
 }
 
 #' @export
@@ -2526,7 +2633,7 @@ coo_perim.default <- function(coo) {
 #' @name coo_perim
 #' @export
 coo_perim.Coo <- function(coo) {
-  lapply(coo$coo, coo_perim)
+  sapply(coo$coo, coo_perim)
 }
 
 
