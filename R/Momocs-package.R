@@ -27,7 +27,7 @@
 #' @references
 #' \itemize{
 #' \item Bonhomme V, Picq S, Gaucherel C, Claude J. 2014. Momocs: Outline Analysis Using R.
-#' \emph{Journal of Statistical Software} \bold{56}. \url{http://www.jstatsoft.org/v56/i13}.
+#' \emph{Journal of Statistical Software} \bold{56}. \url{https://www.jstatsoft.org/v56/i13}.
 #' \item Claude J. 2008. \emph{Morphometrics with R}. Springer-Verlag, New-York.
 #' }
 #' @section Cheers:
@@ -86,14 +86,14 @@ globalVariables(c("x", "y", "f", "xend", "yend", "shp1", "ddply",
                   ))
 
 # welcome message
-.onAttach <- function(lib, pkg) {
-  packageStartupMessage("
-  Momocs is now retired and will no longer be maintained.
-  It is superseded by Momocs2 and more generally MomX ecosystem:
-
-             <   https://momx.github.io   >",
-  appendLF = TRUE)
-}
+# .onAttach <- function(lib, pkg) {
+#   packageStartupMessage("
+#   Momocs is now retired and will no longer be maintained.
+#   It is superseded by Momocs2 and more generally MomX ecosystem:
+#
+#              <   https://momx.github.io   >",
+#   appendLF = TRUE)
+# }
 
 #on load add Momocs' options
 .onLoad <- function(libname, pkgname){

@@ -238,7 +238,7 @@ as_df.Coo <- function(x, ...){
   #   dplyr::as_data_frame() %>%
   #   return()
   dplyr::bind_cols(
-    dplyr::data_frame(coo=x$coo),
+    tibble::tibble(coo=x$coo),
     x$fac
   )
 }
@@ -248,11 +248,11 @@ as_df.Coo <- function(x, ...){
 as_df.Coe <- function(x, ...){
   # need this since if no fac, bind_cols wont be happy
   if (!is_fac(x))
-    return(dplyr::as_data_frame(x$coe))
+    return(tibble::as_tibble(x$coe))
   # shortcut
   dplyr::bind_cols(
     x$fac,
-    dplyr::as_data_frame(x$coe)
+    tibble::as_tibble(x$coe)
   )
 }
 
@@ -261,7 +261,7 @@ as_df.Coe <- function(x, ...){
 #' @export
 as_df.PCA <- function(x, retain, ...){
 
-  scores_df <- dplyr::as_data_frame(x$x)
+  scores_df <- tibble::as_tibble(x$x)
 
   # if retain is not provided, all returned
   if (missing(retain)){
@@ -289,7 +289,7 @@ as_df.PCA <- function(x, retain, ...){
 #' @rdname as_df
 #' @export
 as_df.LDA <- function(x, retain, ...){
-  scores_df <- dplyr::as_data_frame(x$mod.pred$x)
+  scores_df <- tibble::as_tibble(x$mod.pred$x)
 
   # if retain is not provided, all returned
   if (missing(retain)){
@@ -316,7 +316,7 @@ as_df.LDA <- function(x, retain, ...){
   # now the big one
   dplyr::bind_cols(
     # actual, predicted, posterior
-    dplyr::data_frame(actual     = x$f,
+    tibble::tibble(actual     = x$f,
                       predicted  = x$mod.pred$class,
                       posterior  = apply(x$mod.pred$posterior, 1, max)),
     # the original fac
