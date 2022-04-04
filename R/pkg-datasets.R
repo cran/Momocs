@@ -36,7 +36,6 @@ NULL
 #' used Rohlf and Archie (1984). Note that the links defined here are quite approximate.
 #' @source Rohlf F, Archie J. 1984. A comparison of Fourier methods for the
 #' description of wing shape in mosquitoes (Diptera: Culicidae). \emph{Systematic Biology}: 302-317.
-#' Arranged from: \url{http://life.bio.sunysb.edu/morph/data/RohlfArchieWingOutlines.nts}.
 #' @family datasets
 NULL
 
@@ -87,7 +86,7 @@ NULL
 #' @name wings
 #' @rdname data_wings
 #' @format A \link{Ldk} object containing 18 (x; y) landmarks  from 127 mosquito wings, from
-#' @source Rohlf and Slice 1990 and \url{http://life.bio.sunysb.edu/morph/data/RohlfSlice1990Mosq.nts}
+#' @source Rohlf and Slice 1990.
 #' @family datasets
 NULL
 
@@ -120,7 +119,7 @@ NULL
 #' identification of isolated modern human molars: testing Procrustes aligned
 #' outlines as a standardization procedure for elliptic fourier analysis.
 #' \emph{American Journal of Physical Anthropology}, 153(2), 314-22. doi:10.1002/ajpa.22428
-#' \url{ https://onlinelibrary.wiley.com/doi/abs/10.1002/ajpa.22428}
+#' see `https://onlinelibrary.wiley.com/doi/abs/10.1002/ajpa.22428`
 #' @family datasets
 NULL
 
@@ -182,7 +181,7 @@ NULL
 #' @format A \link{Out} object 64 coordinates of 30 wood molar outlines.
 #' @source  Renaud S, Pale JRM, Michaux JR (2003): Adaptive latitudinal trends in
 #'  the mandible shape of \emph{Apodemus} wood mice. \emph{Journal of Biogeography} 30:1617-1628.
-#' \url{https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-2699.2003.00932.x}
+#' see `https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-2699.2003.00932.x`
 #' @family datasets
 NULL
 

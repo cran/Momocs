@@ -54,7 +54,7 @@ fac_dispatcher <- function(x, fac){
   if (is.factor(fac))
     return(fac)
   # formula case
-  if (class(fac) == "formula") {
+  if (inherits(fac, "formula")) {
     column_name <- attr(terms(fac), "term.labels")
     if (any(is.na(match(column_name, colnames(x$fac)))))
       stop("formula provided must match with $fac column names")
@@ -145,10 +145,10 @@ subsetize.Coe <- function(x, subset, ...) {
   e <- substitute(subset)
   retain <- eval(e, Coe$fac, parent.frame())
   Coe2 <- Coe
-  Coe2$coe <- Coe$coe[retain, ]
+  Coe2$coe <- Coe$coe[retain,, drop=FALSE ]
   #   if (is.numeric(Coe2$coe)) Coe2$coe <- t(as.matrix(Coe2$coe)) # single shp case
   if (ncol(Coe$fac) > 0) {
-    Coe2$fac <- Coe$fac[retain, ]
+    Coe2$fac <- Coe$fac[retain,, drop=FALSE]
     # bloody dirty case where a factor is returned
     if (ncol(Coe$fac)==1 & is.factor(Coe2$fac)) {
       Coe2$fac <- tibble::as_tibble(Coe2$fac)
@@ -1084,7 +1084,7 @@ rm_missing.default <- function(x, by){
   if (missing(by))
     filter(x, !apply(is.na(x$fac), 1, any))
   else
-    filter(x, !is.na(x$fac[, by]))
+    filter(x, !is.na(x$fac[[by]]))
 }
 
 #' Removes harmonics from Coe objects

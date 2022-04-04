@@ -955,7 +955,7 @@ coo_slide.default <- function(coo, id, ldk) {
     return(coo)
   }
   n <- nrow(coo)
-  slided.rows <- c(id:n, 1:(id - 1))
+  slided.rows <- unique(c(id:n, 1:(id - 1)))
   return(coo[slided.rows, ])
 }
 
@@ -1772,11 +1772,17 @@ coo_likely_clockwise <- function(coo)
 #' @rdname coo_likely_clockwise
 #' @export
 coo_likely_clockwise.default <- function(coo){
-  res <- numeric(nrow(coo)-1)
-  for (i in seq_along(res)){
-    res[i] <- (coo[i+1, 1] - coo[i, 1]) * (coo[i+1, 2] - coo[i, 2])
-  }
-  sum(res)>0
+  # it uses, complex numbers, polar coordinates and
+  # the rolling difference in argument.
+ coo %>%
+    # cartesian to polar
+    coo2cpx() %>%
+    # retrieve argument
+    Arg() %>%
+    # and the diff along successive points
+    diff() %>%
+    # test if on average it is negative
+    `>`(0) %>% mean() %>% `<`(0.5)
 }
 
 #' @rdname coo_likely_clockwise
@@ -1941,6 +1947,7 @@ coo_shearx.default <- function(coo, k=1){
 #' @export
 coo_shearx.Coo <-function(coo, k=1){
   coo$coo <- lapply(coo$coo, coo_shearx, k=k)
+  coo
 }
 
 # coo_sheary ----------------
@@ -1958,6 +1965,7 @@ coo_sheary.default <- function(coo, k=1){
 #' @export
 coo_sheary.Coo <- function(coo, k=1){
   coo$coo <- lapply(coo$coo, coo_sheary, k=k)
+  coo
 }
 
 # coo_flipx -----------------
@@ -2044,7 +2052,7 @@ coo_dxy.default <- function(coo) {
   coo <- coo_check(coo)
   dx <- coo[, 1] - coo[1, 1]
   dy <- coo[, 2] - coo[1, 2]
-  return(dplyr::data_frame(dx = dx, dy = dy))
+  return(dplyr::tibble(dx = dx, dy = dy))
 }
 
 #' @export
@@ -2686,7 +2694,7 @@ coo_calliper.default <- function(coo, arr.ind = FALSE) {
     # to return a vector (numeric and sorted) of the rows between
     # which the max length has been found
     arr.ind <- sort(as.numeric(arr.ind[1, ]))
-    return(dplyr::data_frame(length = max(d), arr_ind = list(arr.ind)))
+    return(dplyr::tibble(length = max(d), arr_ind = list(arr.ind)))
   } else {
     return(max(d))
   }
