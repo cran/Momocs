@@ -7,6 +7,7 @@
 #' @param x a Ldk (typically), an Out or a matrix
 #' @param id1 id of the 1st row
 #' @param id2 id of the 2nd row
+#' @return numeric
 #' @note On Out objects, we first \link{get_ldk}.
 #' @seealso if you want all pairwise combinations, see \link{coo_truss}
 #' @examples
@@ -144,10 +145,6 @@ measure_nse <- function(ch){
 #' # example on wings dataset
 
 #' tx <- coo_truss(wings)
-#' dim(tx)
-#' # we normalize and plot an heatmap
-#' txn <- apply(tx$coe, 2, .normalize)
-#' # heatmap(txn)
 #'
 #' txp <- PCA(tx, scale. = TRUE, center=TRUE, fac=wings$fac)
 #' plot(txp, 1)
@@ -170,7 +167,3 @@ coo_truss.Coo <- function(x){
   TraCoe(coe=x$coo %>% sapply(coo_truss) %>% t(),
          fac=x$fac)
 }
-
-
-
-

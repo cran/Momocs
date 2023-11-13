@@ -642,11 +642,9 @@ coo_align.Coo <- function(coo) {
 #' the alignment step. This may solve your problem because coo_calliper orders the \code{$arr.ind} used by
 #' coo_aligncalliper.
 #' @examples
-#' \dontrun{
 #' b <- bot[1]
 #' coo_plot(b)
 #' coo_plot(coo_alignxax(b))
-#' }
 #' @family aligning functions
 #' @family coo_ utilities
 #' @export
@@ -678,7 +676,6 @@ coo_alignxax.Coo <- function(coo) {
 #' @inheritParams coo_check
 #' @return a \code{matrix} of (x; y) coordinates, or any \link{Coo} object.
 #' @examples
-#' \dontrun{
 #' b <- bot[1]
 #' coo_plot(b)
 #' coo_plot(coo_aligncalliper(b))
@@ -686,7 +683,6 @@ coo_alignxax.Coo <- function(coo) {
 #' b <- bot %>% slice(1:5) # for speed sake
 #' bot.al <- coo_aligncalliper(b)
 #' stack(bot.al)
-#' }
 #' @family aligning functions
 #' @family coo_ utilities
 #' @export
@@ -1040,18 +1036,25 @@ coo_intersect_segment.default <- function(coo, seg, center=TRUE){
   }
   # turns outlines into a SpatialPolygons
   # and seg into a SpatialLines
-  sp_out <- coo %>%
-    sp::Polygon() %>% list %>%
-    sp::Polygons(ID="useless_yet_required") %>% list %>%
-    sp::SpatialPolygons()
-  sp_seg  <- seg %>%
-    sp::Line() %>% list %>%
-    sp::Lines(ID="useless_yet_required") %>% list %>%
-    sp::SpatialLines()
+  # sp_out <- coo %>%
+  #   sp::Polygon() %>% list %>%
+  #   sp::Polygons(ID="useless_yet_required") %>% list %>%
+  #   sp::SpatialPolygons()
+  # sp_seg  <- seg %>%
+  #   sp::Line() %>% list %>%
+  #   sp::Lines(ID="useless_yet_required") %>% list %>%
+  #   sp::SpatialLines()
   # rgeos function that returns another sp object
-  inter <- rgeos::gIntersection(sp_out, sp_seg)
+  # inter <- rgeos::gIntersection(sp_out, sp_seg)
   # extract coordinates of intersection points
-  inter_xy <- inter@lines[[1]]@Lines[[1]]@coords
+  # inter_xy <- inter@lines[[1]]@Lines[[1]]@coords
+
+  sf_out <- coo %>% coo_close %>% list %>% sf::st_polygon()
+  sf_seg <- seg %>% sf::st_linestring()
+
+  inter <- sf::st_intersection(sf_out, sf_seg)
+  inter_xy <- sf::st_coordinates(inter)[, 1:2]
+
   # find the if of the closest point on the coo
   # and return its id
   edm_nearest(inter_xy[2,, drop=FALSE], coo, full=TRUE)$pos
@@ -1536,7 +1539,7 @@ coo_samplerr.Coo <- function(coo, n) {
 #' along the perimeter of the coordinates provided and keeping the first point
 #'
 #' @inheritParams coo_check
-#' @param n  code{integer}, the number fo points to interpolate.
+#' @param n  \code{integer}, the number fo points to interpolate.
 #' @return a \code{matrix} of (x; y) coordinates, or a \link{Coo} object.
 #' @examples
 #' b5 <- bot %>% slice(1:5) # for speed sake
@@ -2718,6 +2721,7 @@ coo_calliper.Coo <- function(coo, arr.ind = FALSE) {
 #' @param trim \code{numeric}, the number of coordinates to trim
 #' @family coo_ utilities
 #' @family coo_trimming functions
+#' @return a trimmed shape
 #' @examples
 #' olea[1] %>% coo_sample(12) %T>%
 #'    print() %T>% ldk_plot() %>%
@@ -2743,6 +2747,7 @@ coo_trim.Coo <- function(coo, trim=1){
 #' Removes \code{trim} coordinates from the top of a shape.
 #' @inheritParams coo_check
 #' @param trim \code{numeric}, the number of coordinates to trim
+#' @return a trimmed shape
 #' @family coo_ utilities
 #' @family coo_trimming functions
 #' @examples
@@ -2774,6 +2779,7 @@ coo_trimtop.Coo <- function(coo, trim=1){
 #' Removes \code{trim} coordinates from the bottom of a shape.
 #' @inheritParams coo_check
 #' @param trim \code{numeric}, the number of coordinates to trim
+#' @return a trimmed shape
 #' @family coo_ utilities
 #' @family coo_trimming functions
 #' @examples
